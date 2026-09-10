@@ -1,0 +1,822 @@
+/**
+ * Dashboard client.
+ *
+ * The page runs in one of two modes, decided at load time:
+ *
+ *   live   - an ASP.NET Core backend is present. Incidents come from the REST API and updates
+ *            arrive over SignalR, with polling as a fallback.
+ *   static - no backend (for example GitHub Pages, which serves files only). Data comes from a
+ *            snapshot that a real pipeline run exported at build time.
+ *
+ * Three rules shape this file:
+ *  - Realtime is an optimisation, never the source of truth. If the hub is unavailable the
+ *    dashboard degrades to polling, and if the API is unavailable it degrades to the snapshot.
+ *  - Every URL is relative. The site is served from a subpath on GitHub Pages, so a leading "/"
+ *    would resolve to the domain root and break every request.
+ *  - Nothing is presented as more certain than it is. Demo data is labelled wherever it appears,
+ *    and the static mode says plainly that it is a recording rather than a live system.
+ */
+(() => {
+  'use strict';
+
+  const SEVERITY_RANK = { Critical: 4, High: 3, Medium: 2, Low: 1, Unknown: 0 };
+  const SEVERITY_COLOUR = {
+    Critical: '#ef476f',
+    High: '#ff9f1c',
+    Medium: '#ffd166',
+    Low: '#64dfdf',
+    Unknown: '#aebdca',
+  };
+  const POLL_INTERVAL_MS = 15000;
+  const MAX_FEED_ITEMS = 60;
+  const REPLAY_STEP_MS = 900;
+  const SIGNALR_CLIENT_URL = 'https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js';
+
+  const dom = {
+    incidentList: document.querySelector('#incidentList'),
+    feedList: document.querySelector('#feedList'),
+    details: document.querySelector('#details'),
+    incidentCount: document.querySelector('#incidentCount'),
+    feedCount: document.querySelector('#feedCount'),
+    status: document.querySelector('#connectionStatus'),
+    dot: document.querySelector('#connectionDot'),
+    fallback: document.querySelector('#globeFallback'),
+    demoNotice: document.querySelector('#demoNotice'),
+    demoNoticeText: document.querySelector('#demoNoticeText'),
+    severityFilter: document.querySelector('#severityFilter'),
+    typeFilter: document.querySelector('#typeFilter'),
+    locatedOnly: document.querySelector('#locatedOnly'),
+    replayButton: document.querySelector('#replayButton'),
+    feedHint: document.querySelector('#feedHint'),
+    aboutModeText: document.querySelector('#aboutModeText'),
+  };
+
+  /** Full, authoritative state. Replay renders a subset of this rather than mutating it. */
+  const incidents = new Map();
+  let feed = [];
+  const entities = new Map();
+
+  /** What each live marker was drawn from, so an unchanged marker is left alone. */
+  const entitySignatures = new Map();
+
+  let viewer = null;
+  let selectedIncidentId = null;
+  let pollTimer = null;
+  let dataSource = null;
+
+  /**
+   * What relative times are measured against.
+   *
+   * In live mode that is the visitor's clock, because the events really did just arrive. In static
+   * mode it must NOT be: the snapshot describes a recorded run, and measuring it against "now" would
+   * stamp synthetic events on real straits and cities as though they happened this afternoon. The
+   * basis becomes the moment the run was recorded, and the suffix says so.
+   */
+  let timeBasis = null;
+  let timeSuffix = 'ago';
+
+  /** When active, only these incidents render, with counts as they stood at that point. */
+  const replay = { active: false, revealed: new Set(), counts: new Map(), played: new Set(), timer: null };
+
+  const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[character]));
+
+  const colourFor = (severity) => SEVERITY_COLOUR[severity] ?? SEVERITY_COLOUR.Unknown;
+
+  const formatTime = (value) => (value
+    ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
+    : 'Unknown');
+
+  const formatDate = (value) => (value
+    ? new Intl.DateTimeFormat(undefined, { dateStyle: 'long' }).format(new Date(value))
+    : 'an unknown date');
+
+  const formatRelative = (value) => {
+    if (!value) return '';
+    const basis = timeBasis ?? Date.now();
+    const minutes = Math.round((basis - new Date(value).getTime()) / 60000);
+    if (minutes < 1) return timeBasis === null ? 'just now' : `at the start of the run`;
+    if (minutes < 60) return `${minutes}m ${timeSuffix}`;
+    const hours = Math.round(minutes / 60);
+    if (hours < 24) return `${hours}h ${timeSuffix}`;
+    const days = Math.round(hours / 24);
+    return `${days}d ${timeSuffix}`;
+  };
+
+  /** Coerces a snapshot-supplied count to a number, so it can never carry markup into innerHTML. */
+  const asCount = (value) => (Number.isFinite(Number(value)) ? Number(value) : 0);
+
+  const plural = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;
+
+  function setStatus(state, message) {
+    dom.dot.dataset.state = state;
+    dom.status.textContent = message;
+  }
+
+  // ---------------------------------------------------------------- data sources
+
+  /** Reads from the running backend. */
+  const apiSource = {
+    mode: 'live',
+    async probe() {
+      const response = await fetch('./api/incidents?take=1', { headers: { Accept: 'application/json' } });
+
+      // A static host with an SPA fallback answers this with 200 and an HTML page. Requiring JSON
+      // stops the dashboard adopting a "backend" that only ever returns index.html.
+      return response.ok
+        && (response.headers.get('content-type') ?? '').includes('application/json');
+    },
+    async loadIncidents() {
+      const response = await fetch('./api/incidents?take=200', { headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error(`Incident endpoint returned ${response.status}`);
+      return response.json();
+    },
+    async loadObservations() {
+      const response = await fetch('./api/observations?take=60', { headers: { Accept: 'application/json' } });
+      return response.ok ? response.json() : [];
+    },
+    async loadEvidence(incidentId) {
+      const response = await fetch(`./api/observations/by-incident/${incidentId}`, { headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error(`Evidence endpoint returned ${response.status}`);
+      return response.json();
+    },
+  };
+
+  /** Reads the snapshot a real pipeline run exported at build time. */
+  const staticSource = {
+    mode: 'static',
+    meta: null,
+    async probe() {
+      const response = await fetch('./data/meta.json', { headers: { Accept: 'application/json' } });
+      if (!response.ok) return false;
+      this.meta = await response.json();
+      return true;
+    },
+    async loadIncidents() {
+      const response = await fetch('./data/incidents.json', { headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error(`Snapshot incidents returned ${response.status}`);
+      return response.json();
+    },
+    async loadObservations() {
+      const response = await fetch('./data/observations.json', { headers: { Accept: 'application/json' } });
+      return response.ok ? response.json() : [];
+    },
+    async loadEvidence(incidentId) {
+      const response = await fetch(`./data/evidence/${incidentId}.json`, { headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error(`Snapshot evidence returned ${response.status}`);
+      return response.json();
+    },
+  };
+
+  /**
+   * Prefers the live backend, because it is strictly more capable. The snapshot is the fallback,
+   * which is what makes the same build work both locally and on a static host.
+   */
+  async function resolveDataSource() {
+    try {
+      if (await apiSource.probe()) return apiSource;
+    } catch {
+      // A network or CORS failure here just means no backend; fall through to the snapshot.
+    }
+
+    try {
+      if (await staticSource.probe()) return staticSource;
+    } catch {
+      // Handled by the caller, which reports that no data source could be reached.
+    }
+
+    return null;
+  }
+
+  // ---------------------------------------------------------------- globe
+
+  function initialiseGlobe() {
+    if (!window.Cesium) {
+      dom.fallback.hidden = false;
+      return;
+    }
+
+    try {
+      viewer = new Cesium.Viewer('cesiumContainer', {
+        animation: false,
+        baseLayerPicker: false,
+        geocoder: false,
+        homeButton: false,
+        infoBox: false,
+        navigationHelpButton: false,
+        sceneModePicker: false,
+        timeline: false,
+        fullscreenButton: false,
+        selectionIndicator: false,
+
+        // Natural Earth II ships with the CesiumJS distribution and needs no ion access token, so
+        // the published site has real imagery without credentials or a paid quota.
+        baseLayer: Cesium.ImageryLayer.fromProviderAsync(
+          Cesium.TileMapServiceImageryProvider.fromUrl(
+            'https://cesium.com/downloads/cesiumjs/releases/1.126/Build/Cesium/Assets/Textures/NaturalEarthII',
+          ),
+        ),
+      });
+
+      viewer.scene.globe.showGroundAtmosphere = true;
+      viewer.camera.setView({ destination: Cesium.Cartesian3.fromDegrees(30, 24, 22000000) });
+      viewer.selectedEntityChanged.addEventListener((entity) => {
+        const id = entity?.properties?.incidentId?.getValue();
+        if (id) selectIncident(id);
+      });
+    } catch (error) {
+      // A globe failure must not take the rest of the dashboard with it.
+      console.error('Globe initialisation failed', error);
+      dom.fallback.hidden = false;
+      viewer = null;
+    }
+  }
+
+  function syncGlobe(visible) {
+    if (!viewer) return;
+
+    const wanted = new Set(visible.filter((incident) => incident.location).map((incident) => incident.id));
+
+    for (const [id, entity] of entities) {
+      if (!wanted.has(id)) {
+        viewer.entities.remove(entity);
+        entities.delete(id);
+        entitySignatures.delete(id);
+      }
+    }
+
+    visible.forEach((incident) => {
+      if (!incident.location) return;
+
+      const sources = countFor(incident);
+
+      // renderIncidents runs on every replay tick and on every selection. Recreating unchanged
+      // markers each time made them flicker and aborted any flyTo already in flight, because its
+      // target entity was deleted mid-flight.
+      const signature = [
+        incident.severity, incident.title, sources,
+        incident.location.latitude, incident.location.longitude,
+      ].join('|');
+
+      if (entities.has(incident.id) && entitySignatures.get(incident.id) === signature) return;
+
+      const existing = entities.get(incident.id);
+      if (existing) viewer.entities.remove(existing);
+
+      const entity = viewer.entities.add({
+        id: `incident-${incident.id}`,
+        position: Cesium.Cartesian3.fromDegrees(incident.location.longitude, incident.location.latitude),
+        point: {
+          color: Cesium.Color.fromCssColorString(colourFor(incident.severity)),
+          // Corroborated incidents read as more substantial without implying extra certainty.
+          pixelSize: 10 + Math.min(8, sources * 2),
+          outlineColor: Cesium.Color.WHITE,
+          outlineWidth: 1,
+        },
+        label: {
+          text: incident.title.length > 46 ? `${incident.title.slice(0, 45)}…` : incident.title,
+          font: '12px system-ui, sans-serif',
+          fillColor: Cesium.Color.WHITE,
+          outlineColor: Cesium.Color.BLACK,
+          outlineWidth: 2,
+          style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+          pixelOffset: new Cesium.Cartesian2(0, -20),
+          scaleByDistance: new Cesium.NearFarScalar(1.0e6, 1.0, 2.0e7, 0.55),
+
+          // At a whole-globe view the labels overlap into an unreadable smear, so they appear only
+          // once the camera is close enough for them to be legible. The coloured markers carry the
+          // information until then.
+          distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 9.0e6),
+        },
+        properties: { incidentId: incident.id },
+      });
+
+      entities.set(incident.id, entity);
+      entitySignatures.set(incident.id, signature);
+    });
+  }
+
+  // ---------------------------------------------------------------- rendering
+
+  /** Evidence count, which during a replay reflects the run's progress rather than its end state. */
+  function countFor(incident) {
+    return replay.active
+      ? (replay.counts.get(incident.id) ?? 0)
+      : (incident.observationCount ?? 0);
+  }
+
+  function visibleIncidents() {
+    const minSeverity = SEVERITY_RANK[dom.severityFilter.value] ?? 0;
+    const type = dom.typeFilter.value;
+    const locatedOnly = dom.locatedOnly.checked;
+
+    return [...incidents.values()]
+      .filter((incident) => !replay.active || replay.revealed.has(incident.id))
+      .filter((incident) => (SEVERITY_RANK[incident.severity] ?? 0) >= minSeverity)
+      .filter((incident) => !type || incident.eventType === type)
+      .filter((incident) => !locatedOnly || Boolean(incident.location))
+      .sort((left, right) => new Date(right.occurredAt) - new Date(left.occurredAt));
+  }
+
+  function renderIncidents() {
+    const visible = visibleIncidents();
+    dom.incidentCount.textContent = visible.length;
+    dom.incidentList.replaceChildren();
+
+    if (visible.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'empty-state';
+      empty.textContent = replay.active
+        ? 'Waiting for the first observation of the run…'
+        : 'No incidents match the current filters.';
+      dom.incidentList.append(empty);
+    }
+
+    visible.forEach((incident) => {
+      const sources = countFor(incident);
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = `incident-button${incident.id === selectedIncidentId ? ' is-selected' : ''}`;
+      button.style.borderLeftColor = colourFor(incident.severity);
+      button.innerHTML = `
+        <h3>${escapeHtml(incident.title)}</h3>
+        <div class="incident-meta">
+          <span class="sev sev-${escapeHtml(incident.severity)}">${escapeHtml(incident.severity)}</span>
+          <span>${escapeHtml(incident.eventType)}</span>
+          <span>${escapeHtml(formatRelative(incident.occurredAt))}</span>
+        </div>
+        <div class="incident-sub">
+          ${incident.location ? escapeHtml(incident.location.name) : 'Location unresolved'}
+          · ${sources} source${sources === 1 ? '' : 's'}
+          ${sources > 1 ? '<span class="corr-chip">CORRELATED</span>' : ''}
+          ${incident.isDemo ? '<span class="demo-chip">DEMO</span>' : ''}
+        </div>`;
+      button.addEventListener('click', () => selectIncident(incident.id, true));
+      dom.incidentList.append(button);
+    });
+
+    syncGlobe(visible);
+    refreshTypeOptions();
+  }
+
+  function refreshTypeOptions() {
+    // During a replay the dropdown must only offer what has actually appeared, or it reveals which
+    // categories the run is going to produce before the run produces them.
+    const pool = [...incidents.values()]
+      .filter((incident) => !replay.active || replay.revealed.has(incident.id));
+    const types = [...new Set(pool.map((incident) => incident.eventType))].sort();
+    const current = dom.typeFilter.value;
+
+    // Compare the actual values: a set that changes without changing size would slip past a
+    // count-only check and leave the filter offering a category that no longer exists.
+    const rendered = [...dom.typeFilter.options].slice(1).map((option) => option.value);
+    if (rendered.length === types.length && rendered.every((value, index) => value === types[index])) {
+      return;
+    }
+
+    dom.typeFilter.replaceChildren(new Option('All', ''));
+    types.forEach((type) => dom.typeFilter.append(new Option(type, type)));
+    dom.typeFilter.value = types.includes(current) ? current : '';
+  }
+
+  function renderFeed() {
+    dom.feedCount.textContent = feed.length;
+    dom.feedList.replaceChildren();
+
+    if (feed.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'empty-state';
+      empty.textContent = replay.active ? 'Starting the run…' : 'No observations received yet.';
+      dom.feedList.append(empty);
+      return;
+    }
+
+    feed.forEach((observation) => {
+      const item = document.createElement('button');
+      item.type = 'button';
+      // Assigned through className, not innerHTML, so no HTML parsing happens. Escaping here would
+      // corrupt the class name rather than protect anything.
+      item.className = `feed-item status-${String(observation.status ?? '').replace(/[^A-Za-z]/g, '')}`;
+      item.innerHTML = `
+        <div class="feed-head">
+          <span class="feed-source">${escapeHtml(observation.sourceName)}</span>
+          <span class="feed-time">${escapeHtml(formatRelative(observation.receivedAt))}</span>
+        </div>
+        <div class="feed-title">${escapeHtml(observation.title ?? observation.summary ?? 'Untitled observation')}</div>
+        <div class="feed-meta">
+          <span class="pill pill-${escapeHtml(observation.status)}">${escapeHtml(observation.status)}</span>
+          <span>${escapeHtml(observation.eventType)}</span>
+          ${observation.location
+            ? `<span>${escapeHtml(observation.location.name)}</span>`
+            : '<span class="muted">no coordinates</span>'}
+          ${observation.isDemo ? '<span class="demo-chip">DEMO</span>' : ''}
+          ${observation.kind === 'Manual' ? '<span class="manual-chip">USER-SUBMITTED · UNVERIFIED</span>' : ''}
+        </div>
+        ${observation.status === 'Duplicate'
+          ? '<div class="feed-note">Rejected as an exact re-delivery. Kept for audit.</div>'
+          : ''}
+        ${observation.locationResolutionNote
+          ? `<div class="feed-note">${escapeHtml(observation.locationResolutionNote)}</div>`
+          : ''}`;
+      item.addEventListener('click', () => {
+        if (observation.incidentId) selectIncident(observation.incidentId, true);
+      });
+      dom.feedList.append(item);
+    });
+  }
+
+  async function selectIncident(id, flyTo = false) {
+    const incident = incidents.get(id);
+    if (!incident) return;
+
+    selectedIncidentId = id;
+    renderIncidents();
+
+    const location = incident.location
+      ? `${escapeHtml(incident.location.name)}${incident.location.countryCode ? ` · ${escapeHtml(incident.location.countryCode)}` : ''}
+         <span class="coords">${incident.location.latitude.toFixed(3)}, ${incident.location.longitude.toFixed(3)}</span>`
+      : '<span class="muted">Unresolved — no trustworthy coordinates were available</span>';
+
+    const sources = countFor(incident);
+
+    dom.details.innerHTML = `
+      <div class="detail-badges">
+        <span class="badge sev-${escapeHtml(incident.severity)}">${escapeHtml(incident.severity)}</span>
+        <span class="badge">${escapeHtml(incident.eventType)}</span>
+        ${incident.isDemo ? '<span class="badge demo-chip">DEMO DATA</span>' : ''}
+      </div>
+      <h3>${escapeHtml(incident.title)}</h3>
+      <p>${escapeHtml(incident.summary)}</p>
+      <dl class="detail-grid">
+        <dt>Location</dt><dd>${location}</dd>
+        <dt>Occurred</dt><dd>${escapeHtml(formatTime(incident.occurredAt))}</dd>
+        <dt>Evidence</dt><dd>${sources} correlated observation${sources === 1 ? '' : 's'}</dd>
+      </dl>
+      <div class="evidence"><p class="muted">Loading evidence…</p></div>`;
+
+    if (flyTo && viewer) {
+      const entity = entities.get(id);
+      if (entity) viewer.flyTo(entity, { duration: 0.8 }).catch(() => {});
+    }
+
+    await renderEvidence(id);
+  }
+
+  async function renderEvidence(incidentId) {
+    const container = dom.details.querySelector('.evidence');
+    if (!container) return;
+
+    try {
+      const loaded = await dataSource.loadEvidence(incidentId);
+      if (selectedIncidentId !== incidentId) return; // Selection moved on while we were fetching.
+
+      // The snapshot stores an incident's complete evidence. Mid-replay only part of it has been
+      // played, so showing all of it would contradict the count rendered directly above.
+      const observations = replay.active
+        ? loaded.filter((observation) => replay.played.has(observation.id))
+        : loaded;
+
+      container.innerHTML = `
+        <h4>Source evidence</h4>
+        ${observations.length === 0 ? '<p class="muted">No observations are linked to this incident.</p>' : ''}
+        <ul class="evidence-list">
+          ${observations.map((observation) => `
+            <li>
+              <span class="evidence-source">${escapeHtml(observation.sourceName)}</span>
+              <span class="pill pill-${escapeHtml(observation.status)}">${escapeHtml(observation.status)}</span>
+              <div>${escapeHtml(observation.title ?? '')}</div>
+              <div class="muted">${escapeHtml(formatTime(observation.receivedAt))}</div>
+            </li>`).join('')}
+        </ul>`;
+    } catch (error) {
+      console.error(error);
+      container.innerHTML = '<p class="muted">Evidence could not be loaded.</p>';
+    }
+  }
+
+  // ---------------------------------------------------------------- recorded replay
+
+  /**
+   * Plays the exported run back in the order it happened, revealing incidents as the observations
+   * that created them arrive. This is explicitly a recording being replayed on demand, not a
+   * simulation of live activity, which is why it only ever runs when the visitor asks for it.
+   */
+  function startReplay(recorded) {
+    stopReplay();
+
+    const ordered = [...recorded].sort((left, right) => new Date(left.receivedAt) - new Date(right.receivedAt));
+    if (ordered.length === 0) return;
+
+    replay.active = true;
+    replay.revealed.clear();
+    replay.counts.clear();
+    replay.played.clear();
+    feed = [];
+    selectedIncidentId = null;
+
+    dom.details.innerHTML = '<p class="empty-state">Replaying the recorded run…</p>';
+    dom.replayButton.textContent = 'Stop replay';
+    renderIncidents();
+    renderFeed();
+
+    let index = 0;
+
+    const step = () => {
+      if (index >= ordered.length) {
+        finishReplay(recorded);
+        return;
+      }
+
+      const observation = ordered[index++];
+      feed.unshift(observation);
+      if (feed.length > MAX_FEED_ITEMS) feed.length = MAX_FEED_ITEMS;
+      replay.played.add(observation.id);
+
+      // A duplicate is recorded as evidence but adds nothing to an incident, so the count it would
+      // have contributed deliberately does not move.
+      if (observation.incidentId && observation.status !== 'Duplicate') {
+        replay.revealed.add(observation.incidentId);
+        replay.counts.set(observation.incidentId, (replay.counts.get(observation.incidentId) ?? 0) + 1);
+      }
+
+      setStatus('replaying', `Replaying recorded run — ${index} of ${ordered.length} observations`);
+      renderFeed();
+      renderIncidents();
+
+      replay.timer = window.setTimeout(step, REPLAY_STEP_MS);
+    };
+
+    step();
+  }
+
+  function finishReplay(recorded) {
+    // Must cancel the pending step, not just forget its handle. Dropping the handle would leave the
+    // timer running, so stopping a replay part-way would keep appending observations behind the
+    // visitor's back and overwrite the status line.
+    stopReplay();
+    replay.revealed.clear();
+    replay.counts.clear();
+    replay.played.clear();
+    feed = recorded.slice(0, MAX_FEED_ITEMS);
+
+    dom.replayButton.textContent = 'Replay the recorded run';
+    setStatus('snapshot', snapshotStatusText());
+    renderFeed();
+    renderIncidents();
+
+    // The drawer was rendered with the run's partial counts and evidence, so it has to be rebuilt
+    // against the final state or it will sit beside the list contradicting it.
+    if (selectedIncidentId) selectIncident(selectedIncidentId);
+  }
+
+  function stopReplay() {
+    if (replay.timer !== null) {
+      window.clearTimeout(replay.timer);
+      replay.timer = null;
+    }
+    replay.active = false;
+  }
+
+  function snapshotStatusText() {
+    const generatedAt = staticSource.meta?.generatedAt;
+    return `Static snapshot — pipeline run of ${formatDate(generatedAt)}`;
+  }
+
+  // ---------------------------------------------------------------- live updates
+
+  function upsertIncident(incident) {
+    incidents.set(incident.id, incident);
+    renderIncidents();
+    if (incident.id === selectedIncidentId) selectIncident(incident.id);
+  }
+
+  function pushObservation(observation) {
+    feed.unshift(observation);
+    if (feed.length > MAX_FEED_ITEMS) feed.length = MAX_FEED_ITEMS;
+    renderFeed();
+  }
+
+  async function loadSnapshotState() {
+    const [loadedIncidents, loadedObservations] = await Promise.all([
+      dataSource.loadIncidents(),
+      dataSource.loadObservations(),
+    ]);
+
+    incidents.clear();
+    loadedIncidents.forEach((incident) => incidents.set(incident.id, incident));
+    feed = loadedObservations;
+
+    // Fail safe. The notice is hidden ONLY on positive evidence that nothing on screen is demo
+    // data: records were actually loaded, none of them are flagged, and the snapshot (if any) does
+    // not declare itself demo. An empty database must not be mistaken for a live deployment, which
+    // is exactly what a plain "any record flagged?" test would do on a fresh start.
+    const records = loadedIncidents.length + loadedObservations.length;
+    const flaggedDemo = loadedIncidents.some((incident) => incident.isDemo)
+      || loadedObservations.some((observation) => observation.isDemo);
+    const snapshotDeclaresDemo = dataSource.mode === 'static'
+      && (staticSource.meta?.isDemoData ?? true) !== false;
+
+    dom.demoNotice.hidden = records > 0 && !flaggedDemo && !snapshotDeclaresDemo;
+
+    renderIncidents();
+    renderFeed();
+  }
+
+  function startPolling(reason) {
+    if (pollTimer) return;
+    setStatus('polling', `${reason} — polling every ${POLL_INTERVAL_MS / 1000}s`);
+    pollTimer = window.setInterval(
+      () => loadSnapshotState().catch((error) => console.error(error)),
+      POLL_INTERVAL_MS,
+    );
+  }
+
+  function stopPolling() {
+    if (!pollTimer) return;
+    window.clearInterval(pollTimer);
+    pollTimer = null;
+  }
+
+  /** Loads a script on demand and resolves once it is usable. */
+  function loadScript(source) {
+    return new Promise((resolve, reject) => {
+      const element = document.createElement('script');
+      element.src = source;
+      element.async = true;
+      element.addEventListener('load', () => resolve());
+      element.addEventListener('error', () => reject(new Error(`Could not load ${source}`)));
+      document.head.append(element);
+    });
+  }
+
+  async function connectRealtime() {
+    // Fetched here rather than in the document head so the static build, which never opens a hub
+    // connection, does not download a realtime client it cannot use.
+    if (!window.signalR) {
+      try {
+        await loadScript(SIGNALR_CLIENT_URL);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    if (!window.signalR) {
+      startPolling('Realtime client unavailable');
+      return;
+    }
+
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl('./hubs/incidents')
+      .withAutomaticReconnect()
+      .configureLogging(signalR.LogLevel.Warning)
+      .build();
+
+    connection.on('incidentCreated', upsertIncident);
+    connection.on('incidentUpdated', upsertIncident);
+    connection.on('observationReceived', pushObservation);
+
+    connection.onreconnecting(() => {
+      setStatus('connecting', 'Reconnecting to the live feed…');
+      startPolling('Reconnecting');
+    });
+
+    connection.onreconnected(async () => {
+      stopPolling();
+      // Reconnection can span a gap in messages, so re-read committed state rather than assume.
+      await loadSnapshotState().catch((error) => console.error(error));
+      setStatus('live', 'Live — receiving realtime updates');
+    });
+
+    connection.onclose(() => startPolling('Realtime connection closed'));
+
+    try {
+      await connection.start();
+      stopPolling();
+      setStatus('live', 'Live — receiving realtime updates');
+    } catch (error) {
+      console.error('SignalR connection failed', error);
+      startPolling('Realtime unavailable');
+    }
+  }
+
+  // ---------------------------------------------------------------- wiring
+
+  function wireControls() {
+    [dom.severityFilter, dom.typeFilter, dom.locatedOnly]
+      .forEach((control) => control.addEventListener('change', renderIncidents));
+
+    document.querySelectorAll('.tab').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach((other) => {
+          const active = other === tab;
+          other.classList.toggle('is-active', active);
+          other.setAttribute('aria-selected', String(active));
+        });
+        document.querySelector('#incidentsTab').hidden = tab.dataset.tab !== 'incidents';
+        document.querySelector('#feedTab').hidden = tab.dataset.tab !== 'feed';
+        document.querySelector('#aboutTab').hidden = tab.dataset.tab !== 'about';
+      });
+    });
+  }
+
+  /**
+   * Points relative times at the recorded run instead of the visitor's clock. Must run before the
+   * first render: the initial paint would otherwise stamp synthetic events as minutes old, and
+   * nothing re-renders afterwards to correct it.
+   */
+  function applyStaticTimeBasis() {
+    const recordedAt = Date.parse(staticSource.meta?.generatedAt ?? '');
+
+    if (Number.isFinite(recordedAt)) {
+      timeBasis = recordedAt;
+      timeSuffix = 'before the run';
+    }
+  }
+
+  function describeStaticMode() {
+    const meta = staticSource.meta ?? {};
+    const generated = formatDate(meta.generatedAt);
+
+    dom.demoNoticeText.textContent = `Static snapshot · synthetic replay data · run of ${generated}`;
+    dom.feedHint.textContent = 'The observations below are the recorded output of a real pipeline run. '
+      + 'Replay them to watch incidents form and correlate.';
+
+    dom.aboutModeText.innerHTML = `
+      This page is a <strong>static snapshot</strong>. GitHub Pages serves files only, so no .NET
+      process, database, or SignalR hub is running here. Everything shown was produced by a genuine
+      run of the pipeline on ${escapeHtml(generated)} and exported to JSON at build time:
+      <strong>${plural(asCount(meta.observationCount), 'observation')}</strong> in,
+      <strong>${plural(asCount(meta.incidentCount), 'incident')}</strong> out, with
+      <strong>${asCount(meta.duplicateCount)}</strong> rejected as duplicates,
+      <strong>${plural(asCount(meta.correlatedIncidentCount), 'incident')}</strong> formed from
+      multiple sources, and <strong>${asCount(meta.unresolvedLocationCount)}</strong> left
+      deliberately unplaced because no trustworthy coordinates existed.
+      <br><br>
+      Times on this page are shown relative to that run, not to now. Nothing here is current.
+      <br><br>
+      ${escapeHtml(meta.notice ?? 'Synthetic replay data. Not live reporting.')}
+      <br><br>
+      <strong>No AI or ML model is involved.</strong> Categories and severities come from a
+      deterministic keyword classifier; the AI enrichment stage is designed but not yet built.
+      Running the application locally starts the live version, with the queue, background workers,
+      and realtime updates all active.`;
+  }
+
+  function describeLiveMode() {
+    dom.demoNoticeText.textContent = 'Synthetic replay data — not live reporting';
+    dom.aboutModeText.textContent = 'This instance is running the live backend: observations are '
+      + 'ingested into a bounded queue, processed by background workers, persisted, and pushed to '
+      + 'this page over SignalR. The ingested data is still the synthetic replay stream, so nothing '
+      + 'shown describes real-world events. No AI or ML model is involved: categories and severities '
+      + 'come from a deterministic keyword classifier.';
+  }
+
+  async function start() {
+    initialiseGlobe();
+    wireControls();
+
+    dataSource = await resolveDataSource();
+
+    if (!dataSource) {
+      setStatus('error', 'No data source could be reached');
+      dom.details.innerHTML = '<p class="empty-state">Neither the API nor a published snapshot could '
+        + 'be loaded. If you are running locally, check the application logs.</p>';
+      return;
+    }
+
+    if (dataSource.mode === 'static') {
+      applyStaticTimeBasis();
+    }
+
+    try {
+      await loadSnapshotState();
+    } catch (error) {
+      console.error(error);
+      setStatus('error', 'Data could not be loaded');
+      dom.details.innerHTML = '<p class="empty-state">The dashboard data could not be loaded.</p>';
+      return;
+    }
+
+    if (dataSource.mode === 'static') {
+      describeStaticMode();
+      setStatus('snapshot', snapshotStatusText());
+
+      const recorded = [...feed];
+      dom.replayButton.hidden = false;
+      dom.replayButton.addEventListener('click', () => {
+        if (replay.active) {
+          finishReplay(recorded);
+        } else {
+          startReplay(recorded);
+        }
+      });
+      return;
+    }
+
+    describeLiveMode();
+    await connectRealtime();
+  }
+
+  start();
+})();

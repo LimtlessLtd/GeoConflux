@@ -1,0 +1,10 @@
+# Normalise line endings in the repository to LF. CI and the Pages workflow run on Linux and read
+# these files directly, so keeping one convention in the repository avoids checked-in CRLF reaching
+# a shell script or muddying a diff. Windows working copies still get native endings on checkout.
+* text=auto eol=lf
+
+# Binary assets must never be transformed.
+*.png binary
+*.jpg binary
+*.ico binary
+*.db binary

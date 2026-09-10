@@ -1,0 +1,417 @@
+:root {
+  --bg: #070b12;
+  --panel: #0d141f;
+  --panel-2: #121c2a;
+  --line: #1e2c3f;
+  --text: #e6edf5;
+  --muted: #8ea3bb;
+  --accent: #64dfdf;
+  --critical: #ef476f;
+  --high: #ff9f1c;
+  --medium: #ffd166;
+  --low: #64dfdf;
+}
+
+* { box-sizing: border-box; }
+
+/* The `hidden` attribute only sets `display: none` via the user-agent stylesheet, so any author
+   rule that sets `display` silently defeats it. Several elements here are toggled with `hidden`
+   and styled with flex or grid, so this makes the attribute mean what it says. */
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: 1fr minmax(340px, 420px);
+  height: 100vh;
+}
+
+/* ---------------------------------------------------------------- globe */
+
+.globe-region { position: relative; overflow: hidden; }
+#cesiumContainer { position: absolute; inset: 0; }
+
+.globe-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  text-align: center;
+  color: var(--muted);
+  background: radial-gradient(circle at 50% 40%, #101b2b, var(--bg));
+}
+
+.masthead {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.5rem;
+  max-width: 26rem;
+  pointer-events: none;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, .85);
+}
+
+.masthead h1 { margin: .15rem 0; font-size: 1.5rem; font-weight: 600; letter-spacing: -.01em; }
+.masthead p { margin: 0; color: var(--muted); font-size: .85rem; }
+
+.eyebrow {
+  font-size: .7rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.demo-notice {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  max-width: 22rem;
+  padding: .4rem .7rem;
+  border: 1px solid #7a4b12;
+  border-radius: 4px;
+  background: rgba(122, 75, 18, .28);
+  color: #ffce8a;
+  font-size: .7rem;
+  font-weight: 600;
+  letter-spacing: .07em;
+}
+
+.status-card {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .5rem .85rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(10, 16, 26, .88);
+  font-size: .78rem;
+}
+
+.status-dot { width: .55rem; height: .55rem; border-radius: 50%; background: var(--muted); }
+.status-dot[data-state="live"] { background: #3ddc97; box-shadow: 0 0 0 3px rgba(61, 220, 151, .18); }
+.status-dot[data-state="connecting"] { background: var(--medium); }
+.status-dot[data-state="polling"] { background: var(--high); }
+.status-dot[data-state="error"] { background: var(--critical); }
+.status-dot[data-state="snapshot"] { background: #8ea3bb; }
+.status-dot[data-state="replaying"] { background: var(--accent); box-shadow: 0 0 0 3px rgba(100, 223, 223, .18); }
+
+.filters {
+  position: absolute;
+  bottom: 1.25rem;
+  right: 1.5rem;
+  display: flex;
+  gap: .6rem;
+  padding: .55rem .7rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(10, 16, 26, .9);
+}
+
+.filter { display: flex; flex-direction: column; gap: .2rem; font-size: .68rem; color: var(--muted); }
+.filter.checkbox { flex-direction: row; align-items: center; gap: .35rem; }
+
+.filter select {
+  padding: .25rem .4rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: .78rem;
+}
+
+/* ---------------------------------------------------------------- panel */
+
+.side-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-left: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.tabs { display: flex; border-bottom: 1px solid var(--line); }
+
+.tab {
+  flex: 1;
+  padding: .85rem .5rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: .8rem;
+  cursor: pointer;
+}
+
+.tab.is-active { color: var(--text); border-bottom-color: var(--accent); }
+
+.count {
+  display: inline-block;
+  min-width: 1.4rem;
+  padding: 0 .3rem;
+  border-radius: 999px;
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: .7rem;
+}
+
+.tab-panel { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+.feed-hint { margin: .8rem 1rem 0; color: var(--muted); font-size: .72rem; }
+
+.incident-list, .feed-list { display: flex; flex-direction: column; gap: .4rem; padding: .8rem; }
+
+.incident-button, .feed-item {
+  display: block;
+  width: 100%;
+  padding: .65rem .75rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--muted);
+  border-radius: 6px;
+  background: var(--panel-2);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.incident-button:hover, .feed-item:hover { border-color: #2c3f59; background: #17222f; }
+.incident-button.is-selected { background: #182739; border-color: var(--accent); }
+.incident-button h3 { margin: 0 0 .25rem; font-size: .86rem; font-weight: 600; line-height: 1.35; }
+
+.incident-meta, .feed-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45rem;
+  align-items: center;
+  font-size: .7rem;
+  color: var(--muted);
+}
+
+.incident-sub { margin-top: .3rem; font-size: .7rem; color: var(--muted); }
+
+.sev { font-weight: 600; }
+.sev-Critical { color: var(--critical); }
+.sev-High { color: var(--high); }
+.sev-Medium { color: var(--medium); }
+.sev-Low { color: var(--low); }
+
+.manual-chip {
+  padding: .05rem .35rem;
+  border: 1px solid #5a3a6e;
+  border-radius: 3px;
+  background: rgba(120, 80, 160, .28);
+  color: #d9baf0;
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+}
+
+.demo-chip {
+  padding: .05rem .35rem;
+  border: 1px solid #7a4b12;
+  border-radius: 3px;
+  background: rgba(122, 75, 18, .3);
+  color: #ffce8a;
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+}
+
+/* ---------------------------------------------------------------- feed */
+
+.feed-head { display: flex; justify-content: space-between; gap: .5rem; font-size: .68rem; color: var(--muted); }
+.feed-source { font-family: ui-monospace, "Cascadia Code", monospace; color: var(--accent); }
+.feed-title { margin: .25rem 0 .35rem; font-size: .8rem; line-height: 1.35; }
+
+.pill {
+  padding: .05rem .4rem;
+  border-radius: 3px;
+  background: #223349;
+  font-size: .63rem;
+  font-weight: 600;
+  letter-spacing: .03em;
+}
+
+.pill-Persisted { background: rgba(61, 220, 151, .18); color: #7ff0bd; }
+.pill-Duplicate { background: rgba(255, 209, 102, .16); color: var(--medium); }
+.pill-Failed { background: rgba(239, 71, 111, .18); color: #ff9db4; }
+.pill-LocationUnresolved { background: rgba(255, 159, 28, .16); color: var(--high); }
+
+.feed-item.status-Duplicate { opacity: .72; border-left-color: var(--medium); }
+.feed-item.status-Failed { border-left-color: var(--critical); }
+.feed-item.status-Persisted { border-left-color: #3ddc97; }
+
+/* ---------------------------------------------------------------- details */
+
+.details {
+  flex: 0 0 auto;
+  max-height: 46%;
+  overflow-y: auto;
+  padding: 1rem;
+  border-top: 1px solid var(--line);
+  background: #0a111b;
+}
+
+.details h3 { margin: .45rem 0 .35rem; font-size: 1rem; line-height: 1.35; }
+.details p { margin: 0 0 .6rem; color: #c6d4e4; font-size: .82rem; }
+.details h4 { margin: .9rem 0 .4rem; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+.detail-badges { display: flex; flex-wrap: wrap; gap: .35rem; }
+
+.badge {
+  padding: .12rem .45rem;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--panel-2);
+  font-size: .66rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr;
+  gap: .3rem .6rem;
+  margin: .6rem 0 0;
+  font-size: .78rem;
+}
+
+.detail-grid dt { color: var(--muted); }
+.detail-grid dd { margin: 0; }
+.coords { display: block; font-family: ui-monospace, monospace; font-size: .7rem; color: var(--muted); }
+
+.evidence-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: .45rem; }
+
+.evidence-list li {
+  padding: .45rem .6rem;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--panel-2);
+  font-size: .75rem;
+}
+
+.evidence-source { font-family: ui-monospace, monospace; color: var(--accent); margin-right: .4rem; }
+.muted { color: var(--muted); }
+.empty-state { padding: 1rem 0; color: var(--muted); font-size: .82rem; }
+
+@media (max-width: 1000px) {
+  .dashboard { grid-template-columns: 1fr; grid-template-rows: 55vh 1fr; }
+  .side-panel { border-left: 0; border-top: 1px solid var(--line); }
+
+  /* The globe canvas is absolutely positioned and fills this region, so a static sibling paints
+     underneath it and becomes invisible and unclickable. Keeping the controls positioned with a
+     stacking context above the canvas is what makes them usable on a phone. */
+  .filters {
+    position: absolute;
+    top: auto;
+    bottom: .75rem;
+    left: .75rem;
+    right: .75rem;
+    z-index: 2;
+    flex-wrap: wrap;
+  }
+
+  /* On a narrow screen the demo label becomes a full-width banner pinned to the very top. It is the
+     one piece of text that distinguishes this from live reporting, so it gets its own row that
+     nothing can overlap rather than competing for a corner. */
+  .demo-notice {
+    top: 0;
+    bottom: auto;
+    left: 0;
+    right: 0;
+    z-index: 3;
+    max-width: none;
+    border-width: 0 0 1px;
+    border-radius: 0;
+    justify-content: center;
+    background: rgba(38, 24, 8, .97);
+  }
+
+  /* Each remaining overlay gets its own band, so none composite over another. */
+  .status-card { bottom: 5.2rem; left: .75rem; right: auto; z-index: 2; }
+  .masthead { top: 3.1rem; max-width: none; right: 1.5rem; }
+  .masthead h1 { font-size: 1.2rem; }
+  .details { max-height: 55%; }
+}
+
+/* ---------------------------------------------------------------- static mode */
+
+.feed-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  padding: .8rem 1rem 0;
+}
+
+.feed-toolbar .feed-hint { margin: 0; padding: 0; }
+
+.replay-button {
+  align-self: flex-start;
+  padding: .4rem .8rem;
+  border: 1px solid var(--accent);
+  border-radius: 5px;
+  background: rgba(100, 223, 223, .12);
+  color: var(--accent);
+  font: inherit;
+  font-size: .78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.replay-button:hover { background: rgba(100, 223, 223, .22); }
+
+.feed-note {
+  margin-top: .35rem;
+  color: var(--muted);
+  font-size: .68rem;
+  font-style: italic;
+}
+
+.corr-chip {
+  padding: .05rem .35rem;
+  border: 1px solid #1c5a5a;
+  border-radius: 3px;
+  background: rgba(100, 223, 223, .14);
+  color: var(--accent);
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+}
+
+/* ---------------------------------------------------------------- about */
+
+.about { padding: 1rem; }
+.about h3 { margin: 1rem 0 .35rem; font-size: .74rem; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.about h3:first-child { margin-top: 0; }
+.about p { margin: 0 0 .6rem; color: #c6d4e4; font-size: .8rem; line-height: 1.55; }
+.about ul { margin: 0 0 .6rem; padding-left: 1.1rem; color: #c6d4e4; font-size: .8rem; line-height: 1.55; }
+.about li { margin-bottom: .35rem; }
+
+.pipeline {
+  margin: 0 0 .6rem;
+  padding: .6rem .7rem;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--panel-2);
+  color: var(--accent);
+  font-family: ui-monospace, "Cascadia Code", monospace;
+  font-size: .7rem;
+  line-height: 1.6;
+}
+
+.about-links { margin-top: 1rem; }
+.about-links a { color: var(--accent); font-size: .8rem; }

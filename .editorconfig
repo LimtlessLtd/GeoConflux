@@ -1,0 +1,23 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+indent_style = space
+trim_trailing_whitespace = true
+
+[*.{cs,csproj,props,targets}]
+indent_size = 4
+
+[*.{json,js,css,html,yml,yaml,md}]
+indent_size = 2
+
+# EF Core scaffolds migrations, and the shape of that output is the tool's choice rather than ours.
+# Style and performance analysis is disabled here so that generated files cannot fail the build,
+# while every hand-written file in the solution stays under the full ruleset.
+[src/Geopolitics.Infrastructure/Migrations/**.cs]
+generated_code = true
+dotnet_analyzer_diagnostic.category-Style.severity = none
+dotnet_analyzer_diagnostic.category-Performance.severity = none
+dotnet_diagnostic.CA1861.severity = none

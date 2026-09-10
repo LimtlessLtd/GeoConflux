@@ -1,0 +1,97 @@
+{
+  "$comment": "SYNTHETIC DEMO DATA, written for this repository to exercise the pipeline offline. No real organisation is named or implied and no real-world event is described. Rules for anyone adding records: keep the 'replay:' prefix on every sourceName; never attribute a record to a real news agency, government body, or dataset; and remember that the place names are real, so records must never be worded or presented as current reporting.",
+  "scenario": "Bab-el-Mandeb shipping disruption, illustrative",
+  "observations": [
+    {
+      "delayMilliseconds": 400,
+      "sourceName": "replay:wire-service-a",
+      "kind": "News",
+      "sourceIdentifier": "replay-wire-a-0001",
+      "title": "Cargo vessel reports approach by small craft near Bab-el-Mandeb",
+      "content": "A cargo ship transiting the Bab-el-Mandeb strait reported being approached by two small skiffs before naval escorts intervened. No injuries were reported and the vessel continued its passage.",
+      "declaredLocationName": "Bab-el-Mandeb",
+      "occurredAtOffsetMinutes": -95
+    },
+    {
+      "delayMilliseconds": 900,
+      "sourceName": "replay:wire-service-b",
+      "kind": "News",
+      "sourceIdentifier": "replay-wire-b-0001",
+      "title": "Second outlet reports skiff approach in Bab-el-Mandeb strait",
+      "content": "Two skiffs approached a cargo vessel in the Bab-el-Mandeb strait earlier today, according to a second wire service. Naval escorts responded and the vessel was not boarded.",
+      "declaredLocationName": "Bab-el-Mandeb",
+      "occurredAtOffsetMinutes": -88,
+      "$note": "Distinct wording and identifier, same underlying event: exercises correlation rather than deduplication."
+    },
+    {
+      "delayMilliseconds": 700,
+      "sourceName": "replay:wire-service-a",
+      "kind": "News",
+      "sourceIdentifier": "replay-wire-a-0001",
+      "title": "Cargo vessel reports approach by small craft near Bab-el-Mandeb",
+      "content": "A cargo ship transiting the Bab-el-Mandeb strait reported being approached by two small skiffs before naval escorts intervened. No injuries were reported and the vessel continued its passage.",
+      "declaredLocationName": "Bab-el-Mandeb",
+      "occurredAtOffsetMinutes": -95,
+      "$note": "Byte-identical redelivery of the first record: exercises deduplication."
+    },
+    {
+      "delayMilliseconds": 1100,
+      "sourceName": "replay:thermal-feed",
+      "kind": "Satellite",
+      "sourceIdentifier": "replay-thermal-4471",
+      "title": "Thermal anomaly detected off the Yemeni coast",
+      "content": "A thermal anomaly was detected by a synthetic replay of a wide-area thermal sensor. Thermal anomalies have many benign causes and this detection is not evidence of a specific event.",
+      "declaredLatitude": 12.61,
+      "declaredLongitude": 43.41,
+      "declaredEventType": "NaturalHazard",
+      "declaredSeverity": "Low",
+      "occurredAtOffsetMinutes": -70,
+      "$note": "Provider-supplied coordinates, exercising the SourceProvided resolution path."
+    },
+    {
+      "delayMilliseconds": 1300,
+      "sourceName": "replay:event-database",
+      "kind": "ExternalEvent",
+      "sourceIdentifier": "replay-eventdb-88213",
+      "title": "Recorded protest activity in Beirut",
+      "content": "A structured event record describes a demonstration in Beirut over economic conditions. Crowd size is recorded as moderate and no casualties are listed.",
+      "declaredLocationName": "Beirut",
+      "declaredEventType": "Protest",
+      "declaredSeverity": "Low",
+      "occurredAtOffsetMinutes": -240
+    },
+    {
+      "delayMilliseconds": 1000,
+      "sourceName": "replay:wire-service-b",
+      "kind": "News",
+      "sourceIdentifier": "replay-wire-b-0002",
+      "title": "Cyber intrusion reported against a regional port operator",
+      "content": "A regional port operator disclosed a ransomware intrusion that disrupted container scheduling for several hours. Operations were restored from backups and no cargo was reported lost.",
+      "declaredLocationName": "Istanbul",
+      "occurredAtOffsetMinutes": -410
+    },
+    {
+      "delayMilliseconds": 1200,
+      "sourceName": "replay:wire-service-c",
+      "kind": "News",
+      "sourceIdentifier": "replay-wire-c-0007",
+      "title": "Report references an unnamed inland location",
+      "content": "A short dispatch references clashes near a settlement the replay data deliberately leaves unnamed, so that the unresolved-location path is exercised end to end.",
+      "declaredLocationName": "Somewhere Unmapped",
+      "occurredAtOffsetMinutes": -150,
+      "$note": "The place name is absent from the gazetteer: exercises the unresolved-location path."
+    },
+    {
+      "delayMilliseconds": 1400,
+      "sourceName": "replay:event-database",
+      "kind": "ExternalEvent",
+      "sourceIdentifier": "replay-eventdb-88477",
+      "title": "Naval escort activity recorded in the Gulf of Aden",
+      "content": "A structured record notes increased naval escort tasking through the Gulf of Aden following recent reporting of approaches to commercial shipping.",
+      "declaredLocationName": "Gulf of Aden",
+      "declaredEventType": "NavalIncident",
+      "declaredSeverity": "Medium",
+      "occurredAtOffsetMinutes": -55
+    }
+  ]
+}

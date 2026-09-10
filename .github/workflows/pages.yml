@@ -1,0 +1,94 @@
+name: Publish dashboard to GitHub Pages
+
+# GitHub Pages serves static files only, so the live ASP.NET Core backend cannot run there. This
+# workflow instead executes the real pipeline against the recorded replay stream, exports what it
+# produced as JSON, and publishes that alongside the dashboard. The published page is therefore
+# genuine pipeline output rather than hand-written fixtures.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    # The snapshot records when it was generated and the dashboard shows that date, so a weekly
+    # rebuild keeps the published run recent rather than visibly stale.
+    - cron: '17 5 * * 1'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let an in-flight deployment finish rather than cancelling it, so Pages is never left part-updated.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          # Both are supplied so the job does not depend on one exact SDK build remaining
+          # downloadable: global.json pins the version the repository was developed against, and the
+          # feature-band wildcard provides a compatible SDK if that exact build is unavailable.
+          dotnet-version: 10.0.x
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore GeopoliticsDashboard.sln
+
+      - name: Build
+        run: dotnet build GeopoliticsDashboard.sln --configuration Release --no-restore
+
+      # The dashboard is only worth publishing if the pipeline behind it actually works.
+      - name: Test
+        run: dotnet test GeopoliticsDashboard.sln --configuration Release --no-build
+
+      - name: Assemble the static dashboard
+        # The trailing "/." copies the directory CONTENTS. Without it, cp nests the source inside
+        # dist whenever dist already exists, which would publish a site one directory too deep.
+        run: |
+          mkdir -p dist
+          cp -r src/Geopolitics.Api/wwwroot/. dist/
+
+      - name: Run the pipeline and export its output
+        # The output path is absolute on purpose. "dotnet run" executes the program with the project
+        # directory as its working directory, so a relative path here would silently write the
+        # snapshot to src/Geopolitics.Workers/dist and publish a dashboard with no data in it.
+        run: >
+          dotnet run --project src/Geopolitics.Workers --configuration Release --no-build
+          --no-launch-profile -- --export "${{ github.workspace }}/dist/data"
+
+      - name: Verify the exported snapshot
+        run: |
+          set -euo pipefail
+          for file in dist/index.html dist/app.js dist/styles.css \
+                      dist/data/meta.json dist/data/incidents.json dist/data/observations.json; do
+            test -s "$file" || { echo "::error::Missing or empty: $file"; exit 1; }
+          done
+          # An empty run would publish a blank dashboard, which is worse than failing the build.
+          incidents=$(jq '.incidentCount' dist/data/meta.json)
+          observations=$(jq '.observationCount' dist/data/meta.json)
+          echo "Snapshot contains $incidents incident(s) from $observations observation(s)."
+          test "$incidents" -gt 0 || { echo "::error::The snapshot contains no incidents."; exit 1; }
+          test "$observations" -gt 0 || { echo "::error::The snapshot contains no observations."; exit 1; }
+          # Pages runs Jekyll by default, which would drop any path beginning with an underscore.
+          touch dist/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

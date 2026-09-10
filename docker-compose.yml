@@ -1,0 +1,12 @@
+services:
+  dashboard:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - geopolitics-data:/app/data
+    environment:
+      ConnectionStrings__Geopolitics: "Data Source=/app/data/geopolitics.db"
+
+volumes:
+  geopolitics-data:

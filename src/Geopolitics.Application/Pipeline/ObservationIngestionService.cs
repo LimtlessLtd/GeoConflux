@@ -1,0 +1,78 @@
+using Geopolitics.Application.Abstractions;
+using Geopolitics.Application.Contracts;
+using Microsoft.Extensions.Logging;
+
+namespace Geopolitics.Application.Pipeline;
+
+/// <summary>
+/// The one gate every observation passes through before reaching the queue, whether it comes from a
+/// polling adapter, a replay file, or the public submission endpoint. Validation lives here so that
+/// no ingestion path can enqueue an envelope the processor cannot handle.
+/// </summary>
+public sealed partial class ObservationIngestionService(
+    IObservationQueueWriter queue,
+    PipelineDiagnostics diagnostics,
+    ILogger<ObservationIngestionService> logger) : IObservationIngestionService
+{
+    private const int MaxContentLength = 20_000;
+
+    public async ValueTask<IngestionResult> IngestAsync(ObservationEnvelope envelope, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(envelope);
+
+        if (Validate(envelope) is { } rejection)
+        {
+            diagnostics.ItemsFailed.Add(1, new KeyValuePair<string, object?>("source", envelope.SourceName ?? "unknown"));
+            LogRejected(logger, envelope.SourceName ?? "unknown", rejection);
+            return IngestionResult.Rejected(rejection);
+        }
+
+        await queue.EnqueueAsync(envelope, cancellationToken);
+        diagnostics.ItemsReceived.Add(1, new KeyValuePair<string, object?>("source", envelope.SourceName));
+        return IngestionResult.Queued();
+    }
+
+    /// <summary>
+    /// Returns a rejection reason, or <see langword="null"/> when the envelope is acceptable. External
+    /// payloads are untrusted, so bounds are enforced here rather than at the persistence layer.
+    /// </summary>
+    private static string? Validate(ObservationEnvelope envelope)
+    {
+        if (string.IsNullOrWhiteSpace(envelope.SourceName))
+        {
+            return "A source name is required.";
+        }
+
+        if (string.IsNullOrWhiteSpace(envelope.Content))
+        {
+            return "Observation content is required.";
+        }
+
+        if (envelope.Content.Length > MaxContentLength)
+        {
+            return $"Observation content exceeds the {MaxContentLength} character limit.";
+        }
+
+        if (envelope.DeclaredLatitude is { } latitude && latitude is < -90 or > 90)
+        {
+            return "Declared latitude must be between -90 and 90 degrees.";
+        }
+
+        if (envelope.DeclaredLongitude is { } longitude && longitude is < -180 or > 180)
+        {
+            return "Declared longitude must be between -180 and 180 degrees.";
+        }
+
+        // A half-supplied coordinate pair is a provider bug; accepting it would silently place the
+        // report on a meridian or the equator.
+        if (envelope.DeclaredLatitude is null != (envelope.DeclaredLongitude is null))
+        {
+            return "Declared coordinates must supply both latitude and longitude.";
+        }
+
+        return null;
+    }
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Rejected an observation from {SourceName}: {Reason}")]
+    private static partial void LogRejected(ILogger logger, string sourceName, string reason);
+}

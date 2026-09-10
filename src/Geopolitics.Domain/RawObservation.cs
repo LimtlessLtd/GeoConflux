@@ -1,0 +1,227 @@
+namespace Geopolitics.Domain;
+
+/// <summary>
+/// A single report received from one source. An observation is retained for provenance even
+/// when it is a duplicate, fails enrichment, or cannot be located, so that evidence is never
+/// destroyed by a downstream failure.
+/// </summary>
+public sealed class RawObservation
+{
+    private RawObservation()
+    {
+        SourceName = string.Empty;
+        Content = string.Empty;
+        Fingerprint = string.Empty;
+    }
+
+    public RawObservation(
+        Guid id,
+        ObservationKind kind,
+        string sourceName,
+        string content,
+        string? sourceIdentifier,
+        DateTimeOffset receivedAt,
+        bool isDemo)
+    {
+        if (id == Guid.Empty)
+        {
+            throw new DomainException("An observation identifier is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(sourceName))
+        {
+            throw new DomainException("An observation source is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            throw new DomainException("Observation content is required.");
+        }
+
+        Id = id;
+        Kind = kind;
+        SourceName = sourceName.Trim();
+        Content = content.Trim();
+        SourceIdentifier = string.IsNullOrWhiteSpace(sourceIdentifier) ? null : sourceIdentifier.Trim();
+        ReceivedAt = receivedAt;
+        IsDemo = isDemo;
+        Status = ObservationStatus.Received;
+        Fingerprint = ObservationFingerprint.Compute(SourceName, SourceIdentifier, Content);
+    }
+
+    public Guid Id { get; private set; }
+
+    public ObservationKind Kind { get; private set; }
+
+    public string SourceName { get; private set; }
+
+    public string Content { get; private set; }
+
+    public string? SourceIdentifier { get; private set; }
+
+    /// <summary>Deterministic identity used to reject exact re-deliveries of the same report.</summary>
+    public string Fingerprint { get; private set; }
+
+    public DateTimeOffset ReceivedAt { get; private set; }
+
+    public bool IsDemo { get; private set; }
+
+    public ObservationStatus Status { get; private set; }
+
+    /// <summary>Why processing failed, when it did. Distinct from a merely unresolved location.</summary>
+    public string? FailureReason { get; private set; }
+
+    /// <summary>
+    /// Why coordinates are absent. An observation can be fully processed and still be unplaced, so
+    /// this is kept separate from <see cref="FailureReason"/>: not knowing where something happened
+    /// is a normal outcome, not a processing failure.
+    /// </summary>
+    public string? LocationResolutionNote { get; private set; }
+
+    /// <summary>Short headline derived during normalisation.</summary>
+    public string? Title { get; private set; }
+
+    /// <summary>Human-readable summary derived during normalisation.</summary>
+    public string? Summary { get; private set; }
+
+    public EventType EventType { get; private set; } = EventType.Other;
+
+    public Severity Severity { get; private set; } = Severity.Unknown;
+
+    /// <summary>When the reported event happened, as opposed to when the report arrived.</summary>
+    public DateTimeOffset? OccurredAt { get; private set; }
+
+    /// <summary>Place name claimed by the source, before deterministic coordinate resolution.</summary>
+    public string? LocationName { get; private set; }
+
+    public GeoLocation? Location { get; private set; }
+
+    /// <summary>The incident this observation was correlated with, once assessed.</summary>
+    public Guid? IncidentId { get; private set; }
+
+    /// <summary>Set when this delivery repeats an observation the pipeline already accepted.</summary>
+    public Guid? DuplicateOfObservationId { get; private set; }
+
+    /// <summary>
+    /// Records the structured interpretation of the payload. Coordinates are supplied by a
+    /// deterministic resolver and are never inferred from free text by a language model.
+    /// </summary>
+    public void ApplyNormalisation(
+        string title,
+        string summary,
+        EventType eventType,
+        Severity severity,
+        DateTimeOffset occurredAt,
+        string? locationName)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            throw new DomainException("A normalised observation requires a title.");
+        }
+
+        if (string.IsNullOrWhiteSpace(summary))
+        {
+            throw new DomainException("A normalised observation requires a summary.");
+        }
+
+        Title = title.Trim();
+        Summary = summary.Trim();
+        EventType = eventType;
+        Severity = severity;
+        OccurredAt = occurredAt;
+        LocationName = string.IsNullOrWhiteSpace(locationName) ? null : locationName.Trim();
+        Status = ObservationStatus.Normalised;
+        FailureReason = null;
+    }
+
+    /// <summary>Attaches deterministically resolved coordinates.</summary>
+    public void ResolveLocation(GeoLocation location)
+    {
+        Location = location ?? throw new ArgumentNullException(nameof(location));
+        LocationName ??= location.Name;
+        Status = ObservationStatus.LocationResolved;
+        LocationResolutionNote = null;
+    }
+
+    /// <summary>
+    /// Marks that no trustworthy coordinates were available. The observation stays in the
+    /// system and remains correlatable; it simply is not placed on the map.
+    /// </summary>
+    public void MarkLocationUnresolved(string reason)
+    {
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            throw new DomainException("A location resolution failure requires a reason.");
+        }
+
+        Location = null;
+        Status = ObservationStatus.LocationUnresolved;
+        LocationResolutionNote = reason.Trim();
+    }
+
+    public void LinkToIncident(Guid incidentId)
+    {
+        if (incidentId == Guid.Empty)
+        {
+            throw new DomainException("An incident identifier is required.");
+        }
+
+        IncidentId = incidentId;
+        Status = ObservationStatus.Correlated;
+        FailureReason = null;
+    }
+
+    /// <summary>
+    /// Records that an identical report was already accepted. The observation is kept so the
+    /// duplicate delivery remains auditable rather than silently discarded.
+    /// </summary>
+    public void MarkDuplicate(Guid originalObservationId)
+    {
+        if (originalObservationId == Guid.Empty)
+        {
+            throw new DomainException("A duplicate must reference the observation it repeats.");
+        }
+
+        if (originalObservationId == Id)
+        {
+            throw new DomainException("An observation cannot be a duplicate of itself.");
+        }
+
+        DuplicateOfObservationId = originalObservationId;
+        Status = ObservationStatus.Duplicate;
+        FailureReason = null;
+    }
+
+    public void MarkPersisted()
+    {
+        if (IncidentId is null)
+        {
+            throw new DomainException("An observation must be correlated with an incident before it is marked persisted.");
+        }
+
+        Status = ObservationStatus.Persisted;
+        FailureReason = null;
+    }
+
+    public void AdvanceTo(ObservationStatus status)
+    {
+        if (status is ObservationStatus.Failed or ObservationStatus.Received)
+        {
+            throw new DomainException("Use MarkFailed for failures and do not reset an observation to received.");
+        }
+
+        Status = status;
+        FailureReason = null;
+    }
+
+    public void MarkFailed(string reason)
+    {
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            throw new DomainException("A failure reason is required.");
+        }
+
+        Status = ObservationStatus.Failed;
+        FailureReason = reason.Trim();
+    }
+}

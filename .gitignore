@@ -1,0 +1,12 @@
+bin/
+obj/
+.dotnet/
+.nuget/
+.tools/
+*.db
+*.db-shm
+*.db-wal
+appsettings.Local.json
+secrets.json
+dist/
+.claude/

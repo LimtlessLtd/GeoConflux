@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GeoConflux | Geopolitical Intelligence</title>
+  <meta name="description" content="A .NET event-processing platform that correlates geopolitical observations into incidents. Demonstration built on synthetic replay data.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%230d141f' stroke='%2364dfdf' stroke-width='2'/%3E%3Cellipse cx='16' cy='16' rx='6' ry='14' fill='none' stroke='%2364dfdf' stroke-width='1.5' opacity='.7'/%3E%3Cpath d='M2 16h28' stroke='%2364dfdf' stroke-width='1.5' opacity='.7'/%3E%3Ccircle cx='21' cy='11' r='3' fill='%23ff9f1c'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="https://cesium.com/downloads/cesiumjs/releases/1.126/Build/Cesium/Widgets/widgets.css">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="dashboard">
+    <section class="globe-region" aria-label="Global incident map">
+      <div id="cesiumContainer" aria-label="3D globe"></div>
+      <div id="globeFallback" class="globe-fallback" hidden>
+        <p>Globe assets could not be loaded. The incident list and feed remain available.</p>
+      </div>
+
+      <header class="masthead">
+        <span class="eyebrow">GeoConflux</span>
+        <h1>Geopolitical intelligence</h1>
+        <p>Asynchronous, evidence-aware event monitoring.</p>
+      </header>
+
+      <div id="demoNotice" class="demo-notice" role="note">
+        <strong>DEMO</strong>
+        <span id="demoNoticeText">Synthetic replay data — not live reporting</span>
+      </div>
+
+      <section class="status-card" aria-live="polite">
+        <span id="connectionDot" class="status-dot" data-state="connecting"></span>
+        <span id="connectionStatus">Loading…</span>
+      </section>
+
+      <section class="filters" aria-label="Filters">
+        <label class="filter">
+          <span>Severity</span>
+          <select id="severityFilter">
+            <option value="">All</option>
+            <option value="Critical">Critical</option>
+            <option value="High">High and above</option>
+            <option value="Medium">Medium and above</option>
+          </select>
+        </label>
+        <label class="filter">
+          <span>Type</span>
+          <select id="typeFilter"><option value="">All</option></select>
+        </label>
+        <label class="filter checkbox">
+          <input type="checkbox" id="locatedOnly">
+          <span>Located only</span>
+        </label>
+      </section>
+    </section>
+
+    <aside class="side-panel" aria-label="Incidents and evidence">
+      <nav class="tabs" role="tablist">
+        <button class="tab is-active" role="tab" data-tab="incidents" aria-selected="true">
+          Incidents <span id="incidentCount" class="count">0</span>
+        </button>
+        <button class="tab" role="tab" data-tab="feed" aria-selected="false">
+          Feed <span id="feedCount" class="count">0</span>
+        </button>
+        <button class="tab" role="tab" data-tab="about" aria-selected="false">About</button>
+      </nav>
+
+      <div id="incidentsTab" class="tab-panel" role="tabpanel">
+        <div id="incidentList" class="incident-list"></div>
+      </div>
+
+      <div id="feedTab" class="tab-panel" role="tabpanel" hidden>
+        <div class="feed-toolbar">
+          <p class="feed-hint" id="feedHint">Observations as they arrive. An observation is evidence, not a confirmed incident.</p>
+          <button id="replayButton" class="replay-button" type="button" hidden>Replay the recorded run</button>
+        </div>
+        <div id="feedList" class="feed-list" aria-live="polite"></div>
+      </div>
+
+      <div id="aboutTab" class="tab-panel about" role="tabpanel" hidden>
+        <h3>What this is</h3>
+        <p>
+          GeoConflux is a .NET 10 event-processing platform. Heterogeneous observations — news wires,
+          satellite thermal detections, structured event records, manual submissions — are ingested
+          asynchronously, deduplicated, geolocated deterministically, and correlated into incidents.
+        </p>
+
+        <h3>The core idea</h3>
+        <p>
+          <strong>An observation is not an incident.</strong> Several sources describing one event
+          produce a single incident with several pieces of linked evidence. Duplicate evidence is
+          linked and kept, never deleted, so provenance survives.
+        </p>
+
+        <h3>Pipeline</h3>
+        <pre class="pipeline">source → validate → queue → normalise
+     → deduplicate → resolve location
+     → correlate → persist → publish</pre>
+
+        <h3>What is actually running</h3>
+        <p>
+          <strong>No AI or ML model is used yet.</strong> Categories and severities come from a
+          deterministic keyword classifier. The AI enrichment stage is designed and has an interface
+          waiting for it, but it is not built, so nothing here is a model output.
+        </p>
+
+        <h3>Rules the pipeline enforces</h3>
+        <ul>
+          <li>Only a deterministic resolver may produce coordinates. An unmappable report stays
+            visibly unplaced rather than being given plausible-looking ones. This is a standing
+            constraint on the AI stage that comes later, so it can name a place but never place it.</li>
+          <li>Realtime messages are published only after state is committed, so a client can always
+            recover by re-querying.</li>
+          <li>A failed geocode or correlation retains the source payload with a reason instead of
+            discarding evidence.</li>
+          <li>A re-delivered report is recorded as a duplicate rather than deleted, so the fact that
+            a source repeated itself stays auditable.</li>
+        </ul>
+
+        <h3 id="aboutModeHeading">Data</h3>
+        <p id="aboutModeText"></p>
+
+        <p class="about-links">
+          <a id="repoLink" href="https://github.com/LimtlessLtd/GeoConflux" rel="noopener">Source code on GitHub</a>
+        </p>
+      </div>
+
+      <article id="details" class="details" aria-live="polite">
+        <p class="empty-state">Select a marker or list item to inspect its metadata.</p>
+      </article>
+    </aside>
+  </main>
+
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.126/Build/Cesium/Cesium.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
