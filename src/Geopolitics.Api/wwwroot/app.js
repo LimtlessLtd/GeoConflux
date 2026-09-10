@@ -32,6 +32,16 @@
   const REPLAY_STEP_MS = 900;
   const SIGNALR_CLIENT_URL = 'https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js';
 
+  /**
+   * How far above an incident the camera settles when flying to it, in metres.
+   *
+   * Cesium's default framing for a point entity zooms to within a few kilometres. The base imagery
+   * is Natural Earth II, which has no detail at that scale, so the default turns the globe into a
+   * featureless wash the moment a visitor clicks anything. A regional altitude keeps the coastlines
+   * and the surrounding context that make the location meaningful.
+   */
+  const FLY_TO_RANGE_METRES = 2.2e6;
+
   const dom = {
     incidentList: document.querySelector('#incidentList'),
     feedList: document.querySelector('#feedList'),
@@ -254,8 +264,9 @@
       // renderIncidents runs on every replay tick and on every selection. Recreating unchanged
       // markers each time made them flicker and aborted any flyTo already in flight, because its
       // target entity was deleted mid-flight.
+      const isSelected = incident.id === selectedIncidentId;
       const signature = [
-        incident.severity, incident.title, sources,
+        incident.severity, incident.title, sources, isSelected,
         incident.location.latitude, incident.location.longitude,
       ].join('|');
 
@@ -270,11 +281,14 @@
         point: {
           color: Cesium.Color.fromCssColorString(colourFor(incident.severity)),
           // Corroborated incidents read as more substantial without implying extra certainty.
-          pixelSize: 10 + Math.min(8, sources * 2),
-          outlineColor: Cesium.Color.WHITE,
-          outlineWidth: 1,
+          pixelSize: (isSelected ? 4 : 0) + 10 + Math.min(8, sources * 2),
+          outlineColor: isSelected ? Cesium.Color.fromCssColorString('#64dfdf') : Cesium.Color.WHITE,
+          outlineWidth: isSelected ? 3 : 1,
         },
         label: {
+          // Only the selected incident is labelled. Labelling them all produced overlapping text
+          // wherever incidents cluster, which is exactly where the map matters most.
+          show: isSelected,
           text: incident.title.length > 46 ? `${incident.title.slice(0, 45)}…` : incident.title,
           font: '12px system-ui, sans-serif',
           fillColor: Cesium.Color.WHITE,
@@ -283,11 +297,6 @@
           style: Cesium.LabelStyle.FILL_AND_OUTLINE,
           pixelOffset: new Cesium.Cartesian2(0, -20),
           scaleByDistance: new Cesium.NearFarScalar(1.0e6, 1.0, 2.0e7, 0.55),
-
-          // At a whole-globe view the labels overlap into an unreadable smear, so they appear only
-          // once the camera is close enough for them to be legible. The coloured markers carry the
-          // information until then.
-          distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 9.0e6),
         },
         properties: { incidentId: incident.id },
       });
@@ -457,7 +466,13 @@
 
     if (flyTo && viewer) {
       const entity = entities.get(id);
-      if (entity) viewer.flyTo(entity, { duration: 0.8 }).catch(() => {});
+
+      if (entity) {
+        viewer.flyTo(entity, {
+          duration: 0.8,
+          offset: new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(-90), FLY_TO_RANGE_METRES),
+        }).catch(() => {});
+      }
     }
 
     await renderEvidence(id);

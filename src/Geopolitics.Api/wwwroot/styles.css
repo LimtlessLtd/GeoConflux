@@ -36,6 +36,18 @@ html, body {
 /* ---------------------------------------------------------------- globe */
 
 .globe-region { position: relative; overflow: hidden; }
+
+.globe-region::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 11rem;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(4, 8, 14, .82), rgba(4, 8, 14, 0));
+}
 #cesiumContainer { position: absolute; inset: 0; }
 
 .globe-fallback {
@@ -51,6 +63,7 @@ html, body {
 
 .masthead {
   position: absolute;
+  z-index: 2;
   top: 1.25rem;
   left: 1.5rem;
   max-width: 26rem;
@@ -77,9 +90,13 @@ html, body {
   gap: .5rem;
   max-width: 22rem;
   padding: .4rem .7rem;
-  border: 1px solid #7a4b12;
+  z-index: 2;
+  border: 1px solid #b8791f;
   border-radius: 4px;
-  background: rgba(122, 75, 18, .28);
+
+  /* The label that distinguishes this from live reporting must stay readable over any imagery,
+     so it is opaque rather than tinted. */
+  background: rgba(46, 28, 8, .94);
   color: #ffce8a;
   font-size: .7rem;
   font-weight: 600;
@@ -94,9 +111,10 @@ html, body {
   align-items: center;
   gap: .55rem;
   padding: .5rem .85rem;
+  z-index: 2;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(10, 16, 26, .88);
+  background: rgba(10, 16, 26, .92);
   font-size: .78rem;
 }
 
@@ -114,10 +132,11 @@ html, body {
   right: 1.5rem;
   display: flex;
   gap: .6rem;
+  z-index: 2;
   padding: .55rem .7rem;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(10, 16, 26, .9);
+  background: rgba(10, 16, 26, .94);
 }
 
 .filter { display: flex; flex-direction: column; gap: .2rem; font-size: .68rem; color: var(--muted); }
