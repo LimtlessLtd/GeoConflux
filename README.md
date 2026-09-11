@@ -27,10 +27,12 @@ dotnet run --project src/Geopolitics.Api
 
 ## What works today
 
-Sprints 1 to 6 are complete. The application ingests a recorded observation stream, enriches each
-item through a schema-validated AI stage, processes it asynchronously, scores it with a trained
-severity model, streams results to the dashboard in realtime, and summarises what it has stored
-across four time windows. Adapters for RSS, NASA FIRMS, and ACLED feed the same pipeline when they
+Sprints 1 to 5 are complete, and Sprint 6 has delivered its observability, performance, container,
+and documentation work; a formal dependency and security review is still outstanding.
+
+The application ingests a recorded observation stream, enriches each item through a schema-validated
+AI stage, processes it asynchronously, scores it with a trained severity model, streams results to
+the dashboard in realtime, and summarises what it has stored across four time windows. Adapters for RSS, NASA FIRMS, and ACLED feed the same pipeline when they
 are configured; all three ship disabled.
 
 ```text
