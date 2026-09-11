@@ -22,6 +22,8 @@ public sealed class PipelineDiagnostics : IDisposable
         meter = meterFactory.Create(MeterName);
         ItemsReceived = meter.CreateCounter<long>("ingestion.items.received", "{item}", "Envelopes accepted from an ingestion source.");
         ItemsFailed = meter.CreateCounter<long>("ingestion.items.failed", "{item}", "Envelopes rejected before reaching the queue.");
+        ProviderLatency = meter.CreateHistogram<double>("ingestion.provider.latency", "ms", "Wall-clock time for one poll of an external provider.");
+        ProviderFailures = meter.CreateCounter<long>("ingestion.provider.failures", "{poll}", "Provider polls that produced nothing because the provider could not be read.");
         ItemsProcessed = meter.CreateCounter<long>("pipeline.items.processed", "{item}", "Observations that completed processing.");
         ItemsFailedInPipeline = meter.CreateCounter<long>("pipeline.items.failed", "{item}", "Observations that failed during processing.");
         ItemsDeduplicated = meter.CreateCounter<long>("events.deduplicated", "{item}", "Observations rejected as exact re-deliveries.");
@@ -44,6 +46,14 @@ public sealed class PipelineDiagnostics : IDisposable
     public Counter<long> ItemsReceived { get; }
 
     public Counter<long> ItemsFailed { get; }
+
+    /// <summary>
+    /// Poll duration tagged by provider and outcome. Latency and failures are kept separate from
+    /// the pipeline counters because a slow provider and a slow pipeline call for different fixes.
+    /// </summary>
+    public Histogram<double> ProviderLatency { get; }
+
+    public Counter<long> ProviderFailures { get; }
 
     public Counter<long> ItemsProcessed { get; }
 

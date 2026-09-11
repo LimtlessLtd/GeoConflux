@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SYNTHETIC FIXTURE. Invented publisher, invented events. See rss-2.0.xml for the rules this file
+  follows.
+-->
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Example Security Notes</title>
+  <updated>2026-09-09T12:00:00Z</updated>
+  <id>urn:uuid:0b1d2c3e-0000-4000-8000-000000000000</id>
+  <entry>
+    <title>Exercise notice issued for the Baltic Sea</title>
+    <id>urn:example:security:0001</id>
+    <link rel="alternate" href="https://example.invalid/security/1" />
+    <published>2026-09-09T09:45:00Z</published>
+    <summary>An invented notice described a scheduled navigation exercise in the Baltic Sea.</summary>
+  </entry>
+  <entry>
+    <title>Advisory reissued for the Black Sea</title>
+    <link rel="alternate" href="https://example.invalid/security/2" />
+    <updated>2026-09-09T10:05:00Z</updated>
+    <content type="html">&lt;div&gt;A fictional advisory covering the &lt;em&gt;Black Sea&lt;/em&gt; was reissued unchanged.&lt;/div&gt;</content>
+  </entry>
+</feed>

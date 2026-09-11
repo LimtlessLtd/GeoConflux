@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE rss [
+  <!ENTITY probe SYSTEM "file:///etc/passwd">
+]>
+<rss version="2.0">
+  <channel>
+    <title>Feed carrying an external entity declaration</title>
+    <item>
+      <title>Entity probe</title>
+      <guid>doctype-0001</guid>
+      <description>&probe;</description>
+    </item>
+  </channel>
+</rss>

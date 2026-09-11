@@ -29,10 +29,39 @@
                   +------------------------+
 ```
 
+## Ingestion adapters
+
+Every source, recorded or live, implements `IEventSource` and emits the same `ObservationEnvelope`.
+Nothing downstream of the queue knows which adapter produced an item.
+
+```text
+ReplayEventSource      recorded, deterministic, always demo-labelled     (ADR 007)
+RssEventSource         configured feeds; declares nothing                (ADR 015)
+NasaFirmsEventSource   thermal detections; declares its own coordinates  (ADR 015)
+AcledEventSource       coded events; declares coordinates and category   (ADR 015)
+        |
+        +-- PollingEventSource: poll loop, cancellation, containment,
+                                per-provider metrics, repeat suppression
+        |
+        +-- HttpClientFactory + standard resilience handler:
+                                timeout, exponential backoff with jitter,
+                                Retry-After, circuit breaker
+```
+
+What an adapter may declare follows from what its provider actually knows. FIRMS measures where it
+detected heat, so its coordinates are authoritative and take the `SourceProvided` path in ADR 005.
+ACLED codes its records by hand, so its category, coordinates, and fatality-derived severity are
+stated rather than inferred. An RSS item is prose and declares nothing: it earns a position only by
+naming a place the gazetteer recognises.
+
+Live adapters poll only when `Providers:Mode` is `Live` **and** that provider is individually
+enabled. The configuration in this repository sets neither, and a test asserts that under it no
+outbound request is made.
+
 ## Processing pipeline
 
 ```text
-IEventSource (replay, manual submission)
+IEventSource (replay, RSS, NASA FIRMS, ACLED) + manual submission
       |
       v
 ObservationIngestionService   validation; untrusted input stops here
@@ -139,8 +168,10 @@ be processed" are both facts worth auditing.
 `PipelineDiagnostics` owns one meter (`Geopolitics.Pipeline`) and one activity source of the same
 name. Counters cover ingestion, processing, deduplication, incident creation and correlation,
 geocoding outcomes, AI requests, failures, validation failures and repair attempts, and realtime
-publication; histograms record end-to-end processing time tagged by outcome and per-attempt AI
-latency tagged by provider. `Microsoft.Extensions.AI`'s own OpenTelemetry instrumentation is attached
+publication; histograms record end-to-end processing time tagged by outcome, per-attempt AI latency
+tagged by provider, and per-poll provider latency tagged by provider and outcome. Provider latency
+and provider failures are kept separate from the pipeline counters, because a slow upstream feed and
+a slow pipeline call for different fixes. `Microsoft.Extensions.AI`'s own OpenTelemetry instrumentation is attached
 to the chat client under the `Geopolitics.Ai` activity source. Each processed item opens an activity carrying its source, identifier, and fingerprint,
 so a single observation can be followed from ingestion through to delivery.
 
@@ -159,6 +190,18 @@ ingestion and processing can be separated without code changes.
 ## Known limitations
 
 Recorded here rather than discovered later.
+
+**The live adapters have not been run against the live services.** They are verified against
+recorded payloads that match each provider's documented response shape, including the malformed and
+rate-limited cases, using the application's own HTTP stack. That is what can be verified without a
+credential, and it is not the same as having polled the real endpoints. Anything this repository has
+not exercised is described as untested rather than as working.
+
+**One circuit breaker covers all hosts behind a named client.** The standard resilience handler does
+not partition by authority, so the RSS adapter's breaker spans every configured feed. Its throughput
+floor is set above what a normal poll produces so a routine cycle cannot trip it, but a sustained
+outage at one host can still fail the others fast. A per-host breaker would need a second HTTP stack
+and is not worth it at this scale.
 
 **Correlation has a read-then-write race.** `ListCorrelationCandidatesAsync` reads candidates and the
 processor writes an incident without holding a lock across the two. With

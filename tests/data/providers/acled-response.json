@@ -1,0 +1,54 @@
+{
+  "$comment": "SYNTHETIC FIXTURE. Shaped like an ACLED read response so the parser can be exercised offline. The records are invented, no real event is described, and the place names are real only so the pipeline's location handling is exercised.",
+  "status": 200,
+  "success": true,
+  "count": 4,
+  "data": [
+    {
+      "data_id": "9000001",
+      "event_id_cnty": "XYZ1234",
+      "event_date": "2026-09-09",
+      "event_type": "Protests",
+      "sub_event_type": "Peaceful protest",
+      "actor1": "Invented Civic Group",
+      "country": "Neverland",
+      "iso3": "NLD",
+      "location": "Brussels",
+      "latitude": "50.8510",
+      "longitude": "4.3520",
+      "fatalities": "0",
+      "notes": "An invented peaceful demonstration was recorded for fixture purposes."
+    },
+    {
+      "data_id": "9000002",
+      "event_id_cnty": "XYZ1235",
+      "event_date": "2026-09-08",
+      "event_type": "Battles",
+      "sub_event_type": "Armed clash",
+      "country": "Neverland",
+      "location": "Mogadishu",
+      "latitude": 2.0470,
+      "longitude": 45.3180,
+      "fatalities": 7,
+      "notes": "A fictional armed clash used to exercise the fatality-to-severity mapping."
+    },
+    {
+      "data_id": "9000003",
+      "event_id_cnty": "XYZ1236",
+      "event_date": "2026-09-08",
+      "event_type": "Violence against civilians",
+      "sub_event_type": "Attack",
+      "country": "Neverland",
+      "location": "Bamako",
+      "latitude": "not-a-number",
+      "longitude": "-8.0030",
+      "fatalities": 31,
+      "notes": "A fictional record whose latitude is unusable, so it must arrive without coordinates."
+    },
+    {
+      "event_date": "2026-09-07",
+      "event_type": "Strategic developments",
+      "notes": "A record with no identifier at all, which the parser must skip rather than guess at."
+    }
+  ]
+}

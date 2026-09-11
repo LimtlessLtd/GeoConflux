@@ -27,14 +27,16 @@ dotnet run --project src/Geopolitics.Api
 
 ## What works today
 
-Sprints 1 to 3 are complete. The application ingests a recorded observation stream, enriches each
-item through a schema-validated AI stage, processes it asynchronously, and streams results to the
-dashboard in realtime.
+Sprints 1 to 3 are complete, and Sprint 4 has begun with live OSINT ingestion. The application
+ingests a recorded observation stream, enriches each item through a schema-validated AI stage,
+processes it asynchronously, and streams results to the dashboard in realtime. Adapters for RSS,
+NASA FIRMS, and ACLED feed the same pipeline when they are configured; all three ship disabled.
 
 ```text
 IEventSource -> validation -> bounded Channel -> background processor
-             -> normalise -> deduplicate -> AI enrich -> validate
-             -> resolve location -> correlate -> persist -> SignalR -> dashboard
+(replay, RSS,    -> normalise -> deduplicate -> AI enrich -> validate
+ FIRMS, ACLED,   -> resolve location -> correlate -> persist -> SignalR -> dashboard
+ manual)
 ```
 
 Concretely, running the app locally will:
@@ -52,6 +54,52 @@ Concretely, running the app locally will:
 
 You can also submit your own observation from the **Submit** tab and watch it go through the same
 pipeline.
+
+## Live OSINT providers
+
+Three live adapters exist alongside the recorded replay stream. Every one of them is **off** in the
+configuration committed here, and a test asserts that under this configuration the application makes
+no outbound HTTP request at all.
+
+| Provider | Source name | Needs | Declares |
+| --- | --- | --- | --- |
+| RSS / Atom | `rss:<feed>` | feed URLs | nothing |
+| NASA FIRMS | `firms:<dataset>` | `Providers:NasaFirms:ApiKey` | coordinates, `NaturalHazard`, low severity |
+| ACLED | `acled` | `Providers:Acled:ApiKey` + `:Email` | coordinates, category, fatality-derived severity |
+
+A provider polls only when `Providers:Mode` is `Live` **and** its own `Enabled` is `true`. One switch
+would be too easy to flip by copying an example config into a demo deployment.
+
+What each adapter is allowed to declare follows from what its provider actually knows:
+
+- **FIRMS measures position.** A satellite geolocating a thermal pixel is a measurement, so its
+  coordinates are authoritative. It is also the one source whose detections are *not* geopolitical:
+  most thermal anomalies are agricultural burning or wildfire, so detections enter as
+  `NaturalHazard` at low severity and their text says that a thermal detection records heat, not its
+  cause. Their value is corroborative — a signature near an incident other sources are reporting.
+- **ACLED codes by hand.** Its category and coordinates are stated, and severity comes from its own
+  fatality count by a stated rule, not from a model reading the notes.
+- **RSS is prose.** It declares nothing. An article earns a map position only by naming a place the
+  gazetteer recognises, exactly as a manual submission does.
+
+Enabling one, as environment variables:
+
+```powershell
+$env:Providers__Mode = "Live"
+$env:Providers__Rss__Enabled = "true"
+$env:Providers__Rss__Feeds__0__Name = "world"
+$env:Providers__Rss__Feeds__0__Url = "https://example.com/feed.xml"
+dotnet run --project src/Geopolitics.Api
+```
+
+Credentials go in environment variables or user secrets. None is committed, and none is needed to run
+or test the project.
+
+**These adapters have not been run against the live services.** They are verified against recorded
+payloads matching each provider's documented response shape — including malformed bodies, a rate
+limit, a server outage, and a rejected credential — driven through the application's own HTTP stack.
+That is what can be verified without a credential, and it is not the same claim as having polled the
+real endpoints.
 
 ## The AI stage
 
@@ -144,6 +192,11 @@ rerun `dotnet test tests/Geopolitics.AiEvaluationTests`.
   street, and topographic basemaps down to building level, with borders and place names layered on
   the satellite view. If the tile host is unreachable the globe falls back to the texture bundled
   with CesiumJS and says so, rather than going blank ([ADR 014](docs/adr/014-basemap-imagery.md)).
+- **An external integration fails in its own blast radius.** Timeout, exponential backoff with
+  jitter, `Retry-After`, and a circuit breaker come from the standard .NET resilience handler; a
+  4xx that means "your request is wrong" is not retried, so a bad credential fails once rather than
+  four times. A provider that is down, slow, rate-limited, or returning nonsense costs its own poll
+  and nothing else ([ADR 015](docs/adr/015-live-provider-ingestion.md)).
 - **Evidence survives failure.** A failed enrichment, geocode, or correlation retains the source
   payload with a recorded reason instead of discarding it.
 - **Model output is untrusted input.** It is schema-validated, bounded, and given exactly one repair
@@ -205,6 +258,18 @@ credential is ever read from a committed file.
 | `Ai:Model` | llama3.2 | Model or deployment name |
 | `Ai:Endpoint` | none | Required for `AzureOpenAI`; defaults to the local daemon for `Ollama` |
 | `Ai:ApiKey` | none | **Never put this in a file.** Use environment variables or user secrets. |
+| `Providers:Mode` | Demo | `Demo` makes no external call; `Live` allows individually enabled adapters to poll |
+| `Providers:Rss:Enabled` | false | Whether configured feeds are polled |
+| `Providers:Rss:Feeds` | empty | `Name` and `Url` per feed; no publisher is baked into the code |
+| `Providers:NasaFirms:Enabled` | false | Whether thermal detections are polled |
+| `Providers:NasaFirms:ApiKey` | none | **Never put this in a file.** Dormant without it. |
+| `Providers:NasaFirms:Dataset` | VIIRS_NOAA20_NRT | FIRMS dataset identifier |
+| `Providers:NasaFirms:Area` | world | `west,south,east,north`, or `world` |
+| `Providers:NasaFirms:MinimumConfidence` | 50 | Detections below this are noise and are dropped |
+| `Providers:Acled:Enabled` | false | Whether coded conflict events are polled |
+| `Providers:Acled:ApiKey` / `:Email` | none | **Never put these in a file.** Dormant without both. |
+| `Providers:*:PollInterval` | 15 min / 1 h / 6 h | Per-provider polling cadence |
+| `Providers:*:MaxItemsPerPoll` | 25 / 50 / 50 | Ceiling on envelopes emitted from one poll |
 | `Replay:Enabled` | true | Whether the recorded demo stream runs |
 | `Replay:SpeedFactor` | 1 | Multiplier on recorded delays; `0` removes them |
 | `Replay:Loop` | false | Restart the recorded stream for an unattended demo |
@@ -244,17 +309,20 @@ dotnet format GeopoliticsDashboard.sln --verify-no-changes
 docker build -t geopolitics-dashboard .
 ```
 
-127 tests cover domain invariants, fingerprinting, classification, correlation scoring, queue
+164 tests cover domain invariants, fingerprinting, classification, correlation scoring, queue
 backpressure and cancellation, gazetteer resolution, and the processor's failure paths; the AI trust
 boundary (malformed JSON, unknown enums, out-of-range confidence, oversized payloads, control
 characters, prompt-injection fixtures, provider timeout, provider exception, repair success and
-exhaustion); end-to-end integration tests that drive the real host and assert on what the API then
-serves; and the evaluation harness above.
+exhaustion); the OSINT adapters against recorded provider payloads (RSS 2.0, Atom, VIIRS and MODIS
+CSV, ACLED JSON, plus malformed bodies, an external-entity declaration, a rate limit, a server
+outage, and a rejected credential) driven through the application's real HTTP and resilience stack;
+end-to-end integration tests that drive the real host and assert on what the API then serves; and the
+evaluation harness above.
 
 ## Not yet implemented
 
-There is no live external feed, no spatial querying, no analytics, and no ML model yet. Those arrive
-in Sprints 4 to 6 and are deliberately not represented as working before then.
+There is no spatial querying, no semantic deduplication, no analytics, and no ML model yet. Those
+arrive in the rest of Sprints 4 to 6 and are deliberately not represented as working before then.
 
 Three limitations worth stating plainly:
 
@@ -263,6 +331,9 @@ Three limitations worth stating plainly:
 
 - **The default AI provider is a deterministic stand-in, not a language model.** Everything it
   produces is labelled as such. The published snapshot was built with it.
+- **The live OSINT adapters have never polled the real services.** They are tested against recorded
+  payloads only, for the reasons given above. The published dashboard is built from the recorded
+  replay stream, so nothing on it came from a live provider.
 - **Correlation has a read-then-write race** when more than one worker runs and two reports of the
   same event arrive simultaneously; each can open an incident. It does not occur at realistic
   arrival rates, deduplication is unaffected, and the fix belongs with the Sprint 4 correlation

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SYNTHETIC FIXTURE. Written for this repository to exercise the RSS 2.0 code path. The publisher
+  is invented, no real organisation is named or implied, and no real-world event is described. The
+  place names are real because the gazetteer must be exercised with names it can actually resolve.
+-->
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Example Maritime Bulletin</title>
+    <link>https://example.invalid/maritime</link>
+    <description>Illustrative feed used as a parser fixture.</description>
+    <item>
+      <title>Vessel reports small craft approach near Bab-el-Mandeb</title>
+      <link>https://example.invalid/maritime/1</link>
+      <guid isPermaLink="false">example-maritime-0001</guid>
+      <description>&lt;p&gt;A bulk carrier transiting the &lt;b&gt;Bab-el-Mandeb&lt;/b&gt; strait reported two small craft approaching before escorts responded.&lt;/p&gt;&lt;img src="https://example.invalid/px.gif" /&gt;</description>
+      <pubDate>Tue, 09 Sep 2026 08:14:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Port authority extends inspection window</title>
+      <link>https://example.invalid/maritime/2</link>
+      <guid isPermaLink="false">example-maritime-0002</guid>
+      <description>Inspections at a Gulf of Aden terminal were extended by six hours, according to an invented port circular.</description>
+    </item>
+    <item>
+      <title>Shipping advisory updated for the Strait of Hormuz</title>
+      <link>https://example.invalid/maritime/3</link>
+      <content:encoded>An advisory covering the Strait of Hormuz was reissued with no change to its guidance.</content:encoded>
+      <dc:date>2026-09-09T11:30:00Z</dc:date>
+    </item>
+  </channel>
+</rss>

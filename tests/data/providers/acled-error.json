@@ -1,0 +1,11 @@
+{
+  "$comment": "SYNTHETIC FIXTURE: the shape ACLED uses to report a rejected request.",
+  "status": 200,
+  "success": false,
+  "error": [
+    {
+      "status": 403,
+      "message": "Invalid API key or email address."
+    }
+  ]
+}

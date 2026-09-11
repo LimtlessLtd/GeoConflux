@@ -9,6 +9,7 @@ using Geopolitics.Infrastructure.Persistence;
 using Geopolitics.Infrastructure.Queue;
 using Geopolitics.Infrastructure.Realtime;
 using Geopolitics.Infrastructure.Sources;
+using Geopolitics.Infrastructure.Sources.Providers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -105,6 +106,10 @@ public static class ServiceCollectionExtensions
         // Registered unconditionally; the source itself honours Replay:Enabled when it runs, so the
         // setting stays live rather than being baked into the container at startup.
         services.AddSingleton<IEventSource, ReplayEventSource>();
+
+        // Live adapters, on the same footing as the recorded one. Each stays dormant unless its own
+        // configuration turns it on, so this call adds capability without adding any network traffic.
+        services.AddOsintProviders();
 
         services.AddHostedService<EventSourcePumpService>();
         services.AddHostedService<ObservationProcessorService>();

@@ -21,6 +21,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Recorded provider payloads travel with the test assembly so the adapters are exercised
+         against the shapes these services actually return, without any network access. -->
+    <Content Include="..\data\providers\*">
+      <Link>providers\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Geopolitics.Application\Geopolitics.Application.csproj" />
     <ProjectReference Include="..\..\src\Geopolitics.Infrastructure\Geopolitics.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Geopolitics.Domain\Geopolitics.Domain.csproj" />
