@@ -335,6 +335,11 @@ public sealed class EnrichmentEvaluationTests(ITestOutputHelper output)
         builder.AppendLine(CultureInfo.InvariantCulture, $"| Entities — precision / recall / F1 | {entities.Precision:F2} / {entities.Recall:F2} / {entities.F1:F2} |");
         builder.AppendLine(CultureInfo.InvariantCulture, $"| Latency median / p95 | {Percentile(latencies, 0.5):F1} ms / {Percentile(latencies, 0.95):F1} ms |");
         builder.AppendLine();
+        builder.AppendLine("Latency is wall-clock time for one enrichment attempt and is the only figure here that");
+        builder.AppendLine("varies between runs of the deterministic provider — the first call absorbs JIT warm-up, so");
+        builder.AppendLine("p95 moves by tens of milliseconds while every other measure is byte-identical. It is");
+        builder.AppendLine("reported rather than suppressed, but it is not a meaningful benchmark of anything.");
+        builder.AppendLine();
         builder.AppendLine("## Event type");
         builder.AppendLine();
         builder.Append(eventTypes.ToMarkdownTable());
