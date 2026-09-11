@@ -53,7 +53,9 @@ Concretely, running the app locally will:
 - place observations using provider coordinates or a local gazetteer, and leave one deliberately
   unmappable report visible without coordinates;
 - show a confidence score and the method that produced it beside every classification;
-- push each result to the browser over SignalR with no page refresh.
+- push each result to the browser over SignalR with no page refresh;
+- report what was recorded near each watched maritime chokepoint, with measured distances, in the
+  **Chokepoints** tab.
 
 You can also submit your own observation from the **Submit** tab and watch it go through the same
 pipeline.
@@ -192,6 +194,12 @@ rerun `dotnet test tests/Geopolitics.AiEvaluationTests`.
   destroys the distinction between two real events and is nearly invisible afterwards; two incidents
   that should have been one are obvious on the map, so the bar errs high
   ([ADR 016](docs/adr/016-correlation-signals-and-ordering.md)).
+- **Spatial search narrows with an index, then measures exactly.** A search circle becomes the
+  rectangle that contains it, which the database can serve from an index on coordinates; every row it
+  admits is then measured with a great-circle distance, because a rectangle's corners reach about 1.4
+  times the radius. SpatiaLite was evaluated and rejected on measured grounds — its native library
+  ships for Windows only in the NuGet package, and this project builds and publishes on Linux
+  ([ADR 017](docs/adr/017-spatial-querying.md)).
 - **Similarity is lexical, and says so.** The default measure compares the words two reports share
   and reports its method as `lexical-overlap`. It is not an embedding model and is not described as
   one; `ITextSimilarity` is the seam for a real one.
@@ -248,6 +256,8 @@ credential is ever read from a committed file.
 | `GET /api/observations` | Recent observations, including duplicates and failures |
 | `GET /api/observations/by-incident/{id}` | Evidence linked to one incident |
 | `POST /api/observations` | Queue a manual observation (returns `202 Accepted`) |
+| `GET /api/spatial/incidents-near` | Incidents within a radius of a point, nearest first, with measured distances |
+| `GET /api/spatial/chokepoints` | Recorded activity around each watched maritime chokepoint |
 | `GET /api/health` | Health, including processing-queue depth and saturation |
 | `/hubs/incidents` | SignalR hub for realtime updates |
 | `GET /openapi/v1.json` | OpenAPI document |
@@ -326,7 +336,7 @@ dotnet format GeopoliticsDashboard.sln --verify-no-changes
 docker build -t geopolitics-dashboard .
 ```
 
-195 tests cover domain invariants, fingerprinting, classification, correlation scoring, queue
+216 tests cover domain invariants, fingerprinting, classification, correlation scoring, queue
 backpressure and cancellation, gazetteer resolution, and the processor's failure paths; the AI trust
 boundary (malformed JSON, unknown enums, out-of-range confidence, oversized payloads, control
 characters, prompt-injection fixtures, provider timeout, provider exception, repair success and
@@ -334,14 +344,16 @@ exhaustion); the OSINT adapters against recorded provider payloads (RSS 2.0, Ato
 CSV, ACLED JSON, plus malformed bodies, an external-entity declaration, a rate limit, a server
 outage, and a rejected credential) driven through the application's real HTTP and resilience stack;
 the correlation signals (lexical similarity, entity overlap, the positional ceiling, and the
-over-merge guards) and the per-category gate; end-to-end integration tests that drive the real host
+over-merge guards) and the per-category gate; the spatial layer (bounding-box containment around a
+full circle of bearings, antimeridian wrap, pole spanning, the corner case the rectangle admits and
+the circle rejects, and chokepoint counting and ordering); end-to-end integration tests that drive the real host
 and assert on what the API then serves, including a concurrency test that reproduces the correlation
 race and is verified to fail when the gate is removed; and the evaluation harness above.
 
 ## Not yet implemented
 
-There is no spatial querying, no analytics, and no ML model yet. Those arrive in the rest of
-Sprints 4 to 6 and are deliberately not represented as working before then.
+There are no time-windowed analytics and no ML model yet. Those arrive in Sprints 5 and 6 and are
+deliberately not represented as working before then.
 
 Three limitations worth stating plainly:
 

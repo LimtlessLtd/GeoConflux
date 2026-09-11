@@ -92,6 +92,11 @@ public sealed class GeopoliticsDbContext(DbContextOptions<GeopoliticsDbContext> 
                 location.Property(value => value.CountryCode).HasColumnName("location_country_code").HasMaxLength(8);
                 location.Property(value => value.Latitude).HasColumnName("latitude");
                 location.Property(value => value.Longitude).HasColumnName("longitude");
+
+                // Serves the bounding-box pre-filter behind every spatial query. Latitude leads
+                // because it is the selective half: a degree of latitude is a fixed distance, so the
+                // latitude band alone eliminates most of the table before longitude is considered.
+                location.HasIndex(value => new { value.Latitude, value.Longitude });
             });
     }
 

@@ -79,6 +79,61 @@ incidents.MapGet(
     })
     .WithName("GetIncident");
 
+var spatial = app.MapGroup("/api/spatial").WithTags("Spatial");
+
+spatial.MapGet(
+    "/incidents-near",
+    async (
+        double lat,
+        double lon,
+        double? radiusKm,
+        int? take,
+        ISpatialQueryService service,
+        CancellationToken cancellationToken) =>
+    {
+        if (lat is < -90 or > 90 || lon is < -180 or > 180)
+        {
+            return Results.BadRequest(new { error = "lat must be within -90..90 and lon within -180..180." });
+        }
+
+        var radius = Math.Clamp(radiusKm ?? 250, 1, 5000);
+        var results = await service.FindIncidentsNearAsync(lat, lon, radius, take ?? 50, cancellationToken);
+
+        return Results.Ok(new
+        {
+            centre = new { latitude = lat, longitude = lon },
+            radiusKilometres = radius,
+
+            // Stated rather than implied, so a caller knows the precision behind these distances.
+            method = service.Method,
+            count = results.Count,
+            incidents = results,
+        });
+    })
+    .WithName("FindIncidentsNear")
+    .WithSummary("Incidents within a radius of a point, nearest first.");
+
+spatial.MapGet(
+    "/chokepoints",
+    async (int? windowHours, ISpatialQueryService service, CancellationToken cancellationToken) =>
+    {
+        var hours = Math.Clamp(windowHours ?? 24, 1, 24 * 90);
+        var results = await service.AnalyseChokepointsAsync(TimeSpan.FromHours(hours), cancellationToken);
+
+        return Results.Ok(new
+        {
+            windowHours = hours,
+            method = service.Method,
+
+            // Said plainly in the payload, not only in the UI: proximity to a chokepoint is a
+            // geographic fact about where a report was placed, not an assessment of risk to it.
+            notice = "Counts describe incidents recorded within each watch radius. Proximity is not an assessment of threat.",
+            chokepoints = results,
+        });
+    })
+    .WithName("AnalyseChokepoints")
+    .WithSummary("Recorded activity around each watched maritime chokepoint.");
+
 app.MapObservationEndpoints();
 app.MapHub<IncidentHub>(IncidentHub.Path);
 

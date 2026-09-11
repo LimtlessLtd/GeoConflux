@@ -89,6 +89,24 @@ public sealed class FakeIncidentRepository : IIncidentRepository
                 && value.OccurredAt <= windowEnd)
             .ToArray());
 
+    /// <summary>
+    /// Applies the same rectangle rule the SQL predicate does, including the two-interval form for a
+    /// box that wraps the antimeridian. A fake that quietly ignored the wrap would let a test pass
+    /// against behaviour the database does not have.
+    /// </summary>
+    public Task<IReadOnlyList<GeopoliticalIncident>> ListWithinAsync(
+        GeoBoundingBox boundingBox,
+        DateTimeOffset? occurredAfter,
+        int take,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<GeopoliticalIncident>>(committed
+            .Where(value => value.Location is not null
+                && boundingBox.Contains(value.Location.Latitude, value.Location.Longitude)
+                && (occurredAfter is null || value.OccurredAt >= occurredAfter))
+            .OrderByDescending(value => value.OccurredAt)
+            .Take(take)
+            .ToArray());
+
     public Task AddAsync(GeopoliticalIncident incident, CancellationToken cancellationToken)
     {
         pending.Add(incident);

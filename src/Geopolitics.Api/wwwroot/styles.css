@@ -639,3 +639,56 @@ html, body {
   line-height: 1.4;
   color: var(--muted);
 }
+
+.chokepoint-list { display: flex; flex-direction: column; gap: .4rem; padding: .8rem; }
+
+.chokepoint {
+  padding: .65rem .75rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--muted);
+  border-radius: 6px;
+  background: var(--panel-2);
+}
+
+/* A passage with activity is bordered, not coloured by "risk". The count is a count. */
+.chokepoint.is-active { border-left-color: var(--accent); }
+
+.chokepoint h3 { margin: 0 0 .2rem; font-size: .86rem; font-weight: 600; }
+.chokepoint p { margin: .25rem 0 0; font-size: .7rem; color: var(--muted); line-height: 1.45; }
+
+.chokepoint-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45rem;
+  align-items: center;
+  margin-top: .35rem;
+  font-size: .7rem;
+  color: var(--muted);
+}
+
+.chokepoint-count { font-weight: 700; color: var(--text); }
+.chokepoint-quiet { font-style: italic; }
+
+.chokepoint-incidents { margin: .45rem 0 0; padding: 0; list-style: none; }
+
+.chokepoint-incidents li {
+  display: flex;
+  justify-content: space-between;
+  gap: .5rem;
+  padding: .2rem 0;
+  font-size: .7rem;
+  border-top: 1px solid var(--line);
+}
+
+.chokepoint-incidents button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.chokepoint-incidents button:hover { text-decoration: underline; }
+.chokepoint-distance { color: var(--muted); white-space: nowrap; }

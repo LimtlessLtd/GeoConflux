@@ -2,6 +2,7 @@ using Geopolitics.Application;
 using Geopolitics.Application.Abstractions;
 using Geopolitics.Application.Enrichment;
 using Geopolitics.Application.Pipeline;
+using Geopolitics.Application.Spatial;
 using Geopolitics.Infrastructure.Ai;
 using Geopolitics.Infrastructure.Hosting;
 using Geopolitics.Infrastructure.Location;
@@ -38,6 +39,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IObservationRepository, EfObservationRepository>();
         services.AddScoped<IAiInferenceRepository, EfAiInferenceRepository>();
         services.AddScoped<IIncidentQueryService, IncidentQueryService>();
+        services.AddScoped<ISpatialQueryService, SpatialQueryService>();
+
+        // Reference data, immutable and shared.
+        services.AddSingleton<IChokepointCatalogue, MaritimeChokepointCatalogue>();
         services.AddScoped<IObservationQueryService, ObservationQueryService>();
         services.AddScoped<DemoDataSeeder>();
         services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();

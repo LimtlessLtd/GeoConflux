@@ -111,6 +111,9 @@
     submitButton: document.querySelector('#submitButton'),
     submitStatus: document.querySelector('#submitStatus'),
     submitDisabled: document.querySelector('#submitDisabled'),
+    chokepointList: document.querySelector('#chokepointList'),
+    chokepointCount: document.querySelector('#chokepointCount'),
+    chokepointMethod: document.querySelector('#chokepointMethod'),
     basemapFilter: document.querySelector('#basemapFilter'),
     basemapNote: document.querySelector('#basemapNote'),
   };
@@ -255,6 +258,14 @@
       if (!response.ok) throw new Error(`Evidence endpoint returned ${response.status}`);
       return response.json();
     },
+    async loadChokepoints() {
+      // Thirty days, matching the window the snapshot exporter uses, so the panel reads the same
+      // either side of the live/static divide.
+      const response = await fetch('./api/spatial/chokepoints?windowHours=720', { headers: { Accept: 'application/json' } });
+      if (!response.ok) return { method: '', chokepoints: [] };
+      const payload = await response.json();
+      return { method: payload.method ?? '', chokepoints: payload.chokepoints ?? [] };
+    },
   };
 
   /** Reads the snapshot a real pipeline run exported at build time. */
@@ -280,6 +291,13 @@
       const response = await fetch(`./data/evidence/${incidentId}.json`, { headers: { Accept: 'application/json' } });
       if (!response.ok) throw new Error(`Snapshot evidence returned ${response.status}`);
       return response.json();
+    },
+    async loadChokepoints() {
+      const response = await fetch('./data/chokepoints.json', { headers: { Accept: 'application/json' } });
+
+      // An older snapshot simply has no such file, which is an empty panel rather than an error.
+      if (!response.ok) return { method: '', chokepoints: [] };
+      return { method: this.meta?.spatialMethod ?? '', chokepoints: await response.json() };
     },
   };
 
@@ -853,10 +871,106 @@
     renderFeed();
   }
 
+  /**
+   * Renders activity around each watched passage.
+   * <p>
+   * Everything shown here is a count of what was recorded inside a stated radius. There is no score
+   * and no colour scale, because a passage with three nearby reports is not thereby "elevated" — the
+   * moment this panel ranks by anything other than what it measured, it starts asserting an
+   * assessment the system has not made.
+   */
+  function renderChokepoints(analysis) {
+    const entries = analysis?.chokepoints ?? [];
+    dom.chokepointList.replaceChildren();
+    dom.chokepointCount.textContent = entries.filter((entry) => entry.incidentCount > 0).length;
+    dom.chokepointMethod.textContent = analysis?.method
+      ? `Distances: ${analysis.method}.`
+      : '';
+
+    if (entries.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'feed-hint';
+      empty.textContent = 'No chokepoint analysis is available from this data source.';
+      dom.chokepointList.append(empty);
+      return;
+    }
+
+    entries.forEach((entry) => {
+      const card = document.createElement('article');
+      card.className = entry.incidentCount > 0 ? 'chokepoint is-active' : 'chokepoint';
+
+      const heading = document.createElement('h3');
+      heading.textContent = entry.name;
+      card.append(heading);
+
+      const meta = document.createElement('div');
+      meta.className = 'chokepoint-meta';
+
+      const count = document.createElement('span');
+      count.className = entry.incidentCount > 0 ? 'chokepoint-count' : 'chokepoint-count chokepoint-quiet';
+      count.textContent = entry.incidentCount === 1
+        ? '1 incident recorded'
+        : `${entry.incidentCount} incidents recorded`;
+      meta.append(count);
+
+      const radius = document.createElement('span');
+      radius.textContent = `within ${entry.watchRadiusKilometres} km`;
+      meta.append(radius);
+
+      if (entry.nearestIncidentKilometres !== null && entry.nearestIncidentKilometres !== undefined) {
+        const nearest = document.createElement('span');
+        nearest.textContent = `nearest ${entry.nearestIncidentKilometres} km`;
+        meta.append(nearest);
+      }
+
+      (entry.severityCounts ?? []).forEach((severity) => {
+        const chip = document.createElement('span');
+        chip.className = `sev sev-${severity.severity}`;
+        chip.textContent = `${severity.count} ${severity.severity}`;
+        meta.append(chip);
+      });
+
+      card.append(meta);
+
+      const description = document.createElement('p');
+      description.textContent = entry.description;
+      card.append(description);
+
+      if ((entry.incidents ?? []).length > 0) {
+        const list = document.createElement('ul');
+        list.className = 'chokepoint-incidents';
+
+        entry.incidents.forEach((nearby) => {
+          const item = document.createElement('li');
+          const link = document.createElement('button');
+          link.type = 'button';
+          link.textContent = nearby.incident.title;
+          link.addEventListener('click', () => selectIncident(nearby.incident.id, true));
+          item.append(link);
+
+          const distance = document.createElement('span');
+          distance.className = 'chokepoint-distance';
+          distance.textContent = `${nearby.distanceKilometres} km`;
+          item.append(distance);
+          list.append(item);
+        });
+
+        card.append(list);
+      }
+
+      dom.chokepointList.append(card);
+    });
+  }
+
   async function loadSnapshotState() {
-    const [loadedIncidents, loadedObservations] = await Promise.all([
+    const [loadedIncidents, loadedObservations, chokepoints] = await Promise.all([
       dataSource.loadIncidents(),
       dataSource.loadObservations(),
+
+      // Best effort: a data source without chokepoint analysis leaves the panel empty rather than
+      // failing the whole load, because the map and the feed do not depend on it.
+      dataSource.loadChokepoints?.().catch(() => ({ method: '', chokepoints: [] }))
+        ?? { method: '', chokepoints: [] },
     ]);
 
     incidents.clear();
@@ -877,6 +991,7 @@
 
     renderIncidents();
     renderFeed();
+    renderChokepoints(chokepoints);
   }
 
   function startPolling(reason) {

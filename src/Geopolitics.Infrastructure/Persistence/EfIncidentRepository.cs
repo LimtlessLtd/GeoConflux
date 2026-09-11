@@ -53,6 +53,41 @@ public sealed class EfIncidentRepository(GeopoliticsDbContext dbContext) : IInci
             .Take(MaxCorrelationCandidates)
             .ToListAsync(cancellationToken);
 
+    public async Task<IReadOnlyList<GeopoliticalIncident>> ListWithinAsync(
+        GeoBoundingBox boundingBox,
+        DateTimeOffset? occurredAfter,
+        int take,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(boundingBox);
+
+        // Location is an owned type, so these compare against the incident's own latitude and
+        // longitude columns and the composite index on them is usable.
+        var query = dbContext.Incidents
+            .AsNoTracking()
+            .Where(value => value.Location != null
+                && value.Location.Latitude >= boundingBox.South
+                && value.Location.Latitude <= boundingBox.North);
+
+        // A box spanning the 180th meridian is two longitude intervals, not one. Expressed as a
+        // single BETWEEN it would select everything except the region actually wanted.
+        query = boundingBox.CrossesAntimeridian
+            ? query.Where(value => value.Location!.Longitude >= boundingBox.West
+                || value.Location.Longitude <= boundingBox.East)
+            : query.Where(value => value.Location!.Longitude >= boundingBox.West
+                && value.Location.Longitude <= boundingBox.East);
+
+        if (occurredAfter is { } since)
+        {
+            query = query.Where(value => value.OccurredAt >= since);
+        }
+
+        return await query
+            .OrderByDescending(value => value.OccurredAt)
+            .Take(take)
+            .ToListAsync(cancellationToken);
+    }
+
     public Task AddAsync(GeopoliticalIncident incident, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(incident);

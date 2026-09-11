@@ -73,6 +73,9 @@
         <button class="tab" role="tab" data-tab="feed" aria-selected="false">
           Feed <span id="feedCount" class="count">0</span>
         </button>
+        <button class="tab" role="tab" data-tab="chokepoints" aria-selected="false">
+          Chokepoints <span id="chokepointCount" class="count">0</span>
+        </button>
         <button class="tab" role="tab" data-tab="submit" aria-selected="false" id="submitTabButton">Submit</button>
         <button class="tab" role="tab" data-tab="about" aria-selected="false">About</button>
       </nav>
@@ -87,6 +90,16 @@
           <button id="replayButton" class="replay-button" type="button" hidden>Replay the recorded run</button>
         </div>
         <div id="feedList" class="feed-list" aria-live="polite"></div>
+      </div>
+
+      <div id="chokepointsTab" class="tab-panel" role="tabpanel" hidden>
+        <p class="feed-hint">
+          Recorded incidents within each watched passage's radius. Proximity is a geographic fact
+          about where a report was placed — it is <strong>not</strong> an assessment of threat to the
+          passage.
+        </p>
+        <p class="feed-hint" id="chokepointMethod"></p>
+        <div id="chokepointList" class="chokepoint-list"></div>
       </div>
 
       <div id="submitTab" class="tab-panel submit" role="tabpanel" hidden>

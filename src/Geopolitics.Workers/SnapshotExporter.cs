@@ -100,6 +100,7 @@ public static partial class SnapshotExporter
         await using var scope = services.CreateAsyncScope();
         var incidentQueries = scope.ServiceProvider.GetRequiredService<IIncidentQueryService>();
         var observationQueries = scope.ServiceProvider.GetRequiredService<IObservationQueryService>();
+        var spatialQueries = scope.ServiceProvider.GetRequiredService<ISpatialQueryService>();
 
         var incidents = await incidentQueries.ListAsync(new IncidentSearch(250), cancellationToken);
         var observations = await observationQueries.ListRecentAsync(200, cancellationToken);
@@ -119,6 +120,12 @@ public static partial class SnapshotExporter
             await WriteJsonAsync(Path.Combine(evidenceDirectory, $"{incident.Id}.json"), evidence, cancellationToken);
         }
 
+        // Wide enough to cover everything the recorded stream produced, which all occurred within a
+        // few hours of the run. A 24-hour window would make the published panel depend on how long
+        // ago the build happened.
+        var chokepoints = await spatialQueries.AnalyseChokepointsAsync(TimeSpan.FromDays(30), cancellationToken);
+        await WriteJsonAsync(Path.Combine(outputDirectory, "chokepoints.json"), chokepoints, cancellationToken);
+
         var meta = new SnapshotMeta(
             GeneratedAt: DateTimeOffset.UtcNow,
             IncidentCount: incidents.Count,
@@ -127,6 +134,11 @@ public static partial class SnapshotExporter
             DuplicateCount: observations.Count(value => value.Status == Domain.ObservationStatus.Duplicate),
             UnresolvedLocationCount: observations.Count(value => value.Location is null),
             CorrelatedIncidentCount: incidents.Count(value => value.ObservationCount > 1),
+            ChokepointsWithActivity: chokepoints.Count(value => value.IncidentCount > 0),
+
+            // Recorded so the published page can state how these distances were computed rather
+            // than implying a precision the backend does not have.
+            SpatialMethod: spatialQueries.Method,
             IsDemoData: true,
             Notice: "Synthetic replay data produced by a real run of the GeoConflux pipeline. "
                 + "It is not live reporting and describes no real-world events.");
@@ -151,6 +163,8 @@ public static partial class SnapshotExporter
         int DuplicateCount,
         int UnresolvedLocationCount,
         int CorrelatedIncidentCount,
+        int ChokepointsWithActivity,
+        string SpatialMethod,
         bool IsDemoData,
         string Notice);
 

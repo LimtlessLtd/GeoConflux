@@ -157,6 +157,38 @@ Correlate-then-commit is serialised per event type by `CorrelationGate`, because
 candidates and then writes. Enrichment and location resolution run outside that gate, since they are
 the slow stages and touch no shared state.
 
+## Spatial queries
+
+Two stages, because a database can index a coordinate but not a distance.
+
+```text
+search circle
+   |
+   v
+GeoBoundingBox.FromRadius      smallest rectangle containing the circle
+   |
+   v
+ListWithinAsync                SQL predicate on the (latitude, longitude) index
+   |                           wrapped boxes become two longitude intervals
+   v
+GeoLocation.DistanceInKilometresTo   exact great-circle, in memory
+   |
+   v
+results, nearest first
+```
+
+The rectangle may admit rows the circle rejects — its corners reach about 1.4 times the radius — but
+it can never exclude one the circle would have accepted. That asymmetry is the correctness property
+the arrangement depends on, and it is asserted around a full circle of bearings.
+
+`ISpatialQueryService.Method` states how distances were computed and travels into the API payload and
+the published snapshot, so no consumer has to assume a precision the backend does not have. SpatiaLite
+was evaluated and is not used; ADR 017 records the measured reasons.
+
+Maritime chokepoints are a curated catalogue behind `IChokepointCatalogue`, each with its own watch
+radius because the features differ in scale. The analysis reports counts, severity breakdowns, and
+distances, and says in the payload itself that proximity is geography rather than an assessment.
+
 ## Failure behaviour
 
 The pipeline is built so that a failure degrades coverage rather than destroying evidence.
@@ -234,6 +266,11 @@ it is. The category is the cheapest and most reliable discriminator available, a
 filter would widen the candidate set enormously, so this is a deliberate trade rather than an
 oversight. It does mean cross-source corroboration works between sources that agree on a category and
 not between sources that describe one event in different terms.
+
+**Spatial distance is computed in memory, not in SQL.** The bounding-box pre-filter runs in the
+database and bounds the candidate set; the exact distances are measured in the application. At this
+data volume that is irrelevant, and the candidate count is capped. A deployment with a working
+spatial extension would implement `ISpatialQueryService` against SQL functions instead (ADR 017).
 
 **Semantic similarity is lexical.** `LexicalTextSimilarity` compares shared vocabulary and reports
 itself as `lexical-overlap`. It cannot recognise a paraphrase with no words in common, or one event
