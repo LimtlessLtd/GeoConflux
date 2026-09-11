@@ -10,6 +10,9 @@ public sealed class GeopoliticsDbContext(DbContextOptions<GeopoliticsDbContext> 
 
     public DbSet<RawObservation> Observations => Set<RawObservation>();
 
+    /// <summary>Append-only audit trail of enrichment attempts, successful and otherwise.</summary>
+    public DbSet<AiInference> Inferences => Set<AiInference>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // SQLite has no native offset-aware timestamp, and storing text would make range queries
@@ -23,6 +26,30 @@ public sealed class GeopoliticsDbContext(DbContextOptions<GeopoliticsDbContext> 
 
         ConfigureIncidents(modelBuilder, utcTicksConverter);
         ConfigureObservations(modelBuilder, utcTicksConverter, nullableUtcTicksConverter);
+        ConfigureInferences(modelBuilder, utcTicksConverter);
+    }
+
+    private static void ConfigureInferences(ModelBuilder modelBuilder, ValueConverter<DateTimeOffset, long> utcTicks)
+    {
+        var inference = modelBuilder.Entity<AiInference>();
+        inference.ToTable("ai_inferences");
+        inference.HasKey(value => value.Id);
+        inference.Property(value => value.Provider).HasMaxLength(60).IsRequired();
+        inference.Property(value => value.Model).HasMaxLength(120).IsRequired();
+        inference.Property(value => value.PromptVersion).HasMaxLength(20).IsRequired();
+        inference.Property(value => value.Outcome).HasConversion<string>().HasMaxLength(30).IsRequired();
+        inference.Property(value => value.StructuredOutput).HasMaxLength(8000);
+        inference.Property(value => value.Error).HasMaxLength(1000);
+        inference.Property(value => value.CreatedAt).HasConversion(utcTicks).IsRequired();
+        inference.Ignore(value => value.IsSuccess);
+
+        // The two questions asked of this table are "how was this observation classified" and
+        // "how is the provider behaving lately", so both get an index.
+        inference.HasIndex(value => value.ObservationId);
+        inference.HasIndex(value => new { value.Outcome, value.CreatedAt });
+
+        // No foreign key to observations on purpose. An inference is evidence that an attempt
+        // happened, and it must survive even if the observation it describes could not be stored.
     }
 
     private static void ConfigureIncidents(ModelBuilder modelBuilder, ValueConverter<DateTimeOffset, long> utcTicks)
@@ -42,6 +69,13 @@ public sealed class GeopoliticsDbContext(DbContextOptions<GeopoliticsDbContext> 
 
         // The correlator's pre-filter is (EventType, OccurredAt range); this index serves it directly.
         incident.HasIndex(value => new { value.EventType, value.OccurredAt });
+
+        // Stored as a JSON array. Left unmapped, the collection comes back empty after a reload,
+        // which quietly disables the domain's own guard against linking the same observation twice
+        // and makes an incident's evidence list lie about itself.
+        incident.PrimitiveCollection(value => value.ObservationIds)
+            .HasColumnName("observation_ids")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         incident.OwnsOne(
             value => value.Location,
@@ -77,6 +111,24 @@ public sealed class GeopoliticsDbContext(DbContextOptions<GeopoliticsDbContext> 
         observation.Property(value => value.LocationName).HasMaxLength(200);
         observation.Property(value => value.ReceivedAt).HasConversion(utcTicks).IsRequired();
         observation.Property(value => value.OccurredAt).HasConversion(nullableUtcTicks);
+        observation.Property(value => value.ClassificationConfidence).IsRequired();
+        observation.Property(value => value.ClassificationMethod).HasMaxLength(60).IsRequired();
+        observation.Property(value => value.DetectedLanguage).HasMaxLength(16);
+        observation.Property(value => value.SeverityRationale).HasMaxLength(AiInference.MaxRationaleLength);
+
+        // Extracted entities live in a JSON column rather than a child table. They are read as a
+        // set with their observation and never queried independently, so a join table would add a
+        // table and a migration for no query the application actually issues.
+        observation.OwnsMany(
+            value => value.Entities,
+            entity =>
+            {
+                entity.ToJson("entities");
+                entity.Property(value => value.Name).HasMaxLength(ExtractedEntity.MaxNameLength).IsRequired();
+                entity.Property(value => value.Type).HasConversion<string>().HasMaxLength(30).IsRequired();
+                entity.Ignore(value => value.MatchKey);
+            });
+        observation.Navigation(value => value.Entities).UsePropertyAccessMode(PropertyAccessMode.Field);
 
         // Deduplication depends on this constraint rather than on the read-then-insert check alone,
         // because concurrent processors can both pass that check for the same payload.

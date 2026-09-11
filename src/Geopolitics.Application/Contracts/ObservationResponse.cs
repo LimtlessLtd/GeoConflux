@@ -20,7 +20,12 @@ public sealed record ObservationResponse(
     string? LocationResolutionNote,
     Guid? IncidentId,
     Guid? DuplicateOfObservationId,
-    bool IsDemo)
+    bool IsDemo,
+    double ClassificationConfidence,
+    string ClassificationMethod,
+    string? DetectedLanguage,
+    string? SeverityRationale,
+    IReadOnlyList<EntityResponse> Entities)
 {
     public static ObservationResponse FromDomain(RawObservation observation)
     {
@@ -49,6 +54,14 @@ public sealed record ObservationResponse(
             observation.LocationResolutionNote,
             observation.IncidentId,
             observation.DuplicateOfObservationId,
-            observation.IsDemo);
+            observation.IsDemo,
+            observation.ClassificationConfidence,
+            observation.ClassificationMethod,
+            observation.DetectedLanguage,
+            observation.SeverityRationale,
+            [.. observation.Entities.Select(entity => new EntityResponse(entity.Name, entity.Type))]);
     }
 }
+
+/// <summary>A named actor the enrichment step reported. A claim about the text, not a verified fact.</summary>
+public sealed record EntityResponse(string Name, EntityType Type);

@@ -1,6 +1,8 @@
 using Geopolitics.Application;
 using Geopolitics.Application.Abstractions;
+using Geopolitics.Application.Enrichment;
 using Geopolitics.Application.Pipeline;
+using Geopolitics.Infrastructure.Ai;
 using Geopolitics.Infrastructure.Hosting;
 using Geopolitics.Infrastructure.Location;
 using Geopolitics.Infrastructure.Persistence;
@@ -12,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Options;
 
 namespace Geopolitics.Infrastructure;
 
@@ -32,6 +35,7 @@ public static class ServiceCollectionExtensions
             options.UseSqlite(ResolveConnectionString(provider.GetRequiredService<IConfiguration>())));
         services.AddScoped<IIncidentRepository, EfIncidentRepository>();
         services.AddScoped<IObservationRepository, EfObservationRepository>();
+        services.AddScoped<IAiInferenceRepository, EfAiInferenceRepository>();
         services.AddScoped<IIncidentQueryService, IncidentQueryService>();
         services.AddScoped<IObservationQueryService, ObservationQueryService>();
         services.AddScoped<DemoDataSeeder>();
@@ -60,6 +64,14 @@ public static class ServiceCollectionExtensions
             .Bind(configuration.GetSection(ReplayOptions.SectionName))
             .ValidateOnStart();
 
+        services.AddOptions<EnrichmentOptions>()
+            .Bind(configuration.GetSection(EnrichmentOptions.SectionName))
+            .ValidateOnStart();
+
+        services.AddOptions<AiProviderOptions>()
+            .Bind(configuration.GetSection(AiProviderOptions.SectionName))
+            .ValidateOnStart();
+
         services.TryAddSingleton(TimeProvider.System);
         services.AddSingleton<PipelineDiagnostics>();
 
@@ -72,6 +84,14 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<IEventClassifier, KeywordEventClassifier>();
         services.AddSingleton<IObservationIngestionService, ObservationIngestionService>();
+
+        // The mock client is registered unconditionally so that switching Ai:Provider back to Mock
+        // is a configuration change, and so tests can resolve it without rebuilding the container.
+        services.AddSingleton<DeterministicMockChatClient>();
+        services.AddSingleton(provider => ChatClientFactory.Create(
+            provider.GetRequiredService<IOptions<AiProviderOptions>>().Value,
+            provider));
+        services.AddSingleton<IEventEnrichmentService, ChatClientEnrichmentService>();
 
         services.AddScoped<IObservationNormaliser, ObservationNormaliser>();
         services.AddScoped<ILocationResolver, GazetteerLocationResolver>();

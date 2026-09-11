@@ -72,6 +72,47 @@ public sealed class GeopoliticalIncident
 
     public IReadOnlyCollection<Guid> ObservationIds => observationIds.AsReadOnly();
 
+    /// <summary>
+    /// Confidence of the best-supported assessment among this incident's evidence, on a 0-1 scale.
+    /// The dashboard shows a category next to this number rather than alone, so a weakly-supported
+    /// incident reads as weakly supported.
+    /// </summary>
+    public double ClassificationConfidence { get; private set; }
+
+    /// <summary>What produced that assessment, for example <c>keyword</c> or <c>ai:Ollama/llama3.2</c>.</summary>
+    public string ClassificationMethod { get; private set; } = "none";
+
+    /// <summary>
+    /// Adopts an assessment only when it is better supported than the one already held.
+    /// <para>
+    /// Confidence therefore tracks the strongest evidence rather than the most recent. A later,
+    /// vaguer report about an incident should not weaken a well-supported classification, and an
+    /// incident's stated confidence should not oscillate as reports trickle in.
+    /// </para>
+    /// </summary>
+    public bool RecordAssessment(double confidence, string method, DateTimeOffset recordedAt)
+    {
+        if (confidence is < 0 or > 1)
+        {
+            throw new DomainException("Classification confidence must be between 0 and 1.");
+        }
+
+        if (string.IsNullOrWhiteSpace(method))
+        {
+            throw new DomainException("An assessment must record the method that produced it.");
+        }
+
+        if (confidence <= ClassificationConfidence && ClassificationMethod != "none")
+        {
+            return false;
+        }
+
+        ClassificationConfidence = confidence;
+        ClassificationMethod = method.Trim();
+        UpdatedAt = recordedAt;
+        return true;
+    }
+
     public bool LinkObservation(Guid observationId, DateTimeOffset linkedAt)
     {
         if (observationId == Guid.Empty)

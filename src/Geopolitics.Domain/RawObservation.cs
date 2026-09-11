@@ -7,6 +7,15 @@ namespace Geopolitics.Domain;
 /// </summary>
 public sealed class RawObservation
 {
+    /// <summary>
+    /// A cap, not a target. Entity extraction runs over untrusted text and a model that misbehaves
+    /// can return an arbitrarily long list; bounding it here keeps one bad response from bloating
+    /// a row and the payloads derived from it.
+    /// </summary>
+    public const int MaxEntities = 12;
+
+    private readonly List<ExtractedEntity> entities = [];
+
     private RawObservation()
     {
         SourceName = string.Empty;
@@ -103,6 +112,34 @@ public sealed class RawObservation
     public Guid? DuplicateOfObservationId { get; private set; }
 
     /// <summary>
+    /// How certain the classification is, on a 0-1 scale. Always populated, whether the category
+    /// came from a language model or from the deterministic keyword fallback, because the dashboard
+    /// must never present a category without saying how much to trust it.
+    /// </summary>
+    public double ClassificationConfidence { get; private set; }
+
+    /// <summary>
+    /// What produced the classification, for example <c>keyword</c>, <c>source-declared</c>, or
+    /// <c>ai:ollama/llama3.2</c>. Stored so a reader can tell an inference from a heuristic.
+    /// </summary>
+    public string ClassificationMethod { get; private set; } = "none";
+
+    /// <summary>
+    /// BCP-47 language tag of the original payload, when enrichment identified one. Present so a
+    /// translated summary can be shown alongside the language it was translated from.
+    /// </summary>
+    public string? DetectedLanguage { get; private set; }
+
+    /// <summary>
+    /// One or two sentences explaining the severity assessment. Bounded on purpose: this is a
+    /// concise, structured justification for application use, not a reasoning transcript.
+    /// </summary>
+    public string? SeverityRationale { get; private set; }
+
+    /// <summary>Named actors the enrichment step found in the payload. Empty when none were found.</summary>
+    public IReadOnlyList<ExtractedEntity> Entities => entities.AsReadOnly();
+
+    /// <summary>
     /// Records the structured interpretation of the payload. Coordinates are supplied by a
     /// deterministic resolver and are never inferred from free text by a language model.
     /// </summary>
@@ -132,6 +169,145 @@ public sealed class RawObservation
         LocationName = string.IsNullOrWhiteSpace(locationName) ? null : locationName.Trim();
         Status = ObservationStatus.Normalised;
         FailureReason = null;
+    }
+
+    /// <summary>
+    /// Records how much the current classification is worth and where it came from. Called for every
+    /// observation, including those classified by the deterministic fallback, so that confidence is
+    /// never absent from what the dashboard displays.
+    /// </summary>
+    public void ApplyClassificationProvenance(double confidence, string method)
+    {
+        if (confidence is < 0 or > 1)
+        {
+            throw new DomainException("Classification confidence must be between 0 and 1.");
+        }
+
+        if (string.IsNullOrWhiteSpace(method))
+        {
+            throw new DomainException("A classification must record the method that produced it.");
+        }
+
+        ClassificationConfidence = confidence;
+        ClassificationMethod = method.Trim();
+    }
+
+    /// <summary>
+    /// Applies a validated enrichment result over the normalised values.
+    /// <para>
+    /// Only called once the payload has passed schema validation, which is why this method trusts
+    /// its arguments' shape while still enforcing domain invariants. Two rules hold regardless of
+    /// what the model returned: a source-declared category is not overwritten by an inferred one
+    /// (handled by the caller), and no coordinate ever arrives through here — a place <em>name</em>
+    /// may be proposed, and a deterministic resolver alone turns it into a position.
+    /// </para>
+    /// </summary>
+    public void ApplyEnrichment(
+        string summary,
+        EventType eventType,
+        Severity severity,
+        double confidence,
+        string method,
+        string? detectedLanguage,
+        string? severityRationale,
+        string? locationName,
+        IEnumerable<ExtractedEntity> extractedEntities)
+    {
+        ArgumentNullException.ThrowIfNull(extractedEntities);
+
+        if (string.IsNullOrWhiteSpace(summary))
+        {
+            throw new DomainException("An enriched observation requires a summary.");
+        }
+
+        Summary = summary.Trim();
+        EventType = eventType;
+        Severity = severity;
+        DetectedLanguage = string.IsNullOrWhiteSpace(detectedLanguage) ? null : detectedLanguage.Trim();
+        SeverityRationale = Cap(severityRationale, AiInference.MaxRationaleLength);
+
+        // A proposed place name only fills a gap. A name the source stated itself is a fact about
+        // the record; a name inferred from prose is a reading of it, and the stronger claim wins.
+        if (string.IsNullOrWhiteSpace(LocationName) && !string.IsNullOrWhiteSpace(locationName))
+        {
+            LocationName = locationName.Trim();
+        }
+
+        entities.Clear();
+
+        foreach (var entity in extractedEntities.Take(MaxEntities))
+        {
+            if (entity is not null && !entities.Any(existing => existing.MatchKey == entity.MatchKey))
+            {
+                entities.Add(entity);
+            }
+        }
+
+        ApplyClassificationProvenance(confidence, method);
+        Status = ObservationStatus.Enriched;
+        FailureReason = null;
+    }
+
+    /// <summary>
+    /// Applies only the factual extractions from an enrichment result, leaving the classification
+    /// alone.
+    /// <para>
+    /// Used when a model answered but reported low confidence. Confidence describes certainty in the
+    /// <em>classification</em>, so a model unsure whether a report is piracy or a maritime incident
+    /// may still be entirely right that the text is Arabic and names Bab-el-Mandeb. Discarding those
+    /// because a different field was uncertain throws away good data; the category, severity, and
+    /// summary stay deterministic, which is what the low confidence actually justified.
+    /// </para>
+    /// <para>
+    /// Nothing adopted here can place the observation: a location <em>name</em> still has to survive
+    /// the deterministic resolver before it becomes a position.
+    /// </para>
+    /// </summary>
+    public void ApplyExtractions(
+        string? detectedLanguage,
+        string? locationName,
+        IEnumerable<ExtractedEntity> extractedEntities)
+    {
+        ArgumentNullException.ThrowIfNull(extractedEntities);
+
+        DetectedLanguage = string.IsNullOrWhiteSpace(detectedLanguage) ? null : detectedLanguage.Trim();
+
+        if (string.IsNullOrWhiteSpace(LocationName) && !string.IsNullOrWhiteSpace(locationName))
+        {
+            LocationName = locationName.Trim();
+        }
+
+        entities.Clear();
+
+        foreach (var entity in extractedEntities.Take(MaxEntities))
+        {
+            if (entity is not null && !entities.Any(existing => existing.MatchKey == entity.MatchKey))
+            {
+                entities.Add(entity);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Marks the payload as accepted for downstream processing. Separate from enrichment because an
+    /// observation reaches this state whether it was enriched by a model or classified
+    /// deterministically, and the pipeline treats both as validated input from here on.
+    /// </summary>
+    public void MarkValidated()
+    {
+        Status = ObservationStatus.Validated;
+        FailureReason = null;
+    }
+
+    private static string? Cap(string? value, int maxLength)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        var trimmed = value.Trim();
+        return trimmed.Length <= maxLength ? trimmed : string.Concat(trimmed.AsSpan(0, maxLength - 1), "…");
     }
 
     /// <summary>Attaches deterministically resolved coordinates.</summary>

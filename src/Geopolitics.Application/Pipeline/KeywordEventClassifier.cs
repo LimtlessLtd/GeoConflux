@@ -16,6 +16,10 @@ public sealed class KeywordEventClassifier : IEventClassifier
     private static readonly (string Keyword, EventType EventType)[] TypeKeywords =
     [
         ("pirac", EventType.Piracy),
+
+        // "pirates" does not contain "pirac", and it is the commonest word for this in reporting.
+        // Found by an integration test that expected Piracy and got MaritimeIncident.
+        ("pirate", EventType.Piracy),
         ("hijack", EventType.Piracy),
         ("boarded", EventType.Piracy),
         ("skiff", EventType.Piracy),

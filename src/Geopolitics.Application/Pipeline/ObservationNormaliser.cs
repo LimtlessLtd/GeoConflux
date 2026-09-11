@@ -40,6 +40,20 @@ public sealed class ObservationNormaliser(IEventClassifier classifier) : IObserv
             Min(envelope.OccurredAt ?? receivedAt, receivedAt),
             envelope.DeclaredLocationName);
 
+        // Recorded even when nothing later overwrites it, so that every observation carries a stated
+        // confidence and a stated method. A category with no provenance is the one thing the
+        // dashboard must never show.
+        if (envelope.DeclaredEventType is not null)
+        {
+            // A structured provider stating its own category is a fact about its record. High, but
+            // not certain: the provider can still be wrong about the world.
+            observation.ApplyClassificationProvenance(0.9, "source-declared");
+        }
+        else
+        {
+            observation.ApplyClassificationProvenance(classification.Confidence, classification.Method);
+        }
+
         return observation;
     }
 

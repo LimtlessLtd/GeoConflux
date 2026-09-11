@@ -1,8 +1,10 @@
 using System.Diagnostics;
 using Geopolitics.Application.Abstractions;
 using Geopolitics.Application.Contracts;
+using Geopolitics.Application.Enrichment;
 using Geopolitics.Domain;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Geopolitics.Application.Pipeline;
 
@@ -15,6 +17,9 @@ public sealed partial class ObservationProcessor(
     IObservationNormaliser normaliser,
     IObservationRepository observationRepository,
     IIncidentRepository incidentRepository,
+    IAiInferenceRepository inferenceRepository,
+    IEventEnrichmentService enrichmentService,
+    IOptions<EnrichmentOptions> enrichmentOptions,
     ILocationResolver locationResolver,
     IIncidentCorrelator correlator,
     IIncidentNotifier notifier,
@@ -22,6 +27,8 @@ public sealed partial class ObservationProcessor(
     TimeProvider timeProvider,
     ILogger<ObservationProcessor> logger) : IObservationProcessor
 {
+    private readonly EnrichmentOptions enrichment = enrichmentOptions.Value;
+
     public async Task<ObservationProcessingResult> ProcessAsync(ObservationEnvelope envelope, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(envelope);
@@ -89,6 +96,11 @@ public sealed partial class ObservationProcessor(
             return new ObservationProcessingResult(ProcessingOutcome.Duplicate, observation.Id, null, false, null);
         }
 
+        // Enrichment runs after deduplication, not before. A re-delivery of a report that has
+        // already been enriched would otherwise buy a second identical inference at full latency
+        // and full provider cost for an observation the pipeline is about to stop processing.
+        await EnrichAsync(envelope, observation, cancellationToken);
+
         await ResolveLocationAsync(envelope, observation, cancellationToken);
 
         var assessment = await correlator.CorrelateAsync(observation, cancellationToken);
@@ -115,6 +127,12 @@ public sealed partial class ObservationProcessor(
                 incident.ResolveLocation(observation.Location.Copy(), timeProvider.GetUtcNow());
             }
 
+            // Adopted only if this report is better supported than what the incident already holds.
+            incident.RecordAssessment(
+                observation.ClassificationConfidence,
+                observation.ClassificationMethod,
+                timeProvider.GetUtcNow());
+
             diagnostics.IncidentsCorrelated.Add(1, new KeyValuePair<string, object?>("source", observation.SourceName));
             LogCorrelated(logger, observation.Id, incident.Id, assessment.Confidence, assessment.Rationale);
         }
@@ -122,6 +140,10 @@ public sealed partial class ObservationProcessor(
         {
             incident = CreateIncident(observation);
             incident.LinkObservation(observation.Id, timeProvider.GetUtcNow());
+            incident.RecordAssessment(
+                observation.ClassificationConfidence,
+                observation.ClassificationMethod,
+                timeProvider.GetUtcNow());
             await incidentRepository.AddAsync(incident, cancellationToken);
             incidentCreated = true;
 
@@ -142,6 +164,121 @@ public sealed partial class ObservationProcessor(
         await PublishAsync(observation, incident, incidentCreated, cancellationToken);
 
         return new ObservationProcessingResult(ProcessingOutcome.Persisted, observation.Id, incident.Id, incidentCreated, null);
+    }
+
+    /// <summary>
+    /// Runs semantic enrichment and decides whether to adopt the result.
+    /// <para>
+    /// Three things are true of every path through this method. The observation survives: a provider
+    /// that is down, slow, or wrong costs quality, never evidence. The attempt is recorded: an
+    /// <see cref="AiInference"/> row is written whether it succeeded or failed, so degraded
+    /// classification is visible rather than silent. And the deterministic classification from
+    /// normalisation stays in place unless something demonstrably better replaces it.
+    /// </para>
+    /// </summary>
+    private async Task EnrichAsync(
+        ObservationEnvelope envelope,
+        RawObservation observation,
+        CancellationToken cancellationToken)
+    {
+        var result = await enrichmentService.EnrichAsync(
+            new EnrichmentRequest(observation.SourceName, observation.Title, observation.Content),
+            cancellationToken);
+
+        if (result.Outcome != AiInferenceOutcome.Skipped)
+        {
+            await RecordInferenceAsync(observation, result, cancellationToken);
+        }
+
+        if (result.Enrichment is not { } accepted)
+        {
+            // Nothing usable came back. The keyword classification recorded during normalisation
+            // stands, and the observation continues through the pipeline unchanged.
+            observation.MarkValidated();
+            return;
+        }
+
+        if (accepted.Confidence < enrichment.MinimumAcceptedConfidence)
+        {
+            // The model answered and was honest about being unsure. A transparent heuristic that
+            // says "keyword, 0.55" is more useful to a reader than an opaque model that says 0.2,
+            // so the deterministic classification is kept and the inference stays on record.
+            //
+            // The factual extractions are kept, though. Low confidence in the *classification* says
+            // nothing about whether the text is Arabic or names a real strait, and those are exactly
+            // what lets an unreadable report still be placed on the map.
+            observation.ApplyExtractions(accepted.Language, accepted.LocationName, accepted.Entities);
+            LogEnrichmentBelowThreshold(logger, observation.Id, accepted.Confidence, enrichment.MinimumAcceptedConfidence);
+            observation.MarkValidated();
+            return;
+        }
+
+        // A structured provider stating its own category outranks an inference drawn from prose, so
+        // a declared value is preserved and only the gaps are filled.
+        var eventType = envelope.DeclaredEventType ?? accepted.EventType;
+        var severity = envelope.DeclaredSeverity ?? accepted.Severity;
+        var method = $"ai:{result.Provider}/{result.Model}";
+
+        observation.ApplyEnrichment(
+            accepted.Summary,
+            eventType,
+            severity,
+            accepted.Confidence,
+            envelope.DeclaredEventType is null ? method : $"source-declared+{method}",
+            accepted.Language,
+            accepted.SeverityRationale,
+            accepted.LocationName,
+            accepted.Entities);
+
+        observation.MarkValidated();
+        LogEnriched(logger, observation.Id, result.Provider, accepted.Confidence, result.Attempts);
+    }
+
+    /// <summary>
+    /// Writes the audit record. Failing to store it must not fail the observation: the inference is
+    /// telemetry about processing, and losing telemetry is a smaller loss than losing evidence.
+    /// </summary>
+    private async Task RecordInferenceAsync(
+        RawObservation observation,
+        EnrichmentResult result,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var inference = result.IsSuccess
+                ? AiInference.Succeeded(
+                    Guid.CreateVersion7(timeProvider.GetUtcNow()),
+                    observation.Id,
+                    result.Provider,
+                    result.Model,
+                    result.PromptVersion,
+                    result.SchemaVersion,
+                    result.Enrichment!.Confidence,
+                    result.Attempts,
+                    result.LatencyMilliseconds,
+                    timeProvider.GetUtcNow(),
+                    result.StructuredOutput!)
+                : AiInference.Failed(
+                    Guid.CreateVersion7(timeProvider.GetUtcNow()),
+                    observation.Id,
+                    result.Provider,
+                    result.Model,
+                    result.PromptVersion,
+                    result.SchemaVersion,
+                    result.Outcome,
+                    result.Attempts,
+                    result.LatencyMilliseconds,
+                    timeProvider.GetUtcNow(),
+                    result.Error ?? "The enrichment attempt failed without a stated reason.");
+
+            // Added, not saved: it commits with the observation and incident in the single
+            // transaction below, so the audit trail cannot describe a row that was never stored.
+            await inferenceRepository.AddAsync(inference, cancellationToken);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            LogInferenceRecordFailed(logger, exception, observation.Id);
+        }
     }
 
     /// <summary>
@@ -193,7 +330,7 @@ public sealed partial class ObservationProcessor(
         bool incidentCreated,
         CancellationToken cancellationToken)
     {
-        var response = ToResponse(incident);
+        var response = IncidentResponse.FromDomain(incident);
 
         try
         {
@@ -277,22 +414,6 @@ public sealed partial class ObservationProcessor(
     private static Severity Escalate(Severity current, Severity candidate) =>
         candidate > current ? candidate : current;
 
-    private static IncidentResponse ToResponse(GeopoliticalIncident incident) => new(
-        incident.Id,
-        incident.Title,
-        incident.Summary,
-        incident.EventType,
-        incident.Severity,
-        incident.OccurredAt,
-        incident.Location is null
-            ? null
-            : new LocationResponse(
-                incident.Location.Name,
-                incident.Location.CountryCode,
-                incident.Location.Latitude,
-                incident.Location.Longitude),
-        incident.ObservationCount,
-        incident.IsDemo);
 
     private void RecordDuration(long startedAt, ProcessingOutcome outcome) =>
         diagnostics.ProcessingDuration.Record(
@@ -310,6 +431,15 @@ public sealed partial class ObservationProcessor(
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Incident {IncidentId} opened by observation {ObservationId}: {Rationale}")]
     private static partial void LogIncidentCreated(ILogger logger, Guid incidentId, Guid observationId, string rationale);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Observation {ObservationId} enriched by {Provider} at confidence {Confidence} in {Attempts} attempt(s).")]
+    private static partial void LogEnriched(ILogger logger, Guid observationId, string provider, double confidence, int attempts);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Enrichment for observation {ObservationId} reported confidence {Confidence}, below the {Threshold} threshold; the deterministic classification was kept.")]
+    private static partial void LogEnrichmentBelowThreshold(ILogger logger, Guid observationId, double confidence, double threshold);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Could not record the enrichment audit entry for observation {ObservationId}; processing continued.")]
+    private static partial void LogInferenceRecordFailed(ILogger logger, Exception exception, Guid observationId);
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Location resolution failed for observation {ObservationId}; it will be stored without coordinates.")]
     private static partial void LogLocationResolverFailed(ILogger logger, Exception exception, Guid observationId);
