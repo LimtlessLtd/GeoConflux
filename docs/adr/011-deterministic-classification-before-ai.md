@@ -38,3 +38,25 @@ fallback for when a provider is unavailable or returns output that fails schema 
   of stopping ingestion.
 - The classifier is English-language and keyword-bound. It will misclassify unusual phrasing. That is
   acceptable for a stopgap whose confidence output already says not to trust it much.
+
+## Outcome (Sprint 3)
+
+Both predictions held, and one gap identified here has been closed.
+
+`KeywordEventClassifier` is now the fallback rather than the primary classifier. Enrichment runs
+first; when the provider is unavailable, times out, or returns output that fails validation or falls
+below `Enrichment:MinimumAcceptedConfidence`, this classification stands and the failure is recorded
+as an `AiInference` row rather than absorbed silently.
+
+The confidence score is no longer computed and discarded. `RawObservation.ClassificationConfidence`
+and `ClassificationMethod` are persisted, carried through the response contracts, and displayed
+beside every category on the dashboard — so the caveat this ADR recorded ("no part of the product may
+claim that confidence is displayed") no longer applies, because it now is.
+
+The classifier's English-language limitation is no longer a footnote but a measured result. The
+evaluation harness reports it: on the Arabic, Russian, and Chinese fixtures the offline baseline has
+nothing to match on, reports low confidence, and is correctly not adopted. See
+[tests/data/ai-evaluation/RESULTS.md](../../tests/data/ai-evaluation/RESULTS.md).
+
+One defect was found by an integration test during this work: the keyword `pirac` does not match the
+word "pirates", which is the commonest term for it in reporting. `pirate` was added.
