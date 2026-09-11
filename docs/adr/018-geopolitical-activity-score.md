@@ -91,3 +91,23 @@ deployments that chose differently are not comparable. This is stated in the cod
 - Adding a factor or changing a weight changes every published score. The constants are named,
   documented, and covered by property tests rather than by expected values, so a deliberate change is
   a one-line edit and an accidental one fails the suite.
+
+## Amendment, 2026-09-11: recalibrated against live volume
+
+The saturation constant was 6 weighted incidents per day, chosen by measuring the recorded replay
+stream. Switching the published build to live public feeds raised the observed rate to roughly 34
+per day and the score read **99.7** — pinned at the ceiling, with no room to move in either
+direction and therefore carrying no information at all.
+
+The constant is now 30. Measured on the same live run:
+
+| Window | Rate (per day) | Score | Band |
+| --- | ---: | ---: | --- |
+| 24h | 33.8 | 67.6 | elevated |
+| 7d | 9.2 | 26.4 | moderate |
+
+This is precisely the recalibration the original decision predicted would be forced by a different
+ingestion volume, and it is the reason the raw rate is reported next to the score: the rate is the
+measurement and survived the change unaltered, while the 0-100 presentation of it did not. It also
+demonstrates the stated limitation concretely — a score from a deployment calibrated at 6 and one
+calibrated at 30 describe the same activity with different numbers and must never be compared.

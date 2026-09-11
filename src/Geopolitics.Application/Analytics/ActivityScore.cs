@@ -78,16 +78,22 @@ public static class ActivityScoreCalculator
     /// <para>
     /// The one frankly arbitrary constant here, and the reason <see cref="ActivityScore.WeightedPerDay"/>
     /// is reported beside the score: the rate is the measurement, and the 0-100 value is a
-    /// presentation of it. It is set so the volumes this project actually produces land in the middle
-    /// of the range rather than pinned near 100. A deployment ingesting a different volume would have
-    /// to choose differently, and scores from two deployments that chose differently are not
-    /// comparable.
+    /// presentation of it.
+    /// </para>
+    /// <para>
+    /// It was 6, chosen against the recorded replay stream, and that turned out to be the wrong scale
+    /// the moment the pipeline was pointed at live news: four public feeds produce roughly 34 weighted
+    /// incidents a day, which pinned the score at 99.7 and made the number useless — every day would
+    /// have looked maximally busy. Re-set to 30 so real ingestion lands mid-range and has somewhere
+    /// to move in both directions. This is exactly the recalibration ADR 018 said a different volume
+    /// would force, and it is why scores from two differently-calibrated deployments cannot be
+    /// compared.
     /// </para>
     /// </summary>
-    public const double SaturationRatePerDay = 6.0;
+    public const double SaturationRatePerDay = 30.0;
 
     public const string Formula =
-        "score = 100 x (1 - exp(-R / 6)); R = (1 / days) x SUM[ severity x 0.5^(age / (window / 4)) "
+        "score = 100 x (1 - exp(-R / 30)); R = (1 / days) x SUM[ severity x 0.5^(age / (window / 4)) "
         + "x min(3, 1 + 0.5 x log2(evidence)) x (0.4 + 0.6 x confidence) ]";
 
     public const string Notice =

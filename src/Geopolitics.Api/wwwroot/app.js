@@ -913,6 +913,37 @@
     replay.active = false;
   }
 
+  /**
+   * Says what this page is built from, counting rather than asserting.
+   *
+   * The banner used to have two states, demo or not, which was adequate while the only data source
+   * was a recorded stream. With live feeds a snapshot can be either or both, and a single blanket
+   * label would misdescribe half the page whichever label it picked. Live reporting must not be
+   * dismissed as a demo, and recorded demo records must never be passed off as reporting.
+   */
+  function describeProvenance(observations) {
+    const live = observations.filter((observation) => !observation.isDemo).length;
+    const demo = observations.length - live;
+
+    if (live > 0 && demo > 0) {
+      dom.demoNotice.hidden = false;
+      dom.demoNotice.querySelector('strong').textContent = 'MIXED';
+      dom.demoNoticeText.textContent =
+        `${live} live report${live === 1 ? '' : 's'} from public feeds, ${demo} replayed demo record${demo === 1 ? '' : 's'} — each labelled individually`;
+      return;
+    }
+
+    if (live > 0) {
+      dom.demoNotice.hidden = false;
+      dom.demoNotice.querySelector('strong').textContent = 'LIVE';
+      dom.demoNoticeText.textContent =
+        'Real headlines from public news and humanitarian feeds. Categories and severities are this system\u2019s assessments, not the publishers\u2019';
+      return;
+    }
+
+    dom.demoNoticeText.textContent = 'Synthetic replay data \u2014 not live reporting';
+  }
+
   function snapshotStatusText() {
     const generatedAt = staticSource.meta?.generatedAt;
     return `Static snapshot — pipeline run of ${formatDate(generatedAt)}`;
@@ -1402,6 +1433,7 @@
       && (staticSource.meta?.isDemoData ?? true) !== false;
 
     dom.demoNotice.hidden = records > 0 && !flaggedDemo && !snapshotDeclaresDemo;
+    describeProvenance(loadedObservations);
 
     renderIncidents();
     renderFeed();
@@ -1613,9 +1645,18 @@
     const meta = staticSource.meta ?? {};
     const generated = formatDate(meta.generatedAt);
 
-    dom.demoNoticeText.textContent = `Static snapshot · synthetic replay data · run of ${generated}`;
-    dom.feedHint.textContent = 'The observations below are the recorded output of a real pipeline run. '
-      + 'Replay them to watch incidents form and correlate.';
+    // The provenance banner is set from the record counts in describeProvenance and must not be
+    // overwritten here. This used to hard-code "synthetic replay data", which was accurate while
+    // that was the only thing the exporter could read and became a false claim the moment live
+    // feeds were switched on. The run date is appended to whatever provenance was determined.
+    const live = asCount(meta.liveObservationCount);
+    dom.demoNoticeText.textContent += ` · run of ${generated}`;
+
+    dom.feedHint.textContent = live > 0
+      ? 'The observations below were ingested from public feeds by a real pipeline run. Replay them '
+        + 'to watch incidents form and correlate.'
+      : 'The observations below are the recorded output of a real pipeline run. Replay them to '
+        + 'watch incidents form and correlate.';
 
     dom.aboutModeText.innerHTML = `
       This page is a <strong>static snapshot</strong>. GitHub Pages serves files only, so no .NET
@@ -1632,8 +1673,15 @@
       <br><br>
       ${escapeHtml(meta.notice ?? 'Synthetic replay data. Not live reporting.')}
       <br><br>
-      <strong>No AI or ML model is involved.</strong> Categories and severities come from a
-      deterministic keyword classifier; the AI enrichment stage is designed but not yet built.
+      Every observation passed through the <strong>AI enrichment stage</strong> and was scored by the
+      <strong>trained severity model</strong>. With no provider configured — which is how this page is
+      built — enrichment runs against a deterministic in-process stand-in, labelled
+      <code>ai:Mock/deterministic-stub</code> wherever it appears, and it is
+      <strong>not a language model</strong>. That is why so many real headlines land in
+      <em>Other</em>: a keyword classifier is weak on real reporting, and the page shows that rather
+      than hiding it. The severity model is a real trained classifier and its prediction is recorded
+      beside each observation, never used to set the severity shown.
+      <br><br>
       Running the application locally starts the live version, with the queue, background workers,
       and realtime updates all active.`;
   }

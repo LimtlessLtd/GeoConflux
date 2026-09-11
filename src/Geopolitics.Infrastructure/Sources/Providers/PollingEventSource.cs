@@ -19,7 +19,7 @@ namespace Geopolitics.Infrastructure.Sources.Providers;
 public abstract partial class PollingEventSource(
     PipelineDiagnostics diagnostics,
     TimeProvider timeProvider,
-    ILogger logger) : IEventSource
+    ILogger logger) : IEventSource, IBatchEventSource
 {
     /// <summary>
     /// How many recently emitted identifiers to remember. Sized to comfortably exceed a few polls'
@@ -72,6 +72,26 @@ public abstract partial class PollingEventSource(
                 yield break;
             }
         }
+    }
+
+    /// <summary>
+    /// One poll, then stop. This is the bounded read a batch caller needs, and it goes through the
+    /// same instrumentation, failure containment, and repeat suppression as a poll inside the
+    /// continuous loop — so an export exercises the real adapter rather than a second, simpler path
+    /// that could drift from it.
+    /// </summary>
+    public async Task<IReadOnlyList<ObservationEnvelope>> ReadBatchAsync(CancellationToken cancellationToken)
+    {
+        if (!IsEnabled)
+        {
+            LogDisabled(Logger, Name);
+            return [];
+        }
+
+        // A fresh window per batch. The suppression window exists to stop a long-running host
+        // re-emitting what it emitted a few minutes ago; a one-shot read has no such history, and
+        // sharing one across calls would make a second export silently return nothing.
+        return await PollOnceAsync(new RecentIdentifiers(), cancellationToken);
     }
 
     /// <summary>

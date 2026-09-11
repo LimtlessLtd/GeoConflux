@@ -55,10 +55,33 @@ jobs:
           mkdir -p dist
           cp -r src/Geopolitics.Api/wwwroot/. dist/
 
-      - name: Run the pipeline and export its output
+      - name: Run the pipeline against live public feeds and export its output
         # The output path is absolute on purpose. "dotnet run" executes the program with the project
         # directory as its working directory, so a relative path here would silently write the
         # snapshot to src/Geopolitics.Workers/dist and publish a dashboard with no data in it.
+        #
+        # Feeds live here rather than in the application because no publisher is an architectural
+        # dependency of this project: which sources to read is a deployment decision, and this
+        # workflow is the deployment. All four are public, require no credential, and are consumed as
+        # RSS is meant to be — a few dozen headlines per run, at most once a push plus a weekly cron.
+        #
+        # The replay stream stays enabled as a floor. If every feed were unreachable the live batch
+        # would be empty, and the verification below would fail the build and leave the previous page
+        # up; keeping the recorded stream means the page still shows a working pipeline instead. The
+        # snapshot counts live and demo records separately and labels each one, so the two are never
+        # confused for each other.
+        env:
+          Providers__Mode: Live
+          Providers__Rss__Enabled: "true"
+          Providers__Rss__MaxItemsPerPoll: "25"
+          Providers__Rss__Feeds__0__Name: un-news
+          Providers__Rss__Feeds__0__Url: https://news.un.org/feed/subscribe/en/news/all/rss.xml
+          Providers__Rss__Feeds__1__Name: reliefweb
+          Providers__Rss__Feeds__1__Url: https://reliefweb.int/updates/rss.xml
+          Providers__Rss__Feeds__2__Name: bbc-world
+          Providers__Rss__Feeds__2__Url: https://feeds.bbci.co.uk/news/world/rss.xml
+          Providers__Rss__Feeds__3__Name: al-jazeera
+          Providers__Rss__Feeds__3__Url: https://www.aljazeera.com/xml/rss/all.xml
         run: >
           dotnet run --project src/Geopolitics.Workers --configuration Release --no-build
           --no-launch-profile -- --export "${{ github.workspace }}/dist/data"
@@ -75,9 +98,31 @@ jobs:
           # An empty run would publish a blank dashboard, which is worse than failing the build.
           incidents=$(jq '.incidentCount' dist/data/meta.json)
           observations=$(jq '.observationCount' dist/data/meta.json)
-          echo "Snapshot contains $incidents incident(s) from $observations observation(s)."
+          live=$(jq '.liveObservationCount' dist/data/meta.json)
+          demo=$(jq '.demoObservationCount' dist/data/meta.json)
+          echo "Snapshot contains $incidents incident(s) from $observations observation(s): $live live, $demo demo."
           test "$incidents" -gt 0 || { echo "::error::The snapshot contains no incidents."; exit 1; }
           test "$observations" -gt 0 || { echo "::error::The snapshot contains no observations."; exit 1; }
+
+          # A warning, not a failure. Every feed being unreachable is a bad day upstream, not a
+          # broken build, and publishing the recorded run is better than leaving a stale page. It is
+          # surfaced loudly because a page that quietly stopped showing live data would otherwise
+          # look exactly like one that was still working.
+          if [ "$live" -eq 0 ]; then
+            echo "::warning::No live observations were ingested; publishing the recorded stream only."
+          fi
+
+          # The label has to match the data. Publishing real reporting stamped as synthetic, or the
+          # reverse, is the one failure here that would actively mislead a reader.
+          claimed_demo=$(jq '.isDemoData' dist/data/meta.json)
+          if [ "$live" -gt 0 ] && [ "$claimed_demo" != "false" ]; then
+            echo "::error::The snapshot carries live observations but is labelled as demo data."
+            exit 1
+          fi
+          if [ "$live" -eq 0 ] && [ "$claimed_demo" != "true" ]; then
+            echo "::error::The snapshot carries no live observations but is not labelled as demo data."
+            exit 1
+          fi
           # Pages runs Jekyll by default, which would drop any path beginning with an underscore.
           touch dist/.nojekyll
 

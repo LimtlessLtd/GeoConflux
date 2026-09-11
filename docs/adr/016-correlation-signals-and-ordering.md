@@ -83,3 +83,31 @@ stay outside it: they are the slow stages and touch no shared state.
   the capitalised run ending the title and it invented actors like "Northern Transit Council
   Scheduled". Two reports about one organisation produced two different names for it, which silently
   disabled entity correlation. Fixed, with a regression test.
+
+## Amendment, 2026-09-11: time gates, it does not corroborate
+
+Originally the corroboration signals were wording overlap, shared actors, and temporal proximity,
+the last scored as `1 - (hoursApart / correlationWindow)`.
+
+Pointing the pipeline at live news feeds showed that signal to be worthless, and worse than
+worthless in practice. A poll returns everything at once, so every candidate pair had timestamps
+minutes apart inside a 24-hour window and scored ~1.0 on it. A signal that is maximal for every pair
+is not evidence; it was a constant bonus applied to every comparison, and it was large enough to
+carry pairs over the acceptance threshold on its own. On the first real run it merged a report about
+a disease outbreak with one about a dress auction.
+
+It had looked discriminating only because the recorded replay stream is spread across several hours
+by construction. That is an artefact of how the fixture was written, not a property of ingestion.
+
+Time is now used solely as the window gate it always also was. Corroboration comes from wording and
+actors — what two reports actually say and who they name. Whether two reports arrived together says
+nothing about whether they describe the same event.
+
+The knock-on effect is that weakly-evidenced matches no longer clear the bar: a shared place name
+with no shared wording and no shared actors used to correlate and now does not. That is the correct
+direction. This ADR already states that the bar errs high because a wrong merge is destructive and
+nearly invisible afterwards, and a quarter of every corroboration score had been a signal carrying no
+information.
+
+`Pipeline:TimeWeight` is removed. Two unit tests that asserted the old behaviour were rewritten, and
+a test now asserts directly that reports sharing only a place and a timestamp do not merge.

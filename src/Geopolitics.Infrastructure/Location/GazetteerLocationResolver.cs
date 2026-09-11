@@ -29,7 +29,7 @@ public sealed partial class GazetteerLocationResolver(ILogger<GazetteerLocationR
                 : request.LocationName.Trim();
 
             return Task.FromResult(new LocationResolution(
-                new GeoLocation(name, request.DeclaredCountryCode, latitude, longitude),
+                new GeoLocation(name, request.DeclaredCountryCode, latitude, longitude, LocationPrecision.Exact),
                 LocationResolutionMethod.SourceProvided,
                 0.95,
                 null));
@@ -47,18 +47,54 @@ public sealed partial class GazetteerLocationResolver(ILogger<GazetteerLocationR
                     entry.CanonicalName,
                     entry.CountryCode ?? request.DeclaredCountryCode,
                     entry.Latitude,
-                    entry.Longitude),
+                    entry.Longitude,
+                    ToDomain(entry.Precision)),
                 LocationResolutionMethod.Gazetteer,
-
-                // A centroid for a named region is genuinely less precise than a provider fix,
-                // and the confidence reported to the UI says so.
-                0.7,
-                null));
+                ConfidenceFor(entry.Precision),
+                null,
+                NoteFor(entry)));
         }
 
         LogUnknownPlace(logger, request.LocationName);
         return Task.FromResult(LocationResolution.Failed($"'{request.LocationName.Trim()}' is not in the local gazetteer."));
     }
+
+    /// <summary>
+    /// Confidence by how much ground the entry stands for. A gazetteer hit is never as good as a
+    /// provider fix, and a country hit is a great deal worse than a city one — reporting all three at
+    /// the same number would make the figure meaningless.
+    /// </summary>
+    private static double ConfidenceFor(PlacePrecision precision) => precision switch
+    {
+        PlacePrecision.Settlement => 0.7,
+        PlacePrecision.Region => 0.55,
+
+        // Low on purpose. It says the report is somewhere in this country, which is worth plotting
+        // and is not close to knowing where the event was.
+        PlacePrecision.Country => 0.3,
+        _ => 0.5,
+    };
+
+    /// <summary>
+    /// The caveat that travels with a coarse placement. Silent for a settlement, because a note on
+    /// every observation is a note nobody reads.
+    /// </summary>
+    private static string? NoteFor(GazetteerEntry entry) => entry.Precision switch
+    {
+        PlacePrecision.Country =>
+            $"Placed at the centroid of {entry.CanonicalName} because no more specific place was named. "
+                + "The marker shows the country, not the location of the event.",
+        PlacePrecision.Region =>
+            $"Placed at a representative point in {entry.CanonicalName}, which is an area rather than a position.",
+        _ => null,
+    };
+
+    private static LocationPrecision ToDomain(PlacePrecision precision) => precision switch
+    {
+        PlacePrecision.Region => LocationPrecision.Region,
+        PlacePrecision.Country => LocationPrecision.Country,
+        _ => LocationPrecision.Settlement,
+    };
 
     private static string FormatCoordinates(double latitude, double longitude) =>
         $"{latitude:F3}, {longitude:F3}";

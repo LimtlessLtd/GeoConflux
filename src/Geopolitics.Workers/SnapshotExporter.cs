@@ -54,19 +54,31 @@ public static partial class SnapshotExporter
 
         foreach (var source in sources)
         {
-            await foreach (var envelope in source.ReadAsync(cancellationToken).WithCancellation(cancellationToken))
+            // A batch source is read once; a stream source is drained. The distinction is not
+            // cosmetic: a polling adapter's stream never ends, so draining one here would hang the
+            // export forever rather than write a snapshot.
+            var envelopes = source is IBatchEventSource batch
+                ? await batch.ReadBatchAsync(cancellationToken)
+                : await DrainAsync(source, cancellationToken);
+
+            var accepted = 0;
+
+            foreach (var envelope in envelopes)
             {
                 var result = await ingestion.IngestAsync(envelope, cancellationToken);
 
                 if (result.Accepted)
                 {
                     queued++;
+                    accepted++;
                 }
                 else
                 {
                     LogRejected(logger, source.Name, result.RejectionReason ?? "unspecified");
                 }
             }
+
+            LogSourceRead(logger, source.Name, envelopes.Count, accepted);
         }
 
         // Closing the queue is what lets the drain loop below terminate rather than wait for more.
@@ -90,6 +102,24 @@ public static partial class SnapshotExporter
         var resolvedDirectory = Path.GetFullPath(outputDirectory);
         LogExported(logger, resolvedDirectory);
         return 0;
+    }
+
+    /// <summary>
+    /// Reads a finite source to exhaustion. Only used for sources that genuinely end, such as the
+    /// recorded replay stream.
+    /// </summary>
+    private static async Task<IReadOnlyList<ObservationEnvelope>> DrainAsync(
+        IEventSource source,
+        CancellationToken cancellationToken)
+    {
+        var envelopes = new List<ObservationEnvelope>();
+
+        await foreach (var envelope in source.ReadAsync(cancellationToken).WithCancellation(cancellationToken))
+        {
+            envelopes.Add(envelope);
+        }
+
+        return envelopes;
     }
 
     private static async Task WriteAsync(
@@ -141,6 +171,13 @@ public static partial class SnapshotExporter
             await WriteJsonAsync(Path.Combine(analyticsDirectory, $"{window.Token}.json"), report, cancellationToken);
         }
 
+        // Counted, never assumed. This exporter used to hard-code IsDemoData: true because the only
+        // source it could read was the recorded stream. Now that live adapters can feed it, a fixed
+        // label would be a claim about provenance the data does not support — in either direction:
+        // stamping real reporting as synthetic is as wrong as the reverse.
+        var demoObservations = observations.Count(value => value.IsDemo);
+        var liveObservations = observations.Count - demoObservations;
+
         var meta = new SnapshotMeta(
             GeneratedAt: DateTimeOffset.UtcNow,
             IncidentCount: incidents.Count,
@@ -154,9 +191,10 @@ public static partial class SnapshotExporter
             // Recorded so the published page can state how these distances were computed rather
             // than implying a precision the backend does not have.
             SpatialMethod: spatialQueries.Method,
-            IsDemoData: true,
-            Notice: "Synthetic replay data produced by a real run of the GeoConflux pipeline. "
-                + "It is not live reporting and describes no real-world events.");
+            LiveObservationCount: liveObservations,
+            DemoObservationCount: demoObservations,
+            IsDemoData: liveObservations == 0,
+            Notice: Describe(liveObservations, demoObservations));
 
         await WriteJsonAsync(Path.Combine(outputDirectory, "meta.json"), meta, cancellationToken);
     }
@@ -168,7 +206,9 @@ public static partial class SnapshotExporter
     }
 
     /// <param name="GeneratedAt">When this snapshot was produced, shown in the UI so its age is visible.</param>
-    /// <param name="IsDemoData">Always true here; the exporter only ever runs against replay sources.</param>
+    /// <param name="LiveObservationCount">Observations that came from a real external source.</param>
+    /// <param name="DemoObservationCount">Observations that came from the recorded stream.</param>
+    /// <param name="IsDemoData">True only when nothing in this snapshot came from a live source.</param>
     /// <param name="Notice">Plain-language provenance statement carried with the data itself.</param>
     private sealed record SnapshotMeta(
         DateTimeOffset GeneratedAt,
@@ -180,14 +220,36 @@ public static partial class SnapshotExporter
         int CorrelatedIncidentCount,
         int ChokepointsWithActivity,
         string SpatialMethod,
+        int LiveObservationCount,
+        int DemoObservationCount,
         bool IsDemoData,
         string Notice);
+
+    /// <summary>
+    /// States the snapshot's provenance in plain language, including the mixed case. A page carrying
+    /// both real reporting and recorded demo records has to say so: a single blanket label would be
+    /// wrong about half of what it describes whichever label it chose.
+    /// </summary>
+    private static string Describe(int live, int demo) => (live, demo) switch
+    {
+        (0, _) => "Synthetic replay data produced by a real run of the GeoConflux pipeline. "
+            + "It is not live reporting and describes no real-world events.",
+        (_, 0) => "Live reporting ingested from public news and humanitarian feeds by a real run of "
+            + "the GeoConflux pipeline. Headlines are real; the categories, severities, and "
+            + "correlations shown beside them are this system's assessments, not the publishers'.",
+        _ => $"A mixed snapshot: {live} observation(s) ingested live from public feeds and {demo} "
+            + "replayed from the recorded demo stream. Every record is individually labelled with "
+            + "which it is.",
+    };
 
     [LoggerMessage(Level = LogLevel.Error, Message = "No ingestion sources are registered, so there is nothing to export.")]
     private static partial void LogNoSources(ILogger logger);
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Source {SourceName} produced an envelope that failed validation: {Reason}")]
     private static partial void LogRejected(ILogger logger, string sourceName, string reason);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Source {SourceName} produced {Produced} envelope(s), {Accepted} accepted.")]
+    private static partial void LogSourceRead(ILogger logger, string sourceName, int produced, int accepted);
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Queued {Queued} envelope(s) and processed {Processed}.")]
     private static partial void LogProcessed(ILogger logger, int queued, int processed);

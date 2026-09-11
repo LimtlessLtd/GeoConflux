@@ -7,7 +7,12 @@ public sealed class GeoLocation
         Name = string.Empty;
     }
 
-    public GeoLocation(string name, string? countryCode, double latitude, double longitude)
+    public GeoLocation(
+        string name,
+        string? countryCode,
+        double latitude,
+        double longitude,
+        LocationPrecision precision = LocationPrecision.Settlement)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -28,6 +33,7 @@ public sealed class GeoLocation
         CountryCode = string.IsNullOrWhiteSpace(countryCode) ? null : countryCode.Trim().ToUpperInvariant();
         Latitude = latitude;
         Longitude = longitude;
+        Precision = precision;
     }
 
     public string Name { get; private set; }
@@ -39,10 +45,26 @@ public sealed class GeoLocation
     public double Longitude { get; private set; }
 
     /// <summary>
+    /// How much ground this coordinate stands for. Defaults to <see cref="LocationPrecision.Settlement"/>
+    /// so existing callers keep their previous meaning rather than silently becoming coarse.
+    /// </summary>
+    public LocationPrecision Precision { get; private set; }
+
+    /// <summary>
+    /// Whether this coordinate is precise enough for distance between two of them to mean anything.
+    /// <para>
+    /// A country centroid is not. Two reports that share one are at zero distance because the
+    /// gazetteer had one point for the whole country, and treating that as co-location is how
+    /// unrelated events end up in the same incident.
+    /// </para>
+    /// </summary>
+    public bool SupportsDistanceComparison => Precision != LocationPrecision.Country;
+
+    /// <summary>
     /// Returns an independent copy. <see cref="GeoLocation"/> is a value object, so two entities that
     /// happen to be at the same place should hold equal values rather than share one instance.
     /// </summary>
-    public GeoLocation Copy() => new(Name, CountryCode, Latitude, Longitude);
+    public GeoLocation Copy() => new(Name, CountryCode, Latitude, Longitude, Precision);
 
     /// <summary>
     /// Great-circle distance in kilometres. Correlation needs to know whether two reports

@@ -125,10 +125,14 @@ public sealed class CorrelationSignalTests
             observationLocation: Chokepoint,
             incidentLocation: Chokepoint);
 
+        // Given shared actors as well as a shared name. Without corroboration a bare name match no
+        // longer clears the bar at all, which is a separate property asserted on its own below.
         var named = await CorrelateAsync(
             observationLocation: null,
             incidentLocation: Chokepoint,
-            observationLocationName: "Bab-el-Mandeb");
+            observationLocationName: "Bab-el-Mandeb",
+            observationEntities: ["Meridian Shipping"],
+            incidentEntityKeys: ["meridian shipping"]);
 
         Assert.True(measured.IsCorrelated);
         Assert.True(named.IsCorrelated);
@@ -138,6 +142,26 @@ public sealed class CorrelationSignalTests
         Assert.True(
             measured.Confidence > named.Confidence,
             $"Measured co-location scored {measured.Confidence}, a place-name match scored {named.Confidence}.");
+    }
+
+    [Fact]
+    public async Task TimeInsideTheWindowIsNotTreatedAsCorroboration()
+    {
+        // Two reports of the same category, in the same strait, arriving at the same instant, whose
+        // text and actors have nothing in common.
+        var assessment = await CorrelateAsync(
+            observationLocation: null,
+            incidentLocation: Chokepoint,
+            observationLocationName: "Bab-el-Mandeb",
+            observationSummary: "A monk was arrested over an alleged embezzlement scheme.",
+            incidentSummary: "An auction house will offer a dress worn by a public figure.");
+
+        // Arriving together is not evidence of being the same event, and against live feeds it is
+        // not even discriminating: a single poll stamps everything with the same time. When this was
+        // scored as corroboration it merged exactly this pair of real headlines.
+        Assert.False(
+            assessment.IsCorrelated,
+            $"Unrelated reports sharing only a place and a timestamp scored {assessment.Confidence}.");
     }
 
     [Fact]

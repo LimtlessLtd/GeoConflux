@@ -85,7 +85,6 @@ public sealed class PipelineOptions
 
     public double SimilarityWeight { get; set; } = 0.20;
 
-    public double TimeWeight { get; set; } = 0.15;
 
     /// <summary>Whether ingestion sources are started by the host.</summary>
     public bool SourcesEnabled { get; set; } = true;

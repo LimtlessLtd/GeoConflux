@@ -83,10 +83,18 @@ public sealed class DeterministicIncidentCorrelator(
         }
 
         var reasons = new List<string>(4);
-        var support = new List<Signal>(3)
-        {
-            new(1 - (hoursApart / windowHours), options.TimeWeight),
-        };
+
+        // Time gates the window above; it deliberately does not corroborate here.
+        //
+        // It used to. The signal was 1 - (hoursApart / windowHours), which discriminated nicely on
+        // the recorded stream because that data is spread across hours by construction. Live feeds
+        // are not: a poll returns everything at once, timestamps collapse to the same instant, and
+        // the signal became a constant 1.0 handed to every candidate pair. A constant is not
+        // evidence, and against real news it was enough to merge an auction report with a disease
+        // outbreak. Whether two reports arrived together says nothing about whether they describe
+        // the same event, so corroboration now comes only from what they actually say and who they
+        // name.
+        var support = new List<Signal>(2);
 
         var entityOverlap = EntityOverlap(observation, candidate);
 
@@ -158,7 +166,13 @@ public sealed class DeterministicIncidentCorrelator(
         double similarity,
         EntitySignal? entityOverlap)
     {
-        if (observation.Location is { } observed && candidate.Location is { } known)
+        // Both must be precise enough for a distance between them to carry information. A country
+        // centroid is not: two reports share one because the lexicon had a single point for the whole
+        // country, so "zero kilometres apart" says only that both named the same country. Treating
+        // that as co-location merged twenty-one unrelated reports into one incident the first time
+        // this ran against real news, which is what the check below exists to prevent.
+        if (observation.Location is { SupportsDistanceComparison: true } observed
+            && candidate.Location is { SupportsDistanceComparison: true } known)
         {
             var distance = observed.DistanceInKilometresTo(known);
 
@@ -175,6 +189,17 @@ public sealed class DeterministicIncidentCorrelator(
             // well everything else agreed, and the setting would no longer mean what it says.
             var ceiling = 1 - ((1 - options.PlaceNameConfidence) * (distance / options.CorrelationRadiusKilometres));
             return new Positional(ceiling, $"{distance:F1} km apart");
+        }
+
+        // A shared country is real evidence, just weak evidence, and it must sit below a shared place
+        // name: "both somewhere in Sudan" narrows far less than "both at Port Sudan".
+        if (observation.Location is { Precision: LocationPrecision.Country } coarse
+            && candidate.Location is { Precision: LocationPrecision.Country } otherCoarse
+            && string.Equals(coarse.Name, otherCoarse.Name, StringComparison.OrdinalIgnoreCase))
+        {
+            return new Positional(
+                Math.Min(options.ContentOnlyConfidence, options.PlaceNameConfidence),
+                $"both placed in {coarse.Name}, at country level only");
         }
 
         if (NamesMatch(observation.LocationName, candidate.Location?.Name))

@@ -442,7 +442,7 @@ public sealed partial class ObservationProcessor(
 
         if (resolution.Location is { } location)
         {
-            observation.ResolveLocation(location);
+            observation.ResolveLocation(location, resolution.PrecisionNote);
             diagnostics.GeocodingSuccess.Add(1, new KeyValuePair<string, object?>("method", resolution.Method.ToString()));
         }
         else

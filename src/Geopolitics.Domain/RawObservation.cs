@@ -360,13 +360,21 @@ public sealed class RawObservation
         return trimmed.Length <= maxLength ? trimmed : string.Concat(trimmed.AsSpan(0, maxLength - 1), "…");
     }
 
-    /// <summary>Attaches deterministically resolved coordinates.</summary>
-    public void ResolveLocation(GeoLocation location)
+    /// <summary>
+    /// Attaches deterministically resolved coordinates, with an optional note on how coarse they are.
+    /// <para>
+    /// The note matters as much as the position. A report placed at a country centroid and one placed
+    /// at a city are both "located" as far as the type system is concerned, and drawing them
+    /// identically on a globe would claim a precision the first does not have. Where the resolver
+    /// knows the placement is approximate, it says so here and the dashboard repeats it.
+    /// </para>
+    /// </summary>
+    public void ResolveLocation(GeoLocation location, string? precisionNote = null)
     {
         Location = location ?? throw new ArgumentNullException(nameof(location));
         LocationName ??= location.Name;
         Status = ObservationStatus.LocationResolved;
-        LocationResolutionNote = null;
+        LocationResolutionNote = Cap(precisionNote, 500);
     }
 
     /// <summary>

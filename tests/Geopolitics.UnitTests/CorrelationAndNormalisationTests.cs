@@ -129,15 +129,44 @@ public sealed class DeterministicIncidentCorrelatorTests
     public async Task WithoutCoordinatesAMatchingPlaceNameCorrelatesButScoresLower()
     {
         var (correlator, repository) = Build();
-        repository.Seed(Incident(EventType.Protest, Now.AddHours(-2), new GeoLocation("Beirut", "LB", 33.888, 35.495)));
+        repository.Seed(Incident(
+            EventType.Protest,
+            Now.AddHours(-2),
+            new GeoLocation("Beirut", "LB", 33.888, 35.495),
+            summary: "Demonstrators blocked the road outside the ministry in Beirut."));
 
-        var observation = Observation(EventType.Protest, Now, location: null, locationName: "beirut");
+        var observation = Observation(
+            EventType.Protest,
+            Now,
+            location: null,
+            locationName: "beirut",
+            summary: "Demonstrators blocked the road outside the ministry.");
+
         var assessment = await correlator.CorrelateAsync(observation, CancellationToken.None);
 
         Assert.True(assessment.IsCorrelated);
 
         // A name match without corroborating coordinates is genuinely weaker evidence.
         Assert.True(assessment.Confidence < 0.5, $"Expected a low-confidence match, got {assessment.Confidence}.");
+    }
+
+    [Fact]
+    public async Task AMatchingPlaceNameAloneIsNotEnoughToMerge()
+    {
+        var (correlator, repository) = Build();
+        repository.Seed(Incident(EventType.Protest, Now.AddHours(-2), new GeoLocation("Beirut", "LB", 33.888, 35.495)));
+
+        // Same category, same place name, same window — and nothing else. No shared wording, no
+        // shared actors.
+        var observation = Observation(EventType.Protest, Now, location: null, locationName: "beirut");
+        var assessment = await correlator.CorrelateAsync(observation, CancellationToken.None);
+
+        // Two protests in one city on one day are routinely two different protests. This used to
+        // merge, carried by a temporal signal that was really just "both are inside the window" —
+        // which is true of every candidate by construction and therefore evidence of nothing.
+        Assert.False(
+            assessment.IsCorrelated,
+            $"A bare place-name match should not merge, but scored {assessment.Confidence}.");
     }
 
     [Fact]
@@ -160,14 +189,19 @@ public sealed class DeterministicIncidentCorrelatorTests
         return (new DeterministicIncidentCorrelator(repository, new LexicalTextSimilarity(), options), repository);
     }
 
-    private static GeopoliticalIncident Incident(EventType eventType, DateTimeOffset occurredAt, GeoLocation? location) =>
-        new(Guid.NewGuid(), "Existing incident", "Summary.", eventType, Severity.Medium, occurredAt, location, false, occurredAt);
+    private static GeopoliticalIncident Incident(
+        EventType eventType,
+        DateTimeOffset occurredAt,
+        GeoLocation? location,
+        string summary = "Summary.") =>
+        new(Guid.NewGuid(), "Existing incident", summary, eventType, Severity.Medium, occurredAt, location, false, occurredAt);
 
     private static RawObservation Observation(
         EventType eventType,
         DateTimeOffset occurredAt,
         GeoLocation? location,
-        string? locationName = null)
+        string? locationName = null,
+        string summary = "Summary.")
     {
         var observation = new RawObservation(
             Guid.NewGuid(),
@@ -178,7 +212,7 @@ public sealed class DeterministicIncidentCorrelatorTests
             occurredAt,
             false);
 
-        observation.ApplyNormalisation("Title", "Summary.", eventType, Severity.Medium, occurredAt, locationName);
+        observation.ApplyNormalisation("Title", summary, eventType, Severity.Medium, occurredAt, locationName);
 
         if (location is not null)
         {

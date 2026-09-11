@@ -89,6 +89,7 @@ public sealed class GeopoliticsDbContext(DbContextOptions<GeopoliticsDbContext> 
             location =>
             {
                 location.Property(value => value.Name).HasColumnName("location_name").HasMaxLength(200);
+                location.Property(value => value.Precision).HasColumnName("location_precision").HasConversion<string>().HasMaxLength(20);
                 location.Property(value => value.CountryCode).HasColumnName("location_country_code").HasMaxLength(8);
                 location.Property(value => value.Latitude).HasColumnName("latitude");
                 location.Property(value => value.Longitude).HasColumnName("longitude");
@@ -162,6 +163,7 @@ public sealed class GeopoliticsDbContext(DbContextOptions<GeopoliticsDbContext> 
             location =>
             {
                 location.Property(value => value.Name).HasColumnName("location_resolved_name").HasMaxLength(200);
+                location.Property(value => value.Precision).HasColumnName("location_precision").HasConversion<string>().HasMaxLength(20);
                 location.Property(value => value.CountryCode).HasColumnName("location_country_code").HasMaxLength(8);
                 location.Property(value => value.Latitude).HasColumnName("latitude");
                 location.Property(value => value.Longitude).HasColumnName("longitude");

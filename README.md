@@ -9,6 +9,24 @@ trustworthy asynchronous processing pipeline rather than just a map.
 > The dashboard runs on **synthetic replay data**. It is labelled as demo data in the API, in the
 > exported snapshot, and in the UI. It is not live reporting and describes no real-world events.
 
+## Live data
+
+The published dashboard is built by polling four public feeds — UN News, ReliefWeb, BBC World, and
+Al Jazeera — on every deploy and on a weekly schedule. No credential is involved; the feeds are
+public and are read as RSS is meant to be read. A recent run ingested 95 real reports, placed 86% of
+them, and correlated several across outlets.
+
+Real headlines are shown with this system's own assessments beside them, and the two are never
+conflated: categories, severities, and correlations are GeoConflux's, not the publishers'. The
+recorded demo stream is still ingested alongside, so the page cannot go blank if a feed is
+unreachable, and every record is labelled individually as live or demo — the banner counts them
+rather than asserting a blanket label.
+
+What real data makes obvious, and the page does not hide: the default enrichment provider is a
+deterministic keyword stand-in rather than a language model, and it cannot categorise most real
+reporting. Roughly three quarters of live incidents land in `Other`. That is the honest state of the
+offline baseline, and it is the gap a configured provider is expected to close.
+
 ## Two ways to see it
 
 **The published page** at [limtlessltd.github.io/GeoConflux](https://limtlessltd.github.io/GeoConflux/)
@@ -474,9 +492,10 @@ Five limitations worth stating plainly:
 
 - **The default AI provider is a deterministic stand-in, not a language model.** Everything it
   produces is labelled as such. The published snapshot was built with it.
-- **The live OSINT adapters have never polled the real services.** They are tested against recorded
-  payloads only, for the reasons given above. The published dashboard is built from the recorded
-  replay stream, so nothing on it came from a live provider.
+- **NASA FIRMS and ACLED have never polled the real services.** Both need a credential, so they are
+  tested against recorded payloads only. The RSS adapter is no longer in that position: the published
+  dashboard is built by polling four public feeds on every deploy, so what you see there did come
+  from live providers. Anything still untested is described as untested rather than as working.
 - **Correlation cannot corroborate across categories.** Candidates are pre-filtered by event type,
   so a satellite thermal detection is never linked to a piracy report however close it is. That is a
   deliberate trade, and it means cross-source corroboration works between sources that agree on a
