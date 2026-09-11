@@ -4,7 +4,7 @@ GeoConflux is a .NET 10 modular-monolith geopolitical intelligence platform. It 
 observations from the correlated incidents shown to users, and is designed to demonstrate a
 trustworthy asynchronous processing pipeline rather than just a map.
 
-**Live demo: https://limtlessltd.github.io/GeoConflux/**
+**Live dashboard: [limtlessltd.github.io/GeoConflux](https://limtlessltd.github.io/GeoConflux/)**
 
 > The dashboard runs on **synthetic replay data**. It is labelled as demo data in the API, in the
 > exported snapshot, and in the UI. It is not live reporting and describes no real-world events.
