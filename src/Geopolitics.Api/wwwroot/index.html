@@ -51,7 +51,18 @@
           <input type="checkbox" id="locatedOnly">
           <span>Located only</span>
         </label>
+        <label class="filter">
+          <span>Basemap</span>
+          <select id="basemapFilter">
+            <option value="satellite">Satellite</option>
+            <option value="streets">Map</option>
+            <option value="terrain">Terrain</option>
+            <option value="offline">Offline</option>
+          </select>
+        </label>
       </section>
+
+      <p id="basemapNote" class="basemap-note" role="status" hidden></p>
     </section>
 
     <aside class="side-panel" aria-label="Incidents and evidence">
@@ -180,6 +191,20 @@
           <li>A re-delivered report is recorded as a duplicate rather than deleted, so the fact that
             a source repeated itself stays auditable.</li>
         </ul>
+
+        <h3>Basemap</h3>
+        <p>
+          Imagery and boundaries come from Esri's public map services, which serve detail to roughly
+          street level without an API key — so the globe stays useful while the project keeps its
+          "runs with no credentials" property. Use the <strong>Basemap</strong> control to switch
+          between satellite, street, and topographic views. If the tile service cannot be reached the
+          globe falls back to the coarse texture bundled with CesiumJS and says so.
+        </p>
+        <p>
+          Clicking an incident frames it regionally rather than zooming to street level. Most
+          incidents sit at a gazetteer centroid for a named area, so a closer camera would imply a
+          precision the data does not have. Zoom in yourself if you want it.
+        </p>
 
         <h3 id="aboutModeHeading">Data</h3>
         <p id="aboutModeText"></p>

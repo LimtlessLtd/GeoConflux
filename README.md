@@ -140,6 +140,10 @@ rerun `dotnet test tests/Geopolitics.AiEvaluationTests`.
   coordinates ([ADR 005](docs/adr/005-location-resolution.md)).
 - **SignalR is not the processing backbone.** Publication happens after a successful save, and the
   pipeline runs correctly with zero connected clients ([ADR 008](docs/adr/008-signalr.md)).
+- **The globe shows real imagery without a credential.** Esri's public map services supply satellite,
+  street, and topographic basemaps down to building level, with borders and place names layered on
+  the satellite view. If the tile host is unreachable the globe falls back to the texture bundled
+  with CesiumJS and says so, rather than going blank ([ADR 014](docs/adr/014-basemap-imagery.md)).
 - **Evidence survives failure.** A failed enrichment, geocode, or correlation retains the source
   payload with a recorded reason instead of discarding it.
 - **Model output is untrusted input.** It is schema-validated, bounded, and given exactly one repair
@@ -252,7 +256,10 @@ serves; and the evaluation harness above.
 There is no live external feed, no spatial querying, no analytics, and no ML model yet. Those arrive
 in Sprints 4 to 6 and are deliberately not represented as working before then.
 
-Two limitations worth stating plainly:
+Three limitations worth stating plainly:
+
+- **The globe has no 3D terrain or buildings.** Those need a Cesium ion token, which is a credential,
+  so they stay out. Imagery is 2D draped on a sphere.
 
 - **The default AI provider is a deterministic stand-in, not a language model.** Everything it
   produces is labelled as such. The published snapshot was built with it.

@@ -37,16 +37,19 @@ html, body {
 
 .globe-region { position: relative; overflow: hidden; }
 
+/* The scrim behind the masthead. Strengthened when the basemap became real satellite imagery:
+   sunlit desert and white rooftops are far brighter than the painted texture this was tuned for,
+   and the title was washing out over them. */
 .globe-region::before {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 11rem;
+  height: 13rem;
   z-index: 1;
   pointer-events: none;
-  background: linear-gradient(to bottom, rgba(4, 8, 14, .82), rgba(4, 8, 14, 0));
+  background: linear-gradient(to bottom, rgba(4, 8, 14, .94) 0%, rgba(4, 8, 14, .72) 38%, rgba(4, 8, 14, 0) 100%);
 }
 #cesiumContainer { position: absolute; inset: 0; }
 
@@ -72,7 +75,7 @@ html, body {
 }
 
 .masthead h1 { margin: .15rem 0; font-size: 1.5rem; font-weight: 600; letter-spacing: -.01em; }
-.masthead p { margin: 0; color: var(--muted); font-size: .85rem; }
+.masthead p { margin: 0; color: #c3d2e3; font-size: .85rem; }
 
 .eyebrow {
   font-size: .7rem;
@@ -601,5 +604,38 @@ html, body {
   border-radius: 4px;
   font-size: .76rem;
   line-height: 1.5;
+  color: var(--muted);
+}
+
+/* ---------------------------------------------------------------- basemap
+
+   Cesium renders provider credits into its own container. Esri's terms require the attribution to
+   be shown, so this styles it to be legible over imagery rather than hiding it. */
+
+.cesium-widget-credits,
+.cesium-credit-container {
+  z-index: 2;
+  font-size: .62rem !important;
+  color: rgba(230, 237, 245, .72) !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .9);
+}
+
+.cesium-widget-credits a,
+.cesium-credit-container a { color: rgba(230, 237, 245, .82) !important; }
+
+.basemap-note {
+  position: absolute;
+  bottom: 5.6rem;
+  right: 1.5rem;
+  z-index: 2;
+  margin: 0;
+  max-width: 20rem;
+  padding: .4rem .55rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--medium);
+  border-radius: 4px;
+  background: rgba(10, 16, 26, .94);
+  font-size: .68rem;
+  line-height: 1.4;
   color: var(--muted);
 }

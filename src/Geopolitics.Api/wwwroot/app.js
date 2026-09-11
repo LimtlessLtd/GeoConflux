@@ -35,12 +35,56 @@
   /**
    * How far above an incident the camera settles when flying to it, in metres.
    *
-   * Cesium's default framing for a point entity zooms to within a few kilometres. The base imagery
-   * is Natural Earth II, which has no detail at that scale, so the default turns the globe into a
-   * featureless wash the moment a visitor clicks anything. A regional altitude keeps the coastlines
-   * and the surrounding context that make the location meaningful.
+   * Not as close as the imagery now allows, and deliberately so. Most incidents are placed at a
+   * gazetteer centroid for a named region — "Red Sea" resolves to a point in the middle of the Red
+   * Sea — so diving to street level would render a precision the data does not have. This is a
+   * regional framing that shows the coastline and surrounding context; a visitor who wants more
+   * detail can zoom, which is now worth doing.
    */
-  const FLY_TO_RANGE_METRES = 2.2e6;
+  const FLY_TO_RANGE_METRES = 4.0e5;
+
+  /** How long a remote basemap gets to load before the offline texture is used instead. */
+  const BASEMAP_TIMEOUT_MS = 12000;
+
+  const BASEMAP_STORAGE_KEY = 'geoconflux.basemap';
+
+  /**
+   * Selectable basemaps.
+   *
+   * Esri's public map services are used because they serve high-resolution imagery to zoom 23 with
+   * no API key, which keeps the "runs without credentials" property the rest of the project depends
+   * on. Google's tiles would need a key and their terms do not permit this use. Cesium's own world
+   * imagery and 3D terrain would need an ion token, which is the same problem.
+   *
+   * `offline` is the texture bundled with the CesiumJS distribution. It is coarse, but it is the
+   * only one that survives a tile host being unreachable, so it is the fallback rather than a
+   * decorative extra.
+   */
+  const BASEMAPS = {
+    satellite: {
+      label: 'Satellite',
+      url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
+
+      // Imagery alone shows terrain but not jurisdiction. For a geopolitical view the borders and
+      // place names are the point, so they are layered on top rather than offered separately.
+      referenceUrl: 'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer',
+    },
+    streets: {
+      label: 'Map',
+      url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer',
+      referenceUrl: null,
+    },
+    terrain: {
+      label: 'Terrain',
+      url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer',
+      referenceUrl: null,
+    },
+    offline: {
+      label: 'Offline',
+      url: null,
+      referenceUrl: null,
+    },
+  };
 
   const dom = {
     incidentList: document.querySelector('#incidentList'),
@@ -67,6 +111,8 @@
     submitButton: document.querySelector('#submitButton'),
     submitStatus: document.querySelector('#submitStatus'),
     submitDisabled: document.querySelector('#submitDisabled'),
+    basemapFilter: document.querySelector('#basemapFilter'),
+    basemapNote: document.querySelector('#basemapNote'),
   };
 
   /** Full, authoritative state. Replay renders a subset of this rather than mutating it. */
@@ -259,7 +305,7 @@
 
   // ---------------------------------------------------------------- globe
 
-  function initialiseGlobe() {
+  async function initialiseGlobe() {
     if (!window.Cesium) {
       dom.fallback.hidden = false;
       return;
@@ -278,27 +324,125 @@
         fullscreenButton: false,
         selectionIndicator: false,
 
-        // Natural Earth II ships with the CesiumJS distribution and needs no ion access token, so
-        // the published site has real imagery without credentials or a paid quota.
-        baseLayer: Cesium.ImageryLayer.fromProviderAsync(
-          Cesium.TileMapServiceImageryProvider.fromUrl(
-            'https://cesium.com/downloads/cesiumjs/releases/1.126/Build/Cesium/Assets/Textures/NaturalEarthII',
-          ),
-        ),
+        // Imagery is attached below rather than here, so a tile host that is slow or unreachable
+        // costs detail instead of costing the globe.
+        baseLayer: false,
       });
 
+      // What shows through before tiles arrive, and in the gaps if they never do. Matching the
+      // panel colour makes the load read as the page filling in rather than as a broken globe.
+      viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString('#0d141f');
       viewer.scene.globe.showGroundAtmosphere = true;
       viewer.camera.setView({ destination: Cesium.Cartesian3.fromDegrees(30, 24, 22000000) });
       viewer.selectedEntityChanged.addEventListener((entity) => {
         const id = entity?.properties?.incidentId?.getValue();
         if (id) selectIncident(id);
       });
+
+      await applyBasemap(preferredBasemap());
     } catch (error) {
       // A globe failure must not take the rest of the dashboard with it.
       console.error('Globe initialisation failed', error);
       dom.fallback.hidden = false;
       viewer = null;
     }
+  }
+
+  /** The visitor's last choice, when there was one and it still exists. */
+  function preferredBasemap() {
+    try {
+      const stored = window.localStorage?.getItem(BASEMAP_STORAGE_KEY);
+      if (stored && BASEMAPS[stored]) return stored;
+    } catch {
+      // Storage can be unavailable (private mode, file://). A default is a fine outcome.
+    }
+
+    return 'satellite';
+  }
+
+  function rememberBasemap(key) {
+    try {
+      window.localStorage?.setItem(BASEMAP_STORAGE_KEY, key);
+    } catch {
+      // Not worth reporting: the choice simply will not persist.
+    }
+  }
+
+  /**
+   * Swaps the globe's imagery, falling back to the bundled offline texture if the remote host is
+   * slow or unreachable.
+   *
+   * The fallback is the reason this is worth its length. The imagery is a third-party dependency
+   * fetched at runtime, and the rest of this project is built so that an unavailable dependency
+   * degrades one thing rather than breaking the page. A visitor on a blocked network gets the coarse
+   * globe the site had before, plus a note saying why, instead of a blank sphere.
+   */
+  async function applyBasemap(key) {
+    if (!viewer) return;
+
+    const basemap = BASEMAPS[key] ?? BASEMAPS.satellite;
+    let layers = null;
+
+    if (basemap.url) {
+      try {
+        layers = await withTimeout(loadArcGisLayers(basemap), BASEMAP_TIMEOUT_MS);
+      } catch (error) {
+        console.warn(`Basemap "${key}" could not be loaded; falling back to the offline texture.`, error);
+        setBasemapNote('Detailed imagery is unavailable — showing the offline basemap.');
+      }
+    }
+
+    if (!layers) {
+      layers = [await loadOfflineProvider()];
+    } else {
+      setBasemapNote('');
+    }
+
+    // Replaced only once the new imagery is in hand, so a failed swap never leaves a blank globe.
+    viewer.imageryLayers.removeAll();
+    layers.forEach((provider) => viewer.imageryLayers.addImageryProvider(provider));
+    rememberBasemap(key);
+  }
+
+  async function loadArcGisLayers(basemap) {
+    const options = {
+      // Nothing in this dashboard queries the basemap, and leaving picking on makes every click on
+      // the globe issue an identify request to a third-party service.
+      enablePickFeatures: false,
+    };
+
+    const providers = [await Cesium.ArcGisMapServerImageryProvider.fromUrl(basemap.url, options)];
+
+    if (basemap.referenceUrl) {
+      providers.push(await Cesium.ArcGisMapServerImageryProvider.fromUrl(basemap.referenceUrl, options));
+    }
+
+    return providers;
+  }
+
+  /** Natural Earth II, bundled with the CesiumJS distribution. Coarse, but always available. */
+  function loadOfflineProvider() {
+    return Cesium.TileMapServiceImageryProvider.fromUrl(
+      'https://cesium.com/downloads/cesiumjs/releases/1.126/Build/Cesium/Assets/Textures/NaturalEarthII',
+    );
+  }
+
+  function setBasemapNote(message) {
+    if (!dom.basemapNote) return;
+    dom.basemapNote.textContent = message;
+    dom.basemapNote.hidden = message.length === 0;
+  }
+
+  /** Bounds a promise, so an unresponsive host delays the globe rather than blocking it forever. */
+  function withTimeout(promise, milliseconds) {
+    let timer = null;
+
+    return Promise.race([
+      promise.finally(() => clearTimeout(timer)),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`Timed out after ${milliseconds}ms`)), milliseconds);
+      }),
+    ]);
   }
 
   function syncGlobe(visible) {
@@ -348,12 +492,19 @@
           // wherever incidents cluster, which is exactly where the map matters most.
           show: isSelected,
           text: incident.title.length > 46 ? `${incident.title.slice(0, 45)}…` : incident.title,
-          font: '12px system-ui, sans-serif',
+          font: '600 12px system-ui, sans-serif',
           fillColor: Cesium.Color.WHITE,
+
+          // A filled backing rather than an outline alone. Over satellite imagery the label sits on
+          // whatever happens to be underneath it — a white rooftop, a sunlit street — and an
+          // outlined glyph disappears into it. This is the same reason map labels have halos.
+          showBackground: true,
+          backgroundColor: Cesium.Color.fromCssColorString('rgba(7, 11, 18, 0.78)'),
+          backgroundPadding: new Cesium.Cartesian2(7, 5),
           outlineColor: Cesium.Color.BLACK,
           outlineWidth: 2,
           style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-          pixelOffset: new Cesium.Cartesian2(0, -20),
+          pixelOffset: new Cesium.Cartesian2(0, -24),
           scaleByDistance: new Cesium.NearFarScalar(1.0e6, 1.0, 2.0e7, 0.55),
         },
         properties: { incidentId: incident.id },
@@ -813,6 +964,11 @@
 
     dom.submitForm.addEventListener('submit', submitObservation);
 
+    dom.basemapFilter.value = preferredBasemap();
+    dom.basemapFilter.addEventListener('change', () => {
+      applyBasemap(dom.basemapFilter.value).catch((error) => console.error('Basemap switch failed', error));
+    });
+
     document.querySelectorAll('.tab').forEach((tab) => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach((other) => {
@@ -954,7 +1110,8 @@
   }
 
   async function start() {
-    initialiseGlobe();
+    // Awaited so a basemap failure is handled before anything renders over the globe.
+    await initialiseGlobe();
     wireControls();
 
     dataSource = await resolveDataSource();
