@@ -245,6 +245,34 @@
     </span>`;
   }
 
+  /**
+   * The trained model's second opinion on one observation.
+   *
+   * Rendered as a distinct row rather than mixed in with the classification chips, and only ever
+   * described as an opinion. The pipeline's severity is the one that was acted on; this one has no
+   * standing over it, and a reader must not have to work that out from the layout.
+   *
+   * Agreement is shown as well as disagreement. A panel that only appeared when the two differed
+   * would make disagreement look like an error state rather than the ordinary outcome it is.
+   */
+  function modelOpinion(opinion, appliedSeverity) {
+    if (!opinion) return '';
+
+    const agrees = !opinion.disagreesWithApplied;
+    const percent = Math.round((opinion.confidence ?? 0) * 100);
+
+    return `<div class="model-opinion${agrees ? '' : ' is-divergent'}"
+      title="A conventional model trained on a small synthetic corpus. It is recorded for comparison and never sets the severity an incident is stored with. Model: ${escapeHtml(opinion.modelVersion)}">
+      <span class="model-tag">ML</span>
+      <span>${agrees
+        ? `agrees: <strong class="sev sev-${escapeHtml(opinion.severity)}">${escapeHtml(opinion.severity)}</strong>`
+        : `would have said <strong class="sev sev-${escapeHtml(opinion.severity)}">${escapeHtml(opinion.severity)}</strong>,
+           not <strong class="sev sev-${escapeHtml(appliedSeverity ?? 'Unknown')}">${escapeHtml(appliedSeverity ?? 'Unknown')}</strong>`}
+      </span>
+      <span class="model-confidence">${percent}%</span>
+    </div>`;
+  }
+
   function setStatus(state, message) {
     dom.dot.dataset.state = state;
     dom.status.textContent = message;
@@ -785,6 +813,9 @@
               ${observation.severityRationale
                 ? `<div class="rationale">${escapeHtml(observation.severityRationale)}</div>`
                 : ''}
+              ${observation.status === 'Duplicate'
+                ? ''
+                : modelOpinion(observation.modelSeverity, observation.severity)}
               ${Array.isArray(observation.entities) && observation.entities.length > 0
                 ? `<div class="entities" title="Named actors reported by the enrichment stage. Claims about the text, not verified facts.">
                      ${observation.entities.slice(0, 8).map((entity) =>

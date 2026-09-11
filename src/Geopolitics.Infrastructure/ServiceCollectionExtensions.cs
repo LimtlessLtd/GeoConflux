@@ -7,6 +7,7 @@ using Geopolitics.Application.Spatial;
 using Geopolitics.Infrastructure.Ai;
 using Geopolitics.Infrastructure.Hosting;
 using Geopolitics.Infrastructure.Location;
+using Geopolitics.Infrastructure.Ml;
 using Geopolitics.Infrastructure.Persistence;
 using Geopolitics.Infrastructure.Queue;
 using Geopolitics.Infrastructure.Realtime;
@@ -92,6 +93,15 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IObservationQueueMonitor>(provider => provider.GetRequiredService<ChannelObservationBuffer>());
 
         services.AddSingleton<IEventClassifier, KeywordEventClassifier>();
+
+        services.AddOptions<SeverityModelOptions>()
+            .Bind(configuration.GetSection(SeverityModelOptions.SectionName))
+            .ValidateOnStart();
+
+        // Singleton because the trained model is the expensive part and is immutable once fitted.
+        // Training happens lazily on first prediction, so registering it costs nothing in a host
+        // that never processes an observation.
+        services.AddSingleton<ISeverityModel, MLNetSeverityModel>();
 
         // Deterministic and stateless, so one instance serves every worker. Registered against the
         // interface so an embedding-backed measure can replace it without touching the correlator.

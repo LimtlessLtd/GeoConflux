@@ -27,11 +27,11 @@ dotnet run --project src/Geopolitics.Api
 
 ## What works today
 
-Sprints 1 to 4 are complete, and Sprint 5 has begun with the analytics layer. The application
-ingests a recorded observation stream, enriches each item through a schema-validated AI stage,
-processes it asynchronously, streams results to the dashboard in realtime, and summarises what it
-has stored across four time windows. Adapters for RSS, NASA FIRMS, and ACLED feed the same pipeline
-when they are configured; all three ship disabled.
+Sprints 1 to 5 are complete. The application ingests a recorded observation stream, enriches each
+item through a schema-validated AI stage, processes it asynchronously, scores it with a trained
+severity model, streams results to the dashboard in realtime, and summarises what it has stored
+across four time windows. Adapters for RSS, NASA FIRMS, and ACLED feed the same pipeline when they
+are configured; all three ship disabled.
 
 ```text
 IEventSource -> validation -> bounded Channel -> background processor
@@ -59,7 +59,9 @@ Concretely, running the app locally will:
   **Chokepoints** tab;
 - summarise the last 24 hours, 7, 30, or 90 days in the **Analytics** tab — severity and event-type
   distributions, regional activity, where the evidence came from, what the pipeline did with it,
-  incidents over time, and a documented activity score shown with the formula that produced it.
+  incidents over time, and a documented activity score shown with the formula that produced it;
+- score every accepted observation with a trained severity model and record what it would have said
+  beside what the pipeline actually applied, so the disagreements are visible in the evidence list.
 
 You can also submit your own observation from the **Submit** tab and watch it go through the same
 pipeline.
@@ -173,7 +175,7 @@ provider. It is not a measurement of any language model.
 | Event type — accuracy / macro F1 | 0.62 / 0.68 |
 | Severity — accuracy / macro F1 | 0.75 / 0.74 |
 | Location name — precision / recall / F1 | 1.00 / 0.75 / 0.86 |
-| Entities — precision / recall / F1 | 0.10 / 0.67 / 0.17 |
+| Entities — precision / recall / F1 | 0.12 / 0.67 / 0.21 |
 
 The entity figure is poor because the stand-in finds capitalised runs, which recovers most of the
 right names and a lot of noise. Location recall is 0.75 because the baseline cannot read the Arabic,
@@ -187,6 +189,51 @@ ability. The set exists to catch regressions. Full method, per-class tables, and
 
 To measure a real model instead, set `GEOCONFLUX_EVAL_PROVIDER` and `GEOCONFLUX_EVAL_MODEL` and
 rerun `dotnet test tests/Geopolitics.AiEvaluationTests`.
+
+## The severity model, and what it is measured against
+
+A conventional multiclass model — ML.NET, SDCA maximum entropy — is trained in-process from a corpus
+of 140 synthetic, author-labelled reports and scores every observation the pipeline accepts. It sees
+the report text, the assigned category, and four features a bag of words cannot: how many sources
+support it, how confident the classification was, how many actors were named, and whether it could be
+placed.
+
+It is scored on 45 held-out cases it was never trained on, and the enrichment path is run over the
+**same** cases through the **same** provider configuration, so the two are comparable rather than
+merely both present.
+
+| Measure | Severity model | Enrichment provider |
+| --- | ---: | ---: |
+| Accuracy against labels | 0.56 | 0.38 |
+| Macro F1 against labels | 0.51 | 0.32 |
+| Correct of 45 | 25 | 17 |
+
+The two agreed with each other on 18 of 45 cases. Agreement is reported but is never presented as
+accuracy — both can agree and both be wrong — which is why both are also scored against the labels.
+
+The single claim this makes for the model is the margin between those accuracy figures, and that
+margin is **asserted**: if the model stops beating the deterministic classifier already in the
+pipeline, the build fails. At that point the honest response is to remove it, and the test makes that
+visible rather than leaving a model in place because it is there.
+
+Three things about the harness are worth knowing, because they are what makes the numbers mean
+anything:
+
+- **The split is written into the corpus**, not drawn at evaluation time. A split re-randomised per
+  run would make every figure a different measurement and a regression indistinguishable from a
+  reshuffle.
+- **A leak is asserted against by id and by text.** It would raise every figure in the report while
+  leaving it looking entirely reasonable.
+- **Training twice produces the same model**, also asserted. Without that the figures would be a
+  sample rather than a measurement.
+
+The model is not good, and that is reported rather than tuned away: its recall on `CRITICAL` is 0.25
+and on `HIGH` is 0.30, because with 95 training rows a regularised linear model hedges toward the
+middle classes. Tuning it against a 45-case holdout would be fitting the holdout.
+
+Full per-class tables, every case where the two disagreed, the labelling rubric, and the limitations:
+[tests/data/severity-model/RESULTS.md](tests/data/severity-model/RESULTS.md) and
+[the corpus README](src/Geopolitics.Infrastructure/Ml/Data/README.md).
 
 ## Design decisions worth reading
 
@@ -241,9 +288,19 @@ rerun `dotnet test tests/Geopolitics.AiEvaluationTests`.
   stored as converted ticks, which SQLite cannot bucket or decay, so those two share one capped
   four-column projection — and the response says when the cap bound
   ([ADR 019](docs/adr/019-analytics-aggregation.md)).
-- **No ML model is used yet.** Severity comes from enrichment or from keywords. A trained model and
-  the LLM-versus-ML-versus-label comparison are a later increment
-  ([ADR 009](docs/adr/009-ml-model.md)).
+- **The severity model is a second opinion, structurally — not by convention.** A multiclass
+  logistic-regression model (ML.NET, SDCA maximum entropy) scores every accepted observation, and the
+  domain gives it no way to change a stored severity: it writes to `ModelSeverity`, a missing
+  prediction is `null` rather than a default, and every failure in the stage is swallowed. A second
+  opinion that can fail an observation is a new dependency, not an addition
+  ([ADR 020](docs/adr/020-severity-model-as-second-opinion.md)).
+- **The corpus is the artefact; the model is derived from it.** The model is trained in-process from
+  a labelled corpus embedded in the assembly rather than loaded from a committed `.zip`. A committed
+  binary is an artefact nobody can diff or verify came from the dataset beside it, and the version it
+  claims is whatever the last person to regenerate it typed. Training from the corpus makes "this
+  model matches this dataset" true by construction, and a fixed seed with a single training thread
+  makes two runs produce the same model — asserted by a test, because otherwise the evaluation
+  figures would be a sample rather than a measurement.
 
 See [docs/architecture.md](docs/architecture.md) for the stage ordering and failure behaviour.
 
@@ -276,6 +333,8 @@ credential is ever read from a committed file.
 | `GET /api/spatial/chokepoints` | Recorded activity around each watched maritime chokepoint |
 | `GET /api/analytics` | Distributions, timeseries, maritime summary, and activity score for one window (`?window=24h\|7d\|30d\|90d`) |
 | `GET /api/analytics/windows` | The windows analytics can be requested over |
+| `GET /api/severity/model` | Whether the severity model is available, and which model it is |
+| `POST /api/severity/predict` | Scores a report with the trained model, returning every class probability |
 | `GET /api/health` | Health, including processing-queue depth and saturation |
 | `/hubs/incidents` | SignalR hub for realtime updates |
 | `GET /openapi/v1.json` | OpenAPI document |
@@ -299,6 +358,7 @@ credential is ever read from a committed file.
 | `Enrichment:Timeout` | 00:00:20 | Ceiling on one enrichment attempt, including any repair |
 | `Enrichment:MaxRepairAttempts` | 1 | Extra calls allowed to correct output that failed validation |
 | `Enrichment:MinimumAcceptedConfidence` | 0.35 | Below this, the inference is recorded but not applied |
+| `SeverityModel:Enabled` | true | Whether the trained severity model runs. Off removes the second opinion and nothing else. |
 | `Ai:Provider` | Mock | `Mock`, `Ollama`, `OpenAI`, or `AzureOpenAI` |
 | `Ai:Model` | llama3.2 | Model or deployment name |
 | `Ai:Endpoint` | none | Required for `AzureOpenAI`; defaults to the local daemon for `Ollama` |
@@ -366,18 +426,24 @@ over-merge guards) and the per-category gate; the spatial layer (bounding-box co
 full circle of bearings, antimeridian wrap, pole spanning, the corner case the rectangle admits and
 the circle rejects, and chokepoint counting and ordering); the analytics layer (score bounds, monotonicity in each of
 the four factors, the corroboration ceiling, rate-invariance across windows, half-open window
-boundaries, and full-length timeseries including empty buckets); end-to-end integration tests that
-drive the real host
+boundaries, and full-length timeseries including empty buckets); the severity model (holdout
+isolation by id and by text, class coverage in both splits, training reproducibility, and the four
+negative cases that keep it a second opinion — no override, null rather than a default, a throwing
+model absorbed, and a disabled one silent); end-to-end integration tests that drive the real host
 and assert on what the API then serves, including a concurrency test that reproduces the correlation
 race and is verified to fail when the gate is removed; and the evaluation harness above.
 
 ## Not yet implemented
 
-There is no ML severity model yet, so the LLM-versus-ML-versus-label comparison has nothing to
-compare. It is the remainder of Sprint 5 and is deliberately not represented as working before then.
+Five limitations worth stating plainly:
 
-Four limitations worth stating plainly:
-
+- **The severity model learned one author's rubric, not geopolitics.** It is trained on 140
+  synthetic, author-labelled reports and scores 0.56 accuracy on 45 held-out cases against the
+  enrichment baseline's 0.38. That is a real supervised-learning result and it is the only claim made
+  for it. Its recall on `CRITICAL` is 0.25 — with 95 training rows a regularised linear model hedges
+  toward the middle classes — which is reported rather than tuned away, because tuning it on a
+  45-case holdout would be fitting the holdout. Full figures and every disagreement are in
+  [tests/data/severity-model/RESULTS.md](tests/data/severity-model/RESULTS.md).
 - **The activity score summarises this database, not the world.** It measures what the system
   ingested. A quiet score may mean a quiet period, or it may mean no adapter was configured and
   nothing arrived — the score cannot tell those apart. Its saturation constant is calibrated against

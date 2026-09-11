@@ -198,9 +198,26 @@
           validation, the keyword classification is kept and the failure is recorded rather than
           hidden.
         </p>
+        <h3>The severity model</h3>
         <p>
-          No classical ML model exists yet. Severity comes from enrichment or from keywords, and a
-          trained model is a later increment.
+          A conventional <strong>multiclass logistic-regression model</strong> (ML.NET, SDCA maximum
+          entropy) is trained in-process from a labelled corpus of 140 synthetic reports and scores
+          every observation the pipeline accepts. It sees the report text, the assigned category, and
+          four features a bag of words cannot: how many sources support it, how confident the
+          classification was, how many actors were named, and whether it could be placed.
+        </p>
+        <p>
+          It is a <strong>second opinion and never an authority</strong>. The severity an incident is
+          stored and displayed with is the one the pipeline acted on; the model's prediction is
+          recorded next to it, and where the two differ the evidence list says so. A model fitted to a
+          small synthetic corpus has no business overruling a source that declared its own severity.
+        </p>
+        <p>
+          It is evaluated on 45 held-out cases it was never trained on, against the same labels and
+          against the enrichment path run over the identical cases — so the two are comparable rather
+          than merely both present. The measured figures, the per-class breakdown, and every case
+          where the two disagreed are published in the repository, along with what those numbers do
+          and do not support.
         </p>
 
         <h3>The activity score</h3>

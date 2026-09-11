@@ -201,6 +201,12 @@ public sealed class PipelineTestHarness
 
     public IObservationNormaliser Normaliser { get; set; }
 
+    /// <summary>
+    /// Silent by default, so pipeline tests are not implicitly testing the ML model. A test that
+    /// cares about the second opinion substitutes one that predicts.
+    /// </summary>
+    public ISeverityModel SeverityModel { get; set; } = new SilentSeverityModel();
+
     public ObservationProcessor BuildProcessor() => new(
         Normaliser,
         Observations,
@@ -208,6 +214,7 @@ public sealed class PipelineTestHarness
         Inferences,
         EnrichmentService,
         Microsoft.Extensions.Options.Options.Create(Enrichment),
+        SeverityModel,
         LocationResolver,
         Correlator,
         CorrelationGate,
@@ -244,4 +251,36 @@ public sealed class PipelineTestHarness
             OccurredAt = occurredAt,
             DeclaredLocationName = locationName,
         };
+}
+
+/// <summary>
+/// A severity model that is never ready and never predicts, which is what the pipeline sees when the
+/// feature is turned off. It is the default in tests so that pipeline behaviour is asserted without a
+/// trained model quietly participating in it.
+/// </summary>
+public sealed class SilentSeverityModel : ISeverityModel
+{
+    public string Version => "none";
+
+    public bool IsReady => false;
+
+    public Task<SeverityPrediction?> PredictAsync(SeverityFeatures features, CancellationToken cancellationToken) =>
+        Task.FromResult<SeverityPrediction?>(null);
+}
+
+/// <summary>Returns whatever a test scripted, so the recording path can be asserted without training.</summary>
+public sealed class ScriptedSeverityModel(Severity severity, double confidence, string version = "test-model/v1")
+    : ISeverityModel
+{
+    public string Version => version;
+
+    public bool IsReady => true;
+
+    public Task<SeverityPrediction?> PredictAsync(SeverityFeatures features, CancellationToken cancellationToken) =>
+        Task.FromResult<SeverityPrediction?>(new SeverityPrediction(
+            severity,
+            confidence,
+            [new SeverityScore(severity, confidence)],
+            version,
+            "ml:test"));
 }

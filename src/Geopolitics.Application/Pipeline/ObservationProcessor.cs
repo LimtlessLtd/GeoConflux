@@ -20,6 +20,7 @@ public sealed partial class ObservationProcessor(
     IAiInferenceRepository inferenceRepository,
     IEventEnrichmentService enrichmentService,
     IOptions<EnrichmentOptions> enrichmentOptions,
+    ISeverityModel severityModel,
     ILocationResolver locationResolver,
     IIncidentCorrelator correlator,
     CorrelationGate correlationGate,
@@ -102,6 +103,11 @@ public sealed partial class ObservationProcessor(
         // and full provider cost for an observation the pipeline is about to stop processing.
         await EnrichAsync(envelope, observation, cancellationToken);
 
+        // After enrichment, because the model's features include the category and confidence
+        // enrichment produced. Before correlation, so the prediction is recorded against the
+        // observation whether or not it ends up joining an incident.
+        await RecordModelSeverityAsync(observation, cancellationToken);
+
         await ResolveLocationAsync(envelope, observation, cancellationToken);
 
         // Held from the candidate read through to the commit. Correlating outside it would let a
@@ -179,6 +185,72 @@ public sealed partial class ObservationProcessor(
         await PublishAsync(observation, incident, incidentCreated, cancellationToken);
 
         return new ObservationProcessingResult(ProcessingOutcome.Persisted, observation.Id, incident.Id, incidentCreated, null);
+    }
+
+    /// <summary>
+    /// Asks the trained model what it would have said, and records the answer.
+    /// <para>
+    /// Nothing downstream depends on the result. The prediction is stored beside the severity the
+    /// pipeline acted on so the two can be compared later on real traffic, which a labelled corpus
+    /// cannot tell you. It never changes a severity: a model fitted to a small synthetic corpus has
+    /// no standing over a source that declared its own.
+    /// </para>
+    /// <para>
+    /// Every failure path here is swallowed for the same reason. A second opinion that can fail the
+    /// processing of an observation is not a second opinion, it is a new dependency — so an
+    /// unavailable model, a slow one, or one that throws all produce the same outcome as a disabled
+    /// one: no prediction, and the pipeline continues.
+    /// </para>
+    /// </summary>
+    private async Task RecordModelSeverityAsync(RawObservation observation, CancellationToken cancellationToken)
+    {
+        if (!severityModel.IsReady)
+        {
+            return;
+        }
+
+        try
+        {
+            var prediction = await severityModel.PredictAsync(
+                SeverityFeatures.From(
+                    observation.Title,
+                    observation.Summary ?? observation.Content,
+                    observation.EventType,
+                    sourceCount: 1,
+                    observation.ClassificationConfidence,
+                    observation.Entities.Count,
+                    observation.Location is not null),
+                cancellationToken);
+
+            if (prediction is null)
+            {
+                return;
+            }
+
+            observation.RecordModelSeverity(prediction.Severity, prediction.Confidence, prediction.ModelVersion);
+
+            if (observation.ModelDisagrees)
+            {
+                // Logged rather than silently stored. A run in which the model disagrees with
+                // everything is the signal that it has drifted from what the pipeline is seeing,
+                // and it should be visible without anyone querying for it.
+                LogModelDisagreement(
+                    logger,
+                    observation.Id,
+                    observation.Severity,
+                    prediction.Severity,
+                    prediction.Confidence);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Shutdown. Not this stage's business to report.
+            throw;
+        }
+        catch (Exception exception)
+        {
+            LogModelPredictionFailed(logger, exception, observation.Id);
+        }
     }
 
     /// <summary>
@@ -452,6 +524,19 @@ public sealed partial class ObservationProcessor(
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Enrichment for observation {ObservationId} reported confidence {Confidence}, below the {Threshold} threshold; the deterministic classification was kept.")]
     private static partial void LogEnrichmentBelowThreshold(ILogger logger, Guid observationId, double confidence, double threshold);
+
+    [LoggerMessage(
+        Level = LogLevel.Debug,
+        Message = "Severity model disagreed on observation {ObservationId}: pipeline held {Applied}, model predicted {Predicted} at {Confidence:F2}.")]
+    private static partial void LogModelDisagreement(
+        ILogger logger,
+        Guid observationId,
+        Severity applied,
+        Severity predicted,
+        double confidence);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "The severity model could not score observation {ObservationId}; processing continued without a second opinion.")]
+    private static partial void LogModelPredictionFailed(ILogger logger, Exception exception, Guid observationId);
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Could not record the enrichment audit entry for observation {ObservationId}; processing continued.")]
     private static partial void LogInferenceRecordFailed(ILogger logger, Exception exception, Guid observationId);

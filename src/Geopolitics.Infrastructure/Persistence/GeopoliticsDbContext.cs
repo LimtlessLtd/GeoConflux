@@ -128,6 +128,12 @@ public sealed class GeopoliticsDbContext(DbContextOptions<GeopoliticsDbContext> 
         observation.Property(value => value.DetectedLanguage).HasMaxLength(16);
         observation.Property(value => value.SeverityRationale).HasMaxLength(AiInference.MaxRationaleLength);
 
+        // Nullable throughout, and meant to be. A null here is "no second opinion was recorded",
+        // which is a different fact from any severity value the model could have chosen.
+        observation.Property(value => value.ModelSeverity).HasConversion<string>().HasMaxLength(20);
+        observation.Property(value => value.ModelVersion).HasMaxLength(120);
+        observation.Ignore(value => value.ModelDisagrees);
+
         // Extracted entities live in a JSON column rather than a child table. They are read as a
         // set with their observation and never queried independently, so a join table would add a
         // table and a migration for no query the application actually issues.

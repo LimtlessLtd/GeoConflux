@@ -140,6 +140,28 @@ public sealed class RawObservation
     public IReadOnlyList<ExtractedEntity> Entities => entities.AsReadOnly();
 
     /// <summary>
+    /// What the trained severity model thought, or <see langword="null"/> when it was disabled,
+    /// unavailable, or not reached.
+    /// <para>
+    /// Recorded next to <see cref="Severity"/> rather than replacing it. The stored severity is the
+    /// one the pipeline acted on; this is a second opinion, kept so the two can be compared after the
+    /// fact on real traffic rather than only on a labelled corpus. Where they disagree, that
+    /// disagreement is the interesting record.
+    /// </para>
+    /// </summary>
+    public Severity? ModelSeverity { get; private set; }
+
+    /// <summary>The model's probability for that class, 0-1. Null whenever <see cref="ModelSeverity"/> is.</summary>
+    public double? ModelSeverityConfidence { get; private set; }
+
+    /// <summary>
+    /// Which model produced it — trainer, feature-set version, and dataset version. Persisted so a
+    /// stored prediction can be attributed to an exact model rather than to "the severity model",
+    /// which will mean something different in six months.
+    /// </summary>
+    public string? ModelVersion { get; private set; }
+
+    /// <summary>
     /// Records the structured interpretation of the payload. Coordinates are supplied by a
     /// deterministic resolver and are never inferred from free text by a language model.
     /// </summary>
@@ -293,6 +315,34 @@ public sealed class RawObservation
     /// observation reaches this state whether it was enriched by a model or classified
     /// deterministically, and the pipeline treats both as validated input from here on.
     /// </summary>
+    /// <summary>
+    /// Records the trained model's assessment. Deliberately has no power to change
+    /// <see cref="Severity"/>: a model fitted to a small synthetic corpus is evidence about the
+    /// model, not authority over a source that declared its own severity.
+    /// </summary>
+    public void RecordModelSeverity(Severity severity, double confidence, string modelVersion)
+    {
+        if (confidence is < 0 or > 1)
+        {
+            throw new DomainException("Model confidence must be between 0 and 1.");
+        }
+
+        if (string.IsNullOrWhiteSpace(modelVersion))
+        {
+            throw new DomainException("A model prediction must record the model that produced it.");
+        }
+
+        ModelSeverity = severity;
+        ModelSeverityConfidence = confidence;
+        ModelVersion = modelVersion.Trim();
+    }
+
+    /// <summary>
+    /// Whether the model disagreed with the severity the pipeline acted on. False when no prediction
+    /// was made, because "no second opinion" is not a disagreement.
+    /// </summary>
+    public bool ModelDisagrees => ModelSeverity is { } predicted && predicted != Severity;
+
     public void MarkValidated()
     {
         Status = ObservationStatus.Validated;

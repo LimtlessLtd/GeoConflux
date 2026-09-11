@@ -56,9 +56,9 @@ public sealed class EnrichmentEvaluationTests(ITestOutputHelper output)
     public async Task TheConfiguredProviderIsEvaluatedAgainstTheLabelledFixtures()
     {
         var dataset = EvaluationDataset.Load();
-        var options = ResolveProviderOptions();
-        using var diagnostics = new PipelineDiagnostics(new EvaluationMeterFactory());
-        using var chatClient = BuildChatClient(options);
+        var options = EvaluationHost.ResolveProviderOptions();
+        using var diagnostics = new PipelineDiagnostics(new EvaluationHost.MeterFactory());
+        using var chatClient = EvaluationHost.BuildChatClient(options);
 
         var service = new ChatClientEnrichmentService(
             chatClient,
@@ -158,7 +158,7 @@ public sealed class EnrichmentEvaluationTests(ITestOutputHelper output)
         // The offline baseline must be reproducible, or a shifting score could not be read as a
         // regression. This is the property that makes the thresholds above meaningful.
         var dataset = EvaluationDataset.Load();
-        using var diagnostics = new PipelineDiagnostics(new EvaluationMeterFactory());
+        using var diagnostics = new PipelineDiagnostics(new EvaluationHost.MeterFactory());
         using var chatClient = new DeterministicMockChatClient(new KeywordEventClassifier());
 
         var service = new ChatClientEnrichmentService(
@@ -186,7 +186,7 @@ public sealed class EnrichmentEvaluationTests(ITestOutputHelper output)
         // this checks the whole path end to end, including the prompt-injection fixture that asks
         // the model to behave differently.
         var dataset = EvaluationDataset.Load();
-        using var diagnostics = new PipelineDiagnostics(new EvaluationMeterFactory());
+        using var diagnostics = new PipelineDiagnostics(new EvaluationHost.MeterFactory());
         using var chatClient = new DeterministicMockChatClient(new KeywordEventClassifier());
 
         var service = new ChatClientEnrichmentService(
@@ -226,7 +226,7 @@ public sealed class EnrichmentEvaluationTests(ITestOutputHelper output)
         // whatever it returns is still forced through schema validation before anything is adopted.
         var dataset = EvaluationDataset.Load();
         var injection = dataset.Cases.Single(testCase => testCase.Id == "inj-001");
-        using var diagnostics = new PipelineDiagnostics(new EvaluationMeterFactory());
+        using var diagnostics = new PipelineDiagnostics(new EvaluationHost.MeterFactory());
         using var chatClient = new DeterministicMockChatClient(new KeywordEventClassifier());
 
         var service = new ChatClientEnrichmentService(
@@ -254,28 +254,6 @@ public sealed class EnrichmentEvaluationTests(ITestOutputHelper output)
     /// Reads provider settings from the environment so a live evaluation needs no code change and no
     /// committed credential. Absent configuration means the offline stand-in, which is what CI uses.
     /// </summary>
-    private static AiProviderOptions ResolveProviderOptions()
-    {
-        var provider = Environment.GetEnvironmentVariable("GEOCONFLUX_EVAL_PROVIDER");
-
-        if (string.IsNullOrWhiteSpace(provider) || !Enum.TryParse<AiProviderKind>(provider, true, out var kind))
-        {
-            return new AiProviderOptions { Provider = AiProviderKind.Mock };
-        }
-
-        return new AiProviderOptions
-        {
-            Provider = kind,
-            Model = Environment.GetEnvironmentVariable("GEOCONFLUX_EVAL_MODEL") ?? "llama3.2",
-            Endpoint = Environment.GetEnvironmentVariable("GEOCONFLUX_EVAL_ENDPOINT"),
-            ApiKey = Environment.GetEnvironmentVariable("GEOCONFLUX_EVAL_API_KEY"),
-        };
-    }
-
-    private static IChatClient BuildChatClient(AiProviderOptions options) =>
-        options.Provider == AiProviderKind.Mock
-            ? new DeterministicMockChatClient(new KeywordEventClassifier())
-            : ChatClientFactory.Create(options, new EvaluationServiceProvider());
 
     private static string BuildReport(
         EvaluationDataset dataset,
@@ -404,34 +382,5 @@ public sealed class EnrichmentEvaluationTests(ITestOutputHelper output)
 
             directory = directory.Parent;
         }
-    }
-
-    private sealed class EvaluationMeterFactory : IMeterFactory
-    {
-        private readonly List<Meter> meters = [];
-
-        public Meter Create(MeterOptions options)
-        {
-            var meter = new Meter(options.Name, options.Version, options.Tags, scope: this);
-            meters.Add(meter);
-            return meter;
-        }
-
-        public void Dispose()
-        {
-            foreach (var meter in meters)
-            {
-                meter.Dispose();
-            }
-
-            meters.Clear();
-        }
-    }
-
-    /// <summary>Supplies the one service <see cref="ChatClientFactory"/> resolves for a live provider.</summary>
-    private sealed class EvaluationServiceProvider : IServiceProvider
-    {
-        public object? GetService(Type serviceType) =>
-            serviceType == typeof(Microsoft.Extensions.Logging.ILoggerFactory) ? NullLoggerFactory.Instance : null;
     }
 }

@@ -25,7 +25,8 @@ public sealed record ObservationResponse(
     string ClassificationMethod,
     string? DetectedLanguage,
     string? SeverityRationale,
-    IReadOnlyList<EntityResponse> Entities)
+    IReadOnlyList<EntityResponse> Entities,
+    SeverityOpinion? ModelSeverity)
 {
     public static ObservationResponse FromDomain(RawObservation observation)
     {
@@ -59,9 +60,34 @@ public sealed record ObservationResponse(
             observation.ClassificationMethod,
             observation.DetectedLanguage,
             observation.SeverityRationale,
-            [.. observation.Entities.Select(entity => new EntityResponse(entity.Name, entity.Type))]);
+            [.. observation.Entities.Select(entity => new EntityResponse(entity.Name, entity.Type))],
+            observation.ModelSeverity is { } predicted
+                ? new SeverityOpinion(
+                    predicted,
+                    observation.ModelSeverityConfidence ?? 0,
+                    observation.ModelVersion ?? "unknown",
+                    observation.ModelDisagrees)
+                : null);
     }
 }
 
 /// <summary>A named actor the enrichment step reported. A claim about the text, not a verified fact.</summary>
 public sealed record EntityResponse(string Name, EntityType Type);
+
+/// <summary>
+/// What the trained severity model would have said about this observation.
+/// <para>
+/// A separate object rather than four loose fields, so a consumer has to acknowledge that this is a
+/// second opinion before reading its value — and so <see langword="null"/> unambiguously means "no
+/// prediction was made" rather than "predicted Unknown".
+/// </para>
+/// </summary>
+/// <param name="Severity">The class the model predicted.</param>
+/// <param name="Confidence">Its probability for that class. A model score against its training distribution, not a likelihood about the world.</param>
+/// <param name="ModelVersion">Trainer, feature-set version, and dataset version.</param>
+/// <param name="DisagreesWithApplied">Whether this differs from the severity the pipeline actually acted on, which is the case worth surfacing.</param>
+public sealed record SeverityOpinion(
+    Severity Severity,
+    double Confidence,
+    string ModelVersion,
+    bool DisagreesWithApplied);

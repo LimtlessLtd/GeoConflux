@@ -136,6 +136,7 @@ spatial.MapGet(
 
 app.MapObservationEndpoints();
 app.MapAnalyticsEndpoints();
+app.MapSeverityEndpoints();
 app.MapHub<IncidentHub>(IncidentHub.Path);
 
 app.MapHealthChecks(

@@ -870,3 +870,40 @@ html, body {
   .stat-grid { grid-template-columns: 1fr; }
   .bar-row { grid-template-columns: 6.5rem 1fr 2rem; }
 }
+
+/* ---------------------------------------------------------------- model second opinion */
+
+/* Deliberately quieter than the classification chips beside it. This is a comparison the system
+   recorded, not a conclusion it reached, and it should not compete with the severity that was
+   actually applied. */
+.model-opinion {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  margin-top: .3rem;
+  padding: .2rem .35rem;
+  border-left: 2px solid var(--line);
+  background: rgba(100, 223, 223, .05);
+  font-size: .64rem;
+  color: var(--muted);
+  cursor: help;
+}
+
+/* The disagreement case gets a marker, not an alarm colour. Two systems reaching different
+   conclusions is the ordinary outcome this feature exists to record. */
+.model-opinion.is-divergent { border-left-color: var(--accent); }
+
+.model-tag {
+  flex: none;
+  padding: 0 .25rem;
+  border-radius: 2px;
+  background: var(--line);
+  color: var(--text);
+  font-size: .58rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+}
+
+.model-opinion strong { font-weight: 700; }
+
+.model-confidence { margin-left: auto; font-variant-numeric: tabular-nums; }
