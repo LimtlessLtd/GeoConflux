@@ -25,10 +25,10 @@ public sealed class ReplayPipelineTests
         using var factory = new PipelineFactory(runPipeline: true, runSources: true);
         using var client = factory.CreateClient();
 
-        var observations = await WaitForObservationsAsync(client, expected: 8);
+        var observations = await WaitForObservationsAsync(client, expected: 11);
 
         // Every recorded record is accounted for, including the deliberate redelivery.
-        Assert.Equal(8, observations.Count);
+        Assert.Equal(11, observations.Count);
 
         var duplicate = Assert.Single(observations, value => value.Status == ObservationStatus.Duplicate);
         Assert.NotNull(duplicate.DuplicateOfObservationId);
@@ -61,7 +61,7 @@ public sealed class ReplayPipelineTests
         using var factory = new PipelineFactory(runPipeline: true, runSources: true);
         using var client = factory.CreateClient();
 
-        await WaitForObservationsAsync(client, expected: 8);
+        await WaitForObservationsAsync(client, expected: 11);
 
         Assert.NotEmpty(factory.Notifier.Created);
 
@@ -112,7 +112,7 @@ public sealed class ReplayPipelineTests
         using var client = factory.CreateClient();
 
         // Let the finite replay stream run to exhaustion first.
-        await WaitForObservationsAsync(client, expected: 8);
+        await WaitForObservationsAsync(client, expected: 11);
 
         var response = await client.PostAsJsonAsync(
             new Uri("/api/observations", UriKind.Relative),
@@ -129,7 +129,8 @@ public sealed class ReplayPipelineTests
         // broke this endpoint even though the host was still running normally.
         Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
 
-        var observations = await WaitForObservationsAsync(client, expected: 9);
+        // The eleven recorded records plus this submission.
+        var observations = await WaitForObservationsAsync(client, expected: 12);
         Assert.Contains(observations, value => value.SourceName == "manual:analyst-desk");
     }
 

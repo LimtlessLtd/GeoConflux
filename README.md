@@ -41,12 +41,15 @@ IEventSource -> validation -> bounded Channel -> background processor
 
 Concretely, running the app locally will:
 
-- ingest eight recorded observations from four synthetic sources, with realistic arrival delays;
+- ingest eleven recorded observations from five synthetic sources, with realistic arrival delays;
 - reject one byte-identical redelivery as a duplicate, while keeping it for audit, and skip
   enrichment for it rather than paying for work about to be discarded;
 - send every other observation through enrichment, validate the response against a versioned schema,
   and record the attempt — success or failure — as an auditable inference;
-- correlate two differently-worded reports of the same event into a single incident;
+- correlate three differently-worded reports of one event — from two news outlets and a structured
+  event database — into a single incident, scoring distance, shared actors, and shared wording;
+- link two reports that name the same actor in near-identical words even though neither can be
+  placed, which is the only signal available when a report states no location;
 - place observations using provider coordinates or a local gazetteer, and leave one deliberately
   unmappable report visible without coordinates;
 - show a confidence score and the method that produced it beside every classification;
@@ -183,6 +186,15 @@ rerun `dotnet test tests/Geopolitics.AiEvaluationTests`.
 
 - **An observation is not an incident.** Several sources reporting one event produce one incident
   with several pieces of linked evidence. Duplicate evidence is linked, not deleted ([ADR 006](docs/adr/006-event-correlation.md)).
+- **Correlation needs positional evidence, never time and topic alone.** What establishes that two
+  reports concern the same place sets a ceiling on confidence — measured distance highest, a shared
+  place name lower — and time, shared actors, and shared wording scale it from there. A wrong merge
+  destroys the distinction between two real events and is nearly invisible afterwards; two incidents
+  that should have been one are obvious on the map, so the bar errs high
+  ([ADR 016](docs/adr/016-correlation-signals-and-ordering.md)).
+- **Similarity is lexical, and says so.** The default measure compares the words two reports share
+  and reports its method as `lexical-overlap`. It is not an embedding model and is not described as
+  one; `ITextSimilarity` is the seam for a real one.
 - **A language model may never set coordinates.** Only a deterministic resolver produces latitude and
   longitude. An unmappable report stays unplaced rather than being given plausible-looking
   coordinates ([ADR 005](docs/adr/005-location-resolution.md)).
@@ -248,6 +260,11 @@ credential is ever read from a committed file.
 | `Pipeline:ProcessorConcurrency` | 2 | Concurrent processing workers |
 | `Pipeline:CorrelationWindow` | 24:00:00 | How far back the correlator looks |
 | `Pipeline:CorrelationRadiusKilometres` | 75 | How close two reports must be to be the same event |
+| `Pipeline:MinimumCorrelationConfidence` | 0.45 | Turn up when incidents merge that should not |
+| `Pipeline:SemanticSimilarityThreshold` | 0.4 | How much wording must agree to count as corroboration |
+| `Pipeline:PlaceNameConfidence` | 0.55 | Ceiling when co-location rests on a shared place name |
+| `Pipeline:ContentOnlyConfidence` | 0.6 | Ceiling when neither report can be placed at all |
+| `Pipeline:SupportFloor` | 0.6 | How far weak corroboration may pull a match below its ceiling |
 | `Pipeline:SourcesEnabled` | true | Whether this host runs ingestion sources |
 | `Pipeline:ProcessorEnabled` | true | Whether this host drains the queue |
 | `Enrichment:Enabled` | true | Whether observations are sent for enrichment at all |
@@ -309,20 +326,22 @@ dotnet format GeopoliticsDashboard.sln --verify-no-changes
 docker build -t geopolitics-dashboard .
 ```
 
-164 tests cover domain invariants, fingerprinting, classification, correlation scoring, queue
+195 tests cover domain invariants, fingerprinting, classification, correlation scoring, queue
 backpressure and cancellation, gazetteer resolution, and the processor's failure paths; the AI trust
 boundary (malformed JSON, unknown enums, out-of-range confidence, oversized payloads, control
 characters, prompt-injection fixtures, provider timeout, provider exception, repair success and
 exhaustion); the OSINT adapters against recorded provider payloads (RSS 2.0, Atom, VIIRS and MODIS
 CSV, ACLED JSON, plus malformed bodies, an external-entity declaration, a rate limit, a server
 outage, and a rejected credential) driven through the application's real HTTP and resilience stack;
-end-to-end integration tests that drive the real host and assert on what the API then serves; and the
-evaluation harness above.
+the correlation signals (lexical similarity, entity overlap, the positional ceiling, and the
+over-merge guards) and the per-category gate; end-to-end integration tests that drive the real host
+and assert on what the API then serves, including a concurrency test that reproduces the correlation
+race and is verified to fail when the gate is removed; and the evaluation harness above.
 
 ## Not yet implemented
 
-There is no spatial querying, no semantic deduplication, no analytics, and no ML model yet. Those
-arrive in the rest of Sprints 4 to 6 and are deliberately not represented as working before then.
+There is no spatial querying, no analytics, and no ML model yet. Those arrive in the rest of
+Sprints 4 to 6 and are deliberately not represented as working before then.
 
 Three limitations worth stating plainly:
 
@@ -334,9 +353,13 @@ Three limitations worth stating plainly:
 - **The live OSINT adapters have never polled the real services.** They are tested against recorded
   payloads only, for the reasons given above. The published dashboard is built from the recorded
   replay stream, so nothing on it came from a live provider.
-- **Correlation has a read-then-write race** when more than one worker runs and two reports of the
-  same event arrive simultaneously; each can open an incident. It does not occur at realistic
-  arrival rates, deduplication is unaffected, and the fix belongs with the Sprint 4 correlation
-  work. See [docs/architecture.md](docs/architecture.md#known-limitations).
+- **Correlation cannot corroborate across categories.** Candidates are pre-filtered by event type,
+  so a satellite thermal detection is never linked to a piracy report however close it is. That is a
+  deliberate trade, and it means cross-source corroboration works between sources that agree on a
+  category rather than between sources describing one event in different terms.
+- **Similarity is shared vocabulary, not meaning.** It cannot recognise a paraphrase with no words in
+  common, or one event reported in two languages.
+
+  See [docs/architecture.md](docs/architecture.md#known-limitations) for the full list.
 
 See the [ADRs](docs/adr/) and the authoritative [project plan](GeoConflux_Plan.md).

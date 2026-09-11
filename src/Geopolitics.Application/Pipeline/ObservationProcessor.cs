@@ -22,6 +22,7 @@ public sealed partial class ObservationProcessor(
     IOptions<EnrichmentOptions> enrichmentOptions,
     ILocationResolver locationResolver,
     IIncidentCorrelator correlator,
+    CorrelationGate correlationGate,
     IIncidentNotifier notifier,
     PipelineDiagnostics diagnostics,
     TimeProvider timeProvider,
@@ -103,6 +104,14 @@ public sealed partial class ObservationProcessor(
 
         await ResolveLocationAsync(envelope, observation, cancellationToken);
 
+        // Held from the candidate read through to the commit. Correlating outside it would let a
+        // second worker holding a report of the same event read the same candidates and open a
+        // second incident for it, because neither would see the other's uncommitted write.
+        //
+        // Enrichment and location resolution are deliberately outside: they are the slow stages and
+        // they touch no shared state, so serialising them would cost throughput and buy nothing.
+        using var gate = await correlationGate.AcquireAsync(observation.EventType, cancellationToken);
+
         var assessment = await correlator.CorrelateAsync(observation, cancellationToken);
         var incidentCreated = false;
         GeopoliticalIncident incident;
@@ -133,6 +142,11 @@ public sealed partial class ObservationProcessor(
                 observation.ClassificationMethod,
                 timeProvider.GetUtcNow());
 
+            // The incident's cast of actors is the union of what its evidence has named, so a later
+            // report naming someone new widens it. This is also what lets the next observation be
+            // scored on shared actors without reloading every observation behind the incident.
+            incident.MergeEntities(observation.Entities, timeProvider.GetUtcNow());
+
             diagnostics.IncidentsCorrelated.Add(1, new KeyValuePair<string, object?>("source", observation.SourceName));
             LogCorrelated(logger, observation.Id, incident.Id, assessment.Confidence, assessment.Rationale);
         }
@@ -140,6 +154,7 @@ public sealed partial class ObservationProcessor(
         {
             incident = CreateIncident(observation);
             incident.LinkObservation(observation.Id, timeProvider.GetUtcNow());
+            incident.MergeEntities(observation.Entities, timeProvider.GetUtcNow());
             incident.RecordAssessment(
                 observation.ClassificationConfidence,
                 observation.ClassificationMethod,

@@ -77,6 +77,13 @@ public sealed class GeopoliticsDbContext(DbContextOptions<GeopoliticsDbContext> 
             .HasColumnName("observation_ids")
             .UsePropertyAccessMode(PropertyAccessMode.Field);
 
+        // Same treatment, and for the same reason: correlation reads these back on the hot path, and
+        // an unmapped collection would return empty after a reload and silently score every
+        // candidate as sharing no actors.
+        incident.PrimitiveCollection(value => value.EntityKeys)
+            .HasColumnName("entity_keys")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
         incident.OwnsOne(
             value => value.Location,
             location =>

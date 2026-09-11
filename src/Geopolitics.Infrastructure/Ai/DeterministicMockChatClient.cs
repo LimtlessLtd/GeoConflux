@@ -107,10 +107,19 @@ public sealed class DeterministicMockChatClient(IEventClassifier classifier) : I
         var body = ReadBody(report) ?? report;
         var title = ReadLineField(report, "title:");
         var source = ReadLineField(report, "source:") ?? "unknown";
-        var classification = classifier.Classify($"{title} {body}");
+
+        // Composed as two sentences rather than joined with a space. A headline carries no full
+        // stop, so gluing the body straight onto it leaves the body's first word looking like a
+        // continuation of whatever capitalised run ended the title. That is how a title ending
+        // "Northern Transit Council" followed by a body opening "Scheduled convoy departures..."
+        // produced an organisation called "Northern Transit Council Scheduled", and why two reports
+        // about the same actor extracted two different names for it and failed to correlate.
+        var text = Compose(title, body);
+
+        var classification = classifier.Classify(text);
         var language = DetectLanguage(body);
-        var place = Gazetteer.FindFirstMention($"{title} {body}");
-        var entities = ExtractEntities($"{title} {body}", place);
+        var place = Gazetteer.FindFirstMention(text);
+        var entities = ExtractEntities(text, place);
 
         var payload = new
         {
@@ -274,6 +283,21 @@ public sealed class DeterministicMockChatClient(IEventClassifier classifier) : I
         }
 
         return results;
+    }
+
+    /// <summary>
+    /// Joins a headline and a body into one block of prose with a sentence boundary between them,
+    /// so that anything reading this text sees where the title ended.
+    /// </summary>
+    private static string Compose(string? title, string body)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            return body;
+        }
+
+        var trimmed = title.TrimEnd('.', ' ');
+        return trimmed.Length == 0 ? body : $"{trimmed}. {body}";
     }
 
     private static IEnumerable<string> CapitalisedRuns(string text)

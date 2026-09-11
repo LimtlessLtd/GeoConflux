@@ -2,7 +2,15 @@ namespace Geopolitics.Domain;
 
 public sealed class GeopoliticalIncident
 {
+    /// <summary>
+    /// A cap on the actors one incident accumulates. Entities come from extraction over untrusted
+    /// text, and an incident that draws evidence from many reports would otherwise grow this list
+    /// without limit.
+    /// </summary>
+    public const int MaxEntityKeys = 40;
+
     private readonly List<Guid> observationIds = [];
+    private readonly List<string> entityKeys = [];
 
     private GeopoliticalIncident()
     {
@@ -73,6 +81,18 @@ public sealed class GeopoliticalIncident
     public IReadOnlyCollection<Guid> ObservationIds => observationIds.AsReadOnly();
 
     /// <summary>
+    /// Lower-cased names of every actor this incident's evidence has mentioned, accumulated as
+    /// reports are linked.
+    /// <para>
+    /// Held on the incident rather than recomputed from its observations because correlation asks
+    /// "does this new report name anyone already involved" on the hot path, once per candidate. The
+    /// union is also the more truthful answer: an incident's actors are everyone its evidence has
+    /// named, not whoever the most recent outlet happened to mention.
+    /// </para>
+    /// </summary>
+    public IReadOnlyCollection<string> EntityKeys => entityKeys.AsReadOnly();
+
+    /// <summary>
     /// Confidence of the best-supported assessment among this incident's evidence, on a 0-1 scale.
     /// The dashboard shows a category next to this number rather than alone, so a weakly-supported
     /// incident reads as weakly supported.
@@ -129,6 +149,38 @@ public sealed class GeopoliticalIncident
         ObservationCount++;
         UpdatedAt = linkedAt;
         return true;
+    }
+
+    /// <summary>
+    /// Adds any actors this incident has not already recorded. Returns the number newly added, which
+    /// is zero for a report that names nobody new.
+    /// </summary>
+    public int MergeEntities(IEnumerable<ExtractedEntity> entities, DateTimeOffset mergedAt)
+    {
+        ArgumentNullException.ThrowIfNull(entities);
+
+        var added = 0;
+
+        foreach (var entity in entities)
+        {
+            if (entity is null || entityKeys.Count >= MaxEntityKeys)
+            {
+                continue;
+            }
+
+            if (!entityKeys.Contains(entity.MatchKey, StringComparer.Ordinal))
+            {
+                entityKeys.Add(entity.MatchKey);
+                added++;
+            }
+        }
+
+        if (added > 0)
+        {
+            UpdatedAt = mergedAt;
+        }
+
+        return added;
     }
 
     public void Reassess(EventType eventType, Severity severity, string summary, DateTimeOffset updatedAt)

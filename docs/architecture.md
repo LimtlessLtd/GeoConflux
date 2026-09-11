@@ -78,7 +78,8 @@ ObservationProcessor
       |-- deduplicate          content fingerprint + unique index   (ADR 010)
       |-- enrich               AI; validated, fallible, optional    (ADR 012)
       |-- resolve location     deterministic resolver only          (ADR 005)
-      |-- correlate            category + time + distance           (ADR 006)
+      |-- correlate            positional ceiling + corroboration   (ADR 006, 016)
+      |                        serialised per category across the commit
       |-- persist              observation, incident, inference     (one save)
       +-- publish              SignalR, after commit, best effort   (ADR 008)
 ```
@@ -131,6 +132,30 @@ matching place names and reports lower confidence.
 **Persistence precedes publication.** SignalR is a projection of committed state. A client that
 misses a message recovers by re-querying the API; a client that receives a message about state that
 was never committed cannot recover at all.
+
+## Correlation
+
+An observation joins an existing incident only when something establishes that the two concern the
+same **place**. That positional evidence sets a ceiling on confidence; time proximity, shared actors,
+and shared wording then scale it within a floor. They strengthen or weaken a match and can never
+manufacture one.
+
+```text
+positional evidence (sets the ceiling)     corroboration (scales it)
+  measured distance   1.00 -> 0.55           elapsed time inside the window
+  shared place name   0.55                   actors shared with the incident
+  actors + wording    0.60 (both required)   wording overlap (lexical)
+```
+
+Beyond the configured radius a candidate is rejected outright: no amount of agreement in wording
+makes two distant reports the same event. The asymmetry is deliberate. A wrong merge destroys the
+distinction between two real events and is nearly invisible afterwards, whereas two incidents that
+should have been one are obvious on the map. Every threshold and weight is configurable, and every
+decision records a rationale naming the signals that fired (ADR 016).
+
+Correlate-then-commit is serialised per event type by `CorrelationGate`, because the stage reads its
+candidates and then writes. Enrichment and location resolution run outside that gate, since they are
+the slow stages and touch no shared state.
 
 ## Failure behaviour
 
@@ -203,14 +228,21 @@ floor is set above what a normal poll produces so a routine cycle cannot trip it
 outage at one host can still fail the others fast. A per-host breaker would need a second HTTP stack
 and is not worth it at this scale.
 
-**Correlation has a read-then-write race.** `ListCorrelationCandidatesAsync` reads candidates and the
-processor writes an incident without holding a lock across the two. With
-`Pipeline:ProcessorConcurrency > 1`, two reports of the same event arriving simultaneously can each
-open an incident, because neither sees the other's uncommitted write. It is visible when the replay
-stream is driven with `Replay:SpeedFactor = 0` and two workers, and does not occur at realistic
-arrival rates. Deduplication is unaffected — that guarantee rests on a unique index, not on a read.
-A durable fix needs either a correlation-scoped lock or a post-commit merge step, and belongs with
-the Sprint 4 correlation work rather than being bolted on here.
+**Correlation cannot corroborate across categories.** Candidates are pre-filtered by `EventType`, so
+a satellite thermal detection can never be linked to a piracy report however close in space and time
+it is. The category is the cheapest and most reliable discriminator available, and dropping the
+filter would widen the candidate set enormously, so this is a deliberate trade rather than an
+oversight. It does mean cross-source corroboration works between sources that agree on a category and
+not between sources that describe one event in different terms.
+
+**Semantic similarity is lexical.** `LexicalTextSimilarity` compares shared vocabulary and reports
+itself as `lexical-overlap`. It cannot recognise a paraphrase with no words in common, or one event
+reported in two languages. `ITextSimilarity` is the seam for an embedding-backed replacement;
+requiring positional corroboration is what limits the damage in the meantime.
+
+**The correlation gate is in-process.** It is the right scope for a modular monolith and is not a
+distributed lock. Running two processor hosts against one database would reintroduce the
+read-then-write race it exists to close.
 
 **The gazetteer is small and Latin-script.** It holds the chokepoints, seas, and cities that recur in
 the demo dataset. A place outside it resolves to nothing, and the observation stays visibly unplaced.

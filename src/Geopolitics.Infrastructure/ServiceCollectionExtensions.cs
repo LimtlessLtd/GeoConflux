@@ -84,6 +84,15 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IObservationQueueMonitor>(provider => provider.GetRequiredService<ChannelObservationBuffer>());
 
         services.AddSingleton<IEventClassifier, KeywordEventClassifier>();
+
+        // Deterministic and stateless, so one instance serves every worker. Registered against the
+        // interface so an embedding-backed measure can replace it without touching the correlator.
+        services.AddSingleton<ITextSimilarity, LexicalTextSimilarity>();
+
+        // Singleton by necessity, not convenience: its whole purpose is to be the one thing two
+        // concurrent processor scopes contend on.
+        services.AddSingleton<CorrelationGate>();
+
         services.AddSingleton<IObservationIngestionService, ObservationIngestionService>();
 
         // The mock client is registered unconditionally so that switching Ai:Provider back to Mock

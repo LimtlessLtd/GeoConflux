@@ -167,7 +167,9 @@ public sealed class PipelineTestHarness
         EnrichmentService = new StubEnrichmentService();
         Incidents.Inferences = Inferences;
         LocationResolver = new StubLocationResolver();
-        Correlator = new DeterministicIncidentCorrelator(Incidents, Microsoft.Extensions.Options.Options.Create(Options));
+        Similarity = new LexicalTextSimilarity();
+        CorrelationGate = new CorrelationGate();
+        Correlator = new DeterministicIncidentCorrelator(Incidents, Similarity, Microsoft.Extensions.Options.Options.Create(Options));
         Normaliser = new ObservationNormaliser(new KeywordEventClassifier());
     }
 
@@ -191,6 +193,10 @@ public sealed class PipelineTestHarness
 
     public StubLocationResolver LocationResolver { get; }
 
+    public LexicalTextSimilarity Similarity { get; }
+
+    public CorrelationGate CorrelationGate { get; }
+
     public IIncidentCorrelator Correlator { get; set; }
 
     public IObservationNormaliser Normaliser { get; set; }
@@ -204,6 +210,7 @@ public sealed class PipelineTestHarness
         Microsoft.Extensions.Options.Options.Create(Enrichment),
         LocationResolver,
         Correlator,
+        CorrelationGate,
         Notifier,
         Diagnostics,
         Clock,

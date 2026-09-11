@@ -19,6 +19,47 @@ public sealed class MockChatClientTests
         ["latitude", "longitude", "lat", "lon", "lng", "coordinates"];
 
     [Fact]
+    public async Task AnActorIsNotGluedToTheFirstWordOfTheBody()
+    {
+        // Regression: the title and body were joined with a plain space. A headline carries no full
+        // stop, so the body's opening word read as a continuation of the capitalised run that ended
+        // the title, and the extractor invented organisations like "Northern Transit Council
+        // Scheduled". Two reports about one actor therefore produced two different names for it and
+        // could not be correlated on shared actors. Caught by reading the exported snapshot.
+        var response = await EnrichAsync(
+            "replay:wire-service-c",
+            "Transit scheduling suspended after advisory from the Northern Transit Council",
+            "Scheduled convoy departures were suspended pending a review by the Northern Transit Council.");
+
+        var names = Validated(response).Entities.Select(entity => entity.Name).ToArray();
+
+        Assert.Contains("Northern Transit Council", names);
+        Assert.All(names, name => Assert.DoesNotContain("Scheduled", name, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task TheSameActorNamedByTwoReportsExtractsToTheSameKey()
+    {
+        // The property entity-overlap correlation depends on. If two write-ups of one event produce
+        // differently-punctuated names for one organisation, the signal silently never fires.
+        var first = await EnrichAsync(
+            "replay:wire-service-c",
+            "Transit scheduling suspended after advisory from the Northern Transit Council",
+            "The Northern Transit Council suspended scheduled convoy departures pending a review.");
+
+        var second = await EnrichAsync(
+            "replay:wire-service-b",
+            "Convoy departures suspended pending review, says Northern Transit Council",
+            "Scheduled convoy departures were suspended pending a review by the Northern Transit Council.");
+
+        var firstKeys = Validated(first).Entities.Select(entity => entity.MatchKey).ToHashSet();
+        var secondKeys = Validated(second).Entities.Select(entity => entity.MatchKey).ToHashSet();
+
+        Assert.Contains("northern transit council", firstKeys);
+        Assert.True(firstKeys.Overlaps(secondKeys));
+    }
+
+    [Fact]
     public async Task TheSummaryIsTheReportsOwnWordsAndNotThePromptAroundIt()
     {
         // Regression: one field parser served both the single-line `source:`/`title:` markers and the

@@ -157,7 +157,7 @@ public sealed class DeterministicIncidentCorrelatorTests
     {
         var repository = new FakeIncidentRepository();
         var options = Options.Create(new PipelineOptions());
-        return (new DeterministicIncidentCorrelator(repository, options), repository);
+        return (new DeterministicIncidentCorrelator(repository, new LexicalTextSimilarity(), options), repository);
     }
 
     private static GeopoliticalIncident Incident(EventType eventType, DateTimeOffset occurredAt, GeoLocation? location) =>

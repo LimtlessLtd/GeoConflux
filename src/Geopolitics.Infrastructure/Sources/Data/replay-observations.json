@@ -92,6 +92,39 @@
       "declaredEventType": "NavalIncident",
       "declaredSeverity": "Medium",
       "occurredAtOffsetMinutes": -55
+    },
+    {
+      "delayMilliseconds": 900,
+      "sourceName": "replay:event-database",
+      "kind": "ExternalEvent",
+      "sourceIdentifier": "replay-eventdb-88512",
+      "title": "Structured record of a small-craft approach in the Bab-el-Mandeb strait",
+      "content": "A structured event record codes an approach by small skiffs to a commercial vessel in the Bab-el-Mandeb strait. Escorts responded and the vessel was not boarded. No casualties are listed.",
+      "declaredLocationName": "Bab-el-Mandeb",
+      "declaredEventType": "Piracy",
+      "declaredSeverity": "Medium",
+      "occurredAtOffsetMinutes": -90,
+      "$note": "A third source type describing the event the two wire records already cover: exercises correlation across News and ExternalEvent rather than only between two news outlets."
+    },
+    {
+      "delayMilliseconds": 1000,
+      "sourceName": "replay:wire-service-c",
+      "kind": "News",
+      "sourceIdentifier": "replay-wire-c-0042",
+      "title": "Transit scheduling suspended after advisory from the Northern Transit Council",
+      "content": "The Northern Transit Council suspended scheduled convoy departures pending a review, according to an invented circular. The notice gives no location and names no terminal.",
+      "occurredAtOffsetMinutes": -35,
+      "$note": "Deliberately unplaceable: no gazetteer name appears anywhere in the text. Pairs with the next record."
+    },
+    {
+      "delayMilliseconds": 1000,
+      "sourceName": "replay:wire-service-b",
+      "kind": "News",
+      "sourceIdentifier": "replay-wire-b-0099",
+      "title": "Convoy departures suspended pending review, says Northern Transit Council",
+      "content": "Scheduled convoy departures were suspended pending a review by the Northern Transit Council, a second invented circular reports. The notice again gives no location and names no terminal.",
+      "occurredAtOffsetMinutes": -30,
+      "$note": "Same event as the previous record, worded differently, and neither can be placed. Exercises the third deduplication layer: correlation on shared actors plus shared wording, which is the only thing that can link these two."
     }
   ]
 }
