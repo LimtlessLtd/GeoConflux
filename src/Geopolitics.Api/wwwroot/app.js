@@ -116,6 +116,9 @@
     chokepointMethod: document.querySelector('#chokepointMethod'),
     basemapFilter: document.querySelector('#basemapFilter'),
     basemapNote: document.querySelector('#basemapNote'),
+    analyticsWindow: document.querySelector('#analyticsWindow'),
+    analyticsPeriod: document.querySelector('#analyticsPeriod'),
+    analyticsBody: document.querySelector('#analyticsBody'),
   };
 
   /** Full, authoritative state. Replay renders a subset of this rather than mutating it. */
@@ -144,6 +147,22 @@
 
   /** When active, only these incidents render, with counts as they stood at that point. */
   const replay = { active: false, revealed: new Set(), counts: new Map(), played: new Set(), timer: null };
+
+  /**
+   * Analytics windows the backend supports, and the reports already fetched for them.
+   *
+   * Cached per token because a report is a point-in-time answer: re-fetching on every tab switch
+   * would make the same window silently change its numbers as the visitor clicked around, which
+   * reads as instability rather than as freshness.
+   */
+  const ANALYTICS_WINDOWS = [
+    { token: '24h', label: 'Last 24 hours' },
+    { token: '7d', label: 'Last 7 days' },
+    { token: '30d', label: 'Last 30 days' },
+    { token: '90d', label: 'Last 90 days' },
+  ];
+  const analyticsCache = new Map();
+  let analyticsLoaded = false;
 
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
@@ -266,6 +285,11 @@
       const payload = await response.json();
       return { method: payload.method ?? '', chokepoints: payload.chokepoints ?? [] };
     },
+    async loadAnalytics(token) {
+      const response = await fetch(`./api/analytics?window=${encodeURIComponent(token)}`, { headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error(`Analytics endpoint returned ${response.status}`);
+      return response.json();
+    },
   };
 
   /** Reads the snapshot a real pipeline run exported at build time. */
@@ -298,6 +322,12 @@
       // An older snapshot simply has no such file, which is an empty panel rather than an error.
       if (!response.ok) return { method: '', chokepoints: [] };
       return { method: this.meta?.spatialMethod ?? '', chokepoints: await response.json() };
+    },
+    async loadAnalytics(token) {
+      // One file per window, written at build time by the same service the API calls.
+      const response = await fetch(`./data/analytics/${encodeURIComponent(token)}.json`, { headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error(`Snapshot analytics returned ${response.status}`);
+      return response.json();
     },
   };
 
@@ -962,6 +992,359 @@
     });
   }
 
+
+  // ---------------------------------------------------------------- analytics
+
+  const SCORE_BAND_COLOUR = {
+    quiet: '#64dfdf',
+    moderate: '#ffd166',
+    elevated: '#ff9f1c',
+    high: '#ef476f',
+  };
+
+  /** Turns `MARITIME_INCIDENT` or `MaritimeIncident` into `Maritime incident` for display. */
+  function humanise(value) {
+    const spaced = String(value ?? '')
+      .replace(/_/g, ' ')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .toLowerCase()
+      .trim();
+    return spaced ? spaced[0].toUpperCase() + spaced.slice(1) : '—';
+  }
+
+  function element(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
+
+  function statTile(label, value, hint) {
+    const tile = element('div', 'stat');
+    tile.append(element('span', 'stat-value', value));
+    tile.append(element('span', 'stat-label', label));
+    if (hint) tile.append(element('span', 'stat-hint', hint));
+    return tile;
+  }
+
+  /**
+   * A labelled horizontal bar list.
+   *
+   * Every row is drawn against the largest count rather than against the total, so a breakdown
+   * whose classes are wildly uneven still shows the small ones as visible bars instead of as
+   * invisible slivers.
+   */
+  function barList(rows, colourFor) {
+    const list = element('div', 'bars');
+    const largest = rows.reduce((max, row) => Math.max(max, row.count), 0);
+
+    rows.forEach((row) => {
+      const item = element('div', 'bar-row');
+      item.append(element('span', 'bar-label', row.label));
+
+      const track = element('span', 'bar-track');
+      const fill = element('span', 'bar-fill');
+      fill.style.width = `${largest === 0 ? 0 : Math.max(2, (row.count / largest) * 100)}%`;
+      if (colourFor) fill.style.background = colourFor(row);
+      track.append(fill);
+      item.append(track);
+
+      item.append(element('span', 'bar-count', row.count));
+      list.append(item);
+    });
+
+    return list;
+  }
+
+  /**
+   * The incidents-over-time chart, as inline SVG.
+   *
+   * Hand-drawn rather than pulled from a charting library, because the page must work with no
+   * external script host reachable — the same constraint that drives the basemap fallback.
+   * Elevated incidents are stacked inside each bar rather than drawn as a second series: the
+   * question is what share of a period was serious, and two adjacent bars answer a different one.
+   */
+  function timeseriesChart(buckets, suffix) {
+    const NS = 'http://www.w3.org/2000/svg';
+    const width = 300;
+    const height = 68;
+    const gap = buckets.length > 40 ? 0.5 : 1.5;
+    const barWidth = Math.max(1, (width - (gap * (buckets.length - 1))) / buckets.length);
+    const peak = buckets.reduce((max, bucket) => Math.max(max, bucket.count), 0);
+    const total = buckets.reduce((sum, bucket) => sum + bucket.count, 0);
+
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    svg.setAttribute('class', 'timeseries');
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('preserveAspectRatio', 'none');
+    svg.setAttribute(
+      'aria-label',
+      `${total} incident${total === 1 ? '' : 's'} across ${buckets.length} time buckets, peak ${peak}.`,
+    );
+
+    // Drawn first, so bars sit on it. Without a baseline the bars float and a quiet stretch reads
+    // as missing data rather than as a period in which nothing was recorded.
+    const axis = document.createElementNS(NS, 'rect');
+    axis.setAttribute('x', '0');
+    axis.setAttribute('y', (height - 1).toFixed(2));
+    axis.setAttribute('width', String(width));
+    axis.setAttribute('height', '1');
+    axis.setAttribute('class', 'ts-axis');
+    svg.append(axis);
+
+    buckets.forEach((bucket, index) => {
+      const x = index * (barWidth + gap);
+
+      // An empty bucket still gets a tick, so its position on the axis is visible.
+      const full = peak === 0 ? 0 : (bucket.count / peak) * (height - 4);
+      const drawn = bucket.count === 0 ? 1 : Math.max(2, full);
+      const elevatedHeight = bucket.count === 0 ? 0 : drawn * (bucket.elevated / bucket.count);
+
+      const base = document.createElementNS(NS, 'rect');
+      base.setAttribute('x', x.toFixed(2));
+      base.setAttribute('y', (height - drawn).toFixed(2));
+      base.setAttribute('width', barWidth.toFixed(2));
+      base.setAttribute('height', drawn.toFixed(2));
+      base.setAttribute('class', bucket.count === 0 ? 'ts-empty' : 'ts-bar');
+      base.append(titleFor(bucket, suffix));
+      svg.append(base);
+
+      if (elevatedHeight > 0) {
+        const elevated = document.createElementNS(NS, 'rect');
+        elevated.setAttribute('x', x.toFixed(2));
+        elevated.setAttribute('y', (height - elevatedHeight).toFixed(2));
+        elevated.setAttribute('width', barWidth.toFixed(2));
+        elevated.setAttribute('height', elevatedHeight.toFixed(2));
+        elevated.setAttribute('class', 'ts-elevated');
+        svg.append(elevated);
+      }
+    });
+
+    return svg;
+
+    function titleFor(bucket, relativeSuffix) {
+      const node = document.createElementNS(NS, 'title');
+      const when = formatRelative(bucket.start) ?? formatTime(bucket.start);
+      node.textContent = `${bucket.count} incident${bucket.count === 1 ? '' : 's'}`
+        + `${bucket.elevated > 0 ? `, ${bucket.elevated} high or critical` : ''} — ${when}${relativeSuffix}`;
+      return node;
+    }
+  }
+
+  /** The score card: the number, what it is made of, and what it is not. */
+  function scoreCard(score) {
+    const card = element('section', 'score-card');
+    const colour = SCORE_BAND_COLOUR[score.band] ?? 'var(--accent)';
+
+    const head = element('div', 'score-head');
+    const value = element('span', 'score-value', score.value.toFixed(1));
+    value.style.color = colour;
+    head.append(value);
+
+    const heading = element('div', 'score-heading');
+    heading.append(element('h3', null, 'Geopolitical Activity Score'));
+
+    const band = element('span', 'score-band', score.band);
+    band.style.color = colour;
+    heading.append(band);
+    heading.append(element(
+      'span',
+      'score-rate',
+      `${score.weightedPerDay} weighted incidents/day over `
+        + `${score.incidentsScored} incident${score.incidentsScored === 1 ? '' : 's'}`,
+    ));
+    head.append(heading);
+    card.append(head);
+
+    const notice = element('p', 'score-notice');
+    notice.append(element('strong', null, 'Heuristic. '));
+    notice.append(document.createTextNode(score.notice));
+    card.append(notice);
+
+    if (score.truncated) {
+      card.append(element(
+        'p',
+        'score-warning',
+        'Computed over a capped sample of this window, so it is a partial figure.',
+      ));
+    }
+
+    const details = element('details', 'score-detail');
+    details.append(element('summary', null, 'How this number is built'));
+
+    // Listed rather than charted, deliberately. Four of these are multipliers and the fifth is a
+    // rate in incidents per day, so drawing them on one axis would invite a comparison between
+    // quantities that share no unit — the bar for "confidence 0.61" would simply look smaller than
+    // the bar for "7.71 per day", which means nothing.
+    const breakdown = element('dl', 'score-components');
+
+    score.components.forEach((component) => {
+      const term = element('dt');
+      term.append(element('span', 'score-component-label', component.label));
+      term.append(element('span', 'score-component-value', component.value));
+      breakdown.append(term);
+      breakdown.append(element('dd', null, component.description));
+    });
+
+    details.append(breakdown);
+    details.append(element('pre', 'score-formula', score.formula));
+    card.append(details);
+
+    return card;
+  }
+
+  function analyticsSection(title, hint) {
+    const node = element('section', 'analytics-section');
+    node.append(element('h3', null, title));
+    if (hint) node.append(element('p', 'analytics-hint', hint));
+    return node;
+  }
+
+  function renderAnalytics(report) {
+    dom.analyticsBody.replaceChildren();
+
+    dom.analyticsPeriod.textContent = report.incidentCount === 0
+      ? 'Nothing recorded in this window'
+      : `${formatTime(report.from)} — ${formatTime(report.to)}`;
+
+    dom.analyticsBody.append(scoreCard(report.score));
+
+    const tiles = element('div', 'stat-grid');
+    tiles.append(statTile('Incidents', report.incidentCount));
+    tiles.append(statTile('Correlated', report.correlatedIncidentCount, 'drew on more than one report'));
+    tiles.append(statTile('Observations', report.observationCount, 'including duplicates'));
+    tiles.append(statTile('Satellite detections', report.satelliteObservationCount));
+    dom.analyticsBody.append(tiles);
+
+    if (report.timeseries?.length) {
+      const chart = analyticsSection(
+        'Incidents over time',
+        'Oldest at the left. The brighter portion of each bar is the High and Critical share.',
+      );
+      chart.append(timeseriesChart(report.timeseries, timeSuffix === 'ago' ? ' ago' : ` ${timeSuffix}`));
+      chart.append(element(
+        'p',
+        'analytics-hint',
+        `${report.timeseries.length} buckets across ${report.windowLabel.toLowerCase()}.`,
+      ));
+      dom.analyticsBody.append(chart);
+    }
+
+    if (report.bySeverity?.length) {
+      const node = analyticsSection('By severity');
+      node.append(barList(
+        report.bySeverity.map((row) => ({ label: humanise(row.category), count: row.count, severity: row.category })),
+        (row) => colourFor(row.severity),
+      ));
+      dom.analyticsBody.append(node);
+    }
+
+    if (report.byEventType?.length) {
+      const node = analyticsSection('By event type');
+      node.append(barList(report.byEventType.map((row) => ({ label: humanise(row.category), count: row.count }))));
+      dom.analyticsBody.append(node);
+    }
+
+    if (report.byRegion?.length) {
+      const node = analyticsSection(
+        'By region',
+        'Grouped by the country the gazetteer resolved, or by place name where a report fell outside any country.',
+      );
+      node.append(barList(report.byRegion.map((row) => ({
+        label: row.countryCode ? `${row.name} (${row.countryCode})` : row.name,
+        count: row.count,
+      }))));
+      dom.analyticsBody.append(node);
+    }
+
+    if (report.bySourceKind?.length) {
+      const node = analyticsSection('Where the evidence came from');
+      node.append(barList(report.bySourceKind.map((row) => ({ label: humanise(row.category), count: row.count }))));
+      dom.analyticsBody.append(node);
+    }
+
+    if (report.byObservationStatus?.length) {
+      const node = analyticsSection(
+        'What the pipeline did with it',
+        'Terminal state of each observation received in this window. Duplicates and failures are kept, not discarded.',
+      );
+      node.append(barList(report.byObservationStatus.map((row) => ({ label: humanise(row.category), count: row.count }))));
+      dom.analyticsBody.append(node);
+    }
+
+    const maritime = report.maritime;
+
+    if (maritime) {
+      const node = analyticsSection(
+        'Maritime activity',
+        'Counts proximities, not distinct incidents: watch radii overlap, so a report between two '
+          + 'passages is counted by both. Proximity is not an assessment of threat.',
+      );
+
+      node.append(element(
+        'p',
+        'analytics-summary',
+        maritime.chokepointsWithActivity === 0
+          ? `Nothing recorded within the watch radius of any of the ${maritime.chokepointsWatched} passages.`
+          : `${maritime.chokepointsWithActivity} of ${maritime.chokepointsWatched} watched passages had `
+            + `activity, busiest ${maritime.busiest.name} with ${maritime.busiest.incidentCount}.`,
+      ));
+
+      const active = maritime.chokepoints.filter((row) => row.incidentCount > 0);
+
+      if (active.length > 0) {
+        node.append(barList(active.map((row) => ({ label: row.name, count: row.incidentCount }))));
+      }
+
+      dom.analyticsBody.append(node);
+    }
+  }
+
+  /**
+   * Fetches one window, reusing an already-fetched report.
+   *
+   * A failure renders as a message in the panel rather than propagating: analytics are a secondary
+   * view, and a snapshot published before this feature existed simply has no files to serve.
+   */
+  async function showAnalytics(token) {
+    if (!dataSource?.loadAnalytics) {
+      dom.analyticsBody.replaceChildren(element('p', 'empty-state', 'This data source does not provide analytics.'));
+      return;
+    }
+
+    if (analyticsCache.has(token)) {
+      renderAnalytics(analyticsCache.get(token));
+      return;
+    }
+
+    dom.analyticsBody.replaceChildren(element('p', 'empty-state', 'Loading analytics…'));
+
+    try {
+      const report = await dataSource.loadAnalytics(token);
+      analyticsCache.set(token, report);
+      renderAnalytics(report);
+    } catch (error) {
+      console.error(error);
+      dom.analyticsBody.replaceChildren(element(
+        'p',
+        'empty-state',
+        'Analytics could not be loaded from this data source.',
+      ));
+    }
+  }
+
+  function wireAnalytics() {
+    ANALYTICS_WINDOWS.forEach((choice) => {
+      const option = document.createElement('option');
+      option.value = choice.token;
+      option.textContent = choice.label;
+      dom.analyticsWindow.append(option);
+    });
+
+    dom.analyticsWindow.addEventListener('change', () => showAnalytics(dom.analyticsWindow.value));
+  }
+
   async function loadSnapshotState() {
     const [loadedIncidents, loadedObservations, chokepoints] = await Promise.all([
       dataSource.loadIncidents(),
@@ -1084,6 +1467,8 @@
       applyBasemap(dom.basemapFilter.value).catch((error) => console.error('Basemap switch failed', error));
     });
 
+    wireAnalytics();
+
     document.querySelectorAll('.tab').forEach((tab) => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach((other) => {
@@ -1094,6 +1479,13 @@
         document.querySelectorAll('.tab-panel').forEach((panel) => {
           panel.hidden = panel.id !== `${tab.dataset.tab}Tab`;
         });
+
+        // Fetched on first view rather than at start-up. A visitor who never opens the tab should
+        // not pay for the request, and the panel is not on screen to show a result until they do.
+        if (tab.dataset.tab === 'analytics' && !analyticsLoaded) {
+          analyticsLoaded = true;
+          showAnalytics(dom.analyticsWindow.value);
+        }
       });
     });
   }

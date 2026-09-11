@@ -135,6 +135,7 @@ spatial.MapGet(
     .WithSummary("Recorded activity around each watched maritime chokepoint.");
 
 app.MapObservationEndpoints();
+app.MapAnalyticsEndpoints();
 app.MapHub<IncidentHub>(IncidentHub.Path);
 
 app.MapHealthChecks(

@@ -76,6 +76,7 @@
         <button class="tab" role="tab" data-tab="chokepoints" aria-selected="false">
           Chokepoints <span id="chokepointCount" class="count">0</span>
         </button>
+        <button class="tab" role="tab" data-tab="analytics" aria-selected="false">Analytics</button>
         <button class="tab" role="tab" data-tab="submit" aria-selected="false" id="submitTabButton">Submit</button>
         <button class="tab" role="tab" data-tab="about" aria-selected="false">About</button>
       </nav>
@@ -100,6 +101,17 @@
         </p>
         <p class="feed-hint" id="chokepointMethod"></p>
         <div id="chokepointList" class="chokepoint-list"></div>
+      </div>
+
+      <div id="analyticsTab" class="tab-panel analytics" role="tabpanel" hidden>
+        <div class="analytics-toolbar">
+          <label class="filter">
+            <span>Window</span>
+            <select id="analyticsWindow"></select>
+          </label>
+          <span id="analyticsPeriod" class="analytics-period"></span>
+        </div>
+        <div id="analyticsBody" class="analytics-body"></div>
       </div>
 
       <div id="submitTab" class="tab-panel submit" role="tabpanel" hidden>
@@ -189,6 +201,21 @@
         <p>
           No classical ML model exists yet. Severity comes from enrichment or from keywords, and a
           trained model is a later increment.
+        </p>
+
+        <h3>The activity score</h3>
+        <p>
+          The <strong>Analytics</strong> tab reports a Geopolitical Activity Score for each window.
+          It is an openly documented heuristic, not a risk assessment: every incident contributes
+          <em>severity × recency × corroboration × confidence</em>, the total is divided by the
+          window length to give a rate, and that rate is mapped onto 0–100 by a saturating curve.
+          The formula, the per-factor breakdown, and the raw rate are all shown next to the number,
+          because a score a reader cannot take apart is a score they have to take on trust.
+        </p>
+        <p>
+          It summarises <em>what this system ingested</em>. A quiet score can mean a quiet period, or
+          it can mean no adapter was configured and nothing arrived — those are different facts and
+          the score cannot tell them apart.
         </p>
 
         <h3>Rules the pipeline enforces</h3>

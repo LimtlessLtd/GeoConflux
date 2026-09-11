@@ -27,10 +27,11 @@ dotnet run --project src/Geopolitics.Api
 
 ## What works today
 
-Sprints 1 to 3 are complete, and Sprint 4 has begun with live OSINT ingestion. The application
+Sprints 1 to 4 are complete, and Sprint 5 has begun with the analytics layer. The application
 ingests a recorded observation stream, enriches each item through a schema-validated AI stage,
-processes it asynchronously, and streams results to the dashboard in realtime. Adapters for RSS,
-NASA FIRMS, and ACLED feed the same pipeline when they are configured; all three ship disabled.
+processes it asynchronously, streams results to the dashboard in realtime, and summarises what it
+has stored across four time windows. Adapters for RSS, NASA FIRMS, and ACLED feed the same pipeline
+when they are configured; all three ship disabled.
 
 ```text
 IEventSource -> validation -> bounded Channel -> background processor
@@ -55,7 +56,10 @@ Concretely, running the app locally will:
 - show a confidence score and the method that produced it beside every classification;
 - push each result to the browser over SignalR with no page refresh;
 - report what was recorded near each watched maritime chokepoint, with measured distances, in the
-  **Chokepoints** tab.
+  **Chokepoints** tab;
+- summarise the last 24 hours, 7, 30, or 90 days in the **Analytics** tab — severity and event-type
+  distributions, regional activity, where the evidence came from, what the pipeline did with it,
+  incidents over time, and a documented activity score shown with the formula that produced it.
 
 You can also submit your own observation from the **Submit** tab and watch it go through the same
 pipeline.
@@ -225,6 +229,18 @@ rerun `dotnet test tests/Geopolitics.AiEvaluationTests`.
 - **No classification is shown without its confidence and method.** A category on its own reads as a
   fact; "HIGH, 45%, keyword match" does not. Both are persisted on the observation and the incident,
   not computed for display.
+- **The activity score is a heuristic, and cannot be quoted without saying so.** Each incident
+  contributes severity x recency x corroboration x confidence; the total is divided by the window
+  length to give a rate, and that rate is mapped onto 0-100 by a saturating curve. The formula, the
+  per-factor breakdown, the raw rate, and the caveat all travel in the same payload and render in the
+  same card as the number, because a score that can be screenshotted away from its definition will be
+  ([ADR 018](docs/adr/018-geopolitical-activity-score.md)).
+- **Analytics aggregate in SQL; only what SQL cannot express is sampled.** Every breakdown is a
+  `GROUP BY` returning one row per class, so its cost tracks the number of classes rather than how
+  busy the period was. The timeseries and the score need per-incident time arithmetic over timestamps
+  stored as converted ticks, which SQLite cannot bucket or decay, so those two share one capped
+  four-column projection — and the response says when the cap bound
+  ([ADR 019](docs/adr/019-analytics-aggregation.md)).
 - **No ML model is used yet.** Severity comes from enrichment or from keywords. A trained model and
   the LLM-versus-ML-versus-label comparison are a later increment
   ([ADR 009](docs/adr/009-ml-model.md)).
@@ -258,6 +274,8 @@ credential is ever read from a committed file.
 | `POST /api/observations` | Queue a manual observation (returns `202 Accepted`) |
 | `GET /api/spatial/incidents-near` | Incidents within a radius of a point, nearest first, with measured distances |
 | `GET /api/spatial/chokepoints` | Recorded activity around each watched maritime chokepoint |
+| `GET /api/analytics` | Distributions, timeseries, maritime summary, and activity score for one window (`?window=24h\|7d\|30d\|90d`) |
+| `GET /api/analytics/windows` | The windows analytics can be requested over |
 | `GET /api/health` | Health, including processing-queue depth and saturation |
 | `/hubs/incidents` | SignalR hub for realtime updates |
 | `GET /openapi/v1.json` | OpenAPI document |
@@ -346,16 +364,25 @@ outage, and a rejected credential) driven through the application's real HTTP an
 the correlation signals (lexical similarity, entity overlap, the positional ceiling, and the
 over-merge guards) and the per-category gate; the spatial layer (bounding-box containment around a
 full circle of bearings, antimeridian wrap, pole spanning, the corner case the rectangle admits and
-the circle rejects, and chokepoint counting and ordering); end-to-end integration tests that drive the real host
+the circle rejects, and chokepoint counting and ordering); the analytics layer (score bounds, monotonicity in each of
+the four factors, the corroboration ceiling, rate-invariance across windows, half-open window
+boundaries, and full-length timeseries including empty buckets); end-to-end integration tests that
+drive the real host
 and assert on what the API then serves, including a concurrency test that reproduces the correlation
 race and is verified to fail when the gate is removed; and the evaluation harness above.
 
 ## Not yet implemented
 
-There are no time-windowed analytics and no ML model yet. Those arrive in Sprints 5 and 6 and are
-deliberately not represented as working before then.
+There is no ML severity model yet, so the LLM-versus-ML-versus-label comparison has nothing to
+compare. It is the remainder of Sprint 5 and is deliberately not represented as working before then.
 
-Three limitations worth stating plainly:
+Four limitations worth stating plainly:
+
+- **The activity score summarises this database, not the world.** It measures what the system
+  ingested. A quiet score may mean a quiet period, or it may mean no adapter was configured and
+  nothing arrived — the score cannot tell those apart. Its saturation constant is calibrated against
+  the volumes this project produces, so scores from two differently-calibrated deployments are not
+  comparable ([ADR 018](docs/adr/018-geopolitical-activity-score.md)).
 
 - **The globe has no 3D terrain or buildings.** Those need a Cesium ion token, which is a credential,
   so they stay out. Imagery is 2D draped on a sphere.

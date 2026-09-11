@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Geopolitics.Application;
 using Geopolitics.Application.Abstractions;
+using Geopolitics.Application.Analytics;
 using Geopolitics.Application.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -101,6 +102,7 @@ public static partial class SnapshotExporter
         var incidentQueries = scope.ServiceProvider.GetRequiredService<IIncidentQueryService>();
         var observationQueries = scope.ServiceProvider.GetRequiredService<IObservationQueryService>();
         var spatialQueries = scope.ServiceProvider.GetRequiredService<ISpatialQueryService>();
+        var analyticsQueries = scope.ServiceProvider.GetRequiredService<IAnalyticsService>();
 
         var incidents = await incidentQueries.ListAsync(new IncidentSearch(250), cancellationToken);
         var observations = await observationQueries.ListRecentAsync(200, cancellationToken);
@@ -125,6 +127,19 @@ public static partial class SnapshotExporter
         // ago the build happened.
         var chokepoints = await spatialQueries.AnalyseChokepointsAsync(TimeSpan.FromDays(30), cancellationToken);
         await WriteJsonAsync(Path.Combine(outputDirectory, "chokepoints.json"), chokepoints, cancellationToken);
+
+        // Every window is exported rather than only the default, so the published page can switch
+        // between them without a backend. They are computed at build time against the clock of the
+        // run that produced them, which is why the page measures their age from the snapshot
+        // timestamp rather than from the visitor's clock.
+        var analyticsDirectory = Path.Combine(outputDirectory, "analytics");
+        Directory.CreateDirectory(analyticsDirectory);
+
+        foreach (var window in AnalyticsWindow.All)
+        {
+            var report = await analyticsQueries.BuildAsync(window, cancellationToken);
+            await WriteJsonAsync(Path.Combine(analyticsDirectory, $"{window.Token}.json"), report, cancellationToken);
+        }
 
         var meta = new SnapshotMeta(
             GeneratedAt: DateTimeOffset.UtcNow,

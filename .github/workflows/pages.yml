@@ -67,7 +67,9 @@ jobs:
         run: |
           set -euo pipefail
           for file in dist/index.html dist/app.js dist/styles.css \
-                      dist/data/meta.json dist/data/incidents.json dist/data/observations.json; do
+                      dist/data/meta.json dist/data/incidents.json dist/data/observations.json \
+                      dist/data/analytics/24h.json dist/data/analytics/7d.json \
+                      dist/data/analytics/30d.json dist/data/analytics/90d.json; do
             test -s "$file" || { echo "::error::Missing or empty: $file"; exit 1; }
           done
           # An empty run would publish a blank dashboard, which is worse than failing the build.

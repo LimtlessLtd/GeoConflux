@@ -1,5 +1,6 @@
 using Geopolitics.Application;
 using Geopolitics.Application.Abstractions;
+using Geopolitics.Application.Analytics;
 using Geopolitics.Application.Enrichment;
 using Geopolitics.Application.Pipeline;
 using Geopolitics.Application.Spatial;
@@ -38,8 +39,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IIncidentRepository, EfIncidentRepository>();
         services.AddScoped<IObservationRepository, EfObservationRepository>();
         services.AddScoped<IAiInferenceRepository, EfAiInferenceRepository>();
+        services.AddScoped<IAnalyticsRepository, EfAnalyticsRepository>();
         services.AddScoped<IIncidentQueryService, IncidentQueryService>();
         services.AddScoped<ISpatialQueryService, SpatialQueryService>();
+        services.AddScoped<IAnalyticsService, AnalyticsService>();
 
         // Reference data, immutable and shared.
         services.AddSingleton<IChokepointCatalogue, MaritimeChokepointCatalogue>();

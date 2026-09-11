@@ -692,3 +692,181 @@ html, body {
 
 .chokepoint-incidents button:hover { text-decoration: underline; }
 .chokepoint-distance { color: var(--muted); white-space: nowrap; }
+
+/* ---------------------------------------------------------------- analytics */
+
+.analytics-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: .6rem;
+  padding: .8rem 1rem .2rem;
+  flex-wrap: wrap;
+}
+
+.analytics-period { color: var(--muted); font-size: .68rem; }
+
+.analytics-body { display: flex; flex-direction: column; gap: .6rem; padding: .8rem; }
+
+.analytics-section {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: .6rem .7rem;
+}
+
+.analytics-section h3 {
+  margin: 0 0 .4rem;
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+
+.analytics-hint { margin: .3rem 0 .45rem; color: var(--muted); font-size: .66rem; line-height: 1.45; }
+
+.analytics-summary { margin: 0 0 .45rem; font-size: .72rem; }
+
+/* The score card. Given more weight than the breakdowns below it because it is the one figure a
+   visitor is likely to quote, which is also why its caveat sits inside the same card rather than
+   somewhere the number can be screenshotted away from. */
+.score-card {
+  background: linear-gradient(180deg, var(--panel-2), var(--panel));
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: .7rem .8rem;
+}
+
+.score-head { display: flex; align-items: center; gap: .75rem; }
+
+.score-value { font-size: 2.4rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+
+.score-heading { display: flex; flex-direction: column; gap: .1rem; min-width: 0; }
+
+.score-heading h3 { margin: 0; font-size: .8rem; font-weight: 600; }
+
+.score-band { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+
+.score-rate { color: var(--muted); font-size: .64rem; }
+
+.score-notice { margin: .55rem 0 0; color: var(--muted); font-size: .66rem; line-height: 1.5; }
+
+.score-notice strong { color: var(--medium); }
+
+.score-warning {
+  margin: .4rem 0 0;
+  padding: .35rem .45rem;
+  border-left: 2px solid var(--high);
+  background: rgba(255, 159, 28, .08);
+  font-size: .66rem;
+}
+
+.score-detail { margin-top: .5rem; }
+
+.score-detail summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-size: .68rem;
+  padding: .2rem 0;
+}
+
+.score-components { margin: .5rem 0 0; }
+
+.score-components dt {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: .5rem;
+  padding-top: .35rem;
+  border-top: 1px solid var(--line);
+}
+
+.score-components dt:first-of-type { padding-top: 0; border-top: 0; }
+
+.score-component-label { font-size: .7rem; font-weight: 600; }
+
+.score-component-value {
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.score-components dd {
+  margin: .1rem 0 .35rem;
+  color: var(--muted);
+  font-size: .63rem;
+  line-height: 1.45;
+}
+
+.score-formula {
+  margin: .5rem 0 0;
+  padding: .45rem .5rem;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--muted);
+  font-size: .6rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .45rem; }
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: .1rem;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: .5rem .6rem;
+}
+
+.stat-value { font-size: 1.3rem; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+
+.stat-label { font-size: .68rem; color: var(--text); }
+
+.stat-hint { font-size: .6rem; color: var(--muted); }
+
+.bars { display: flex; flex-direction: column; gap: .28rem; }
+
+/* Fixed label and count columns so the bars share one baseline and stay comparable down the list.
+   An auto-width label would make every track start somewhere different. */
+.bar-row {
+  display: grid;
+  grid-template-columns: 8.5rem 1fr 2rem;
+  align-items: center;
+  gap: .4rem;
+  font-size: .68rem;
+}
+
+.bar-label {
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bar-track { height: .5rem; background: var(--bg); border-radius: 3px; overflow: hidden; }
+
+.bar-fill { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+
+.bar-count { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.timeseries { display: block; width: 100%; height: 68px; }
+
+.ts-bar { fill: var(--accent); opacity: .55; }
+
+.ts-elevated { fill: var(--high); }
+
+.ts-axis { fill: var(--line); }
+
+/* Empty buckets are drawn as a tick on the axis rather than omitted, so a quiet stretch reads as
+   "nothing was recorded" instead of as missing data. */
+.ts-empty { fill: var(--line); }
+
+@media (max-width: 900px) {
+  .stat-grid { grid-template-columns: 1fr; }
+  .bar-row { grid-template-columns: 6.5rem 1fr 2rem; }
+}
