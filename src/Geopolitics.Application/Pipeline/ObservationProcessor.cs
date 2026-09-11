@@ -83,7 +83,13 @@ public sealed partial class ObservationProcessor(
         RawObservation observation,
         CancellationToken cancellationToken)
     {
-        var duplicateOf = await observationRepository.FindByFingerprintAsync(observation.Fingerprint, cancellationToken);
+        Guid? duplicateOf;
+
+        using (var stage = diagnostics.StartStage(PipelineDiagnostics.Stages.Deduplicate))
+        {
+            duplicateOf = await observationRepository.FindByFingerprintAsync(observation.Fingerprint, cancellationToken);
+            stage.Tag("observation.duplicate", duplicateOf is not null);
+        }
 
         if (duplicateOf is { } originalId)
         {
@@ -101,14 +107,23 @@ public sealed partial class ObservationProcessor(
         // Enrichment runs after deduplication, not before. A re-delivery of a report that has
         // already been enriched would otherwise buy a second identical inference at full latency
         // and full provider cost for an observation the pipeline is about to stop processing.
-        await EnrichAsync(envelope, observation, cancellationToken);
+        using (var stage = diagnostics.StartStage(PipelineDiagnostics.Stages.Enrich))
+        {
+            await EnrichAsync(envelope, observation, cancellationToken);
+            stage.Tag("classification.method", observation.ClassificationMethod);
+            stage.Tag("classification.confidence", observation.ClassificationConfidence);
+        }
 
         // After enrichment, because the model's features include the category and confidence
         // enrichment produced. Before correlation, so the prediction is recorded against the
         // observation whether or not it ends up joining an incident.
         await RecordModelSeverityAsync(observation, cancellationToken);
 
-        await ResolveLocationAsync(envelope, observation, cancellationToken);
+        using (var stage = diagnostics.StartStage(PipelineDiagnostics.Stages.ResolveLocation))
+        {
+            await ResolveLocationAsync(envelope, observation, cancellationToken);
+            stage.Tag("location.resolved", observation.Location is not null);
+        }
 
         // Held from the candidate read through to the commit. Correlating outside it would let a
         // second worker holding a report of the same event read the same candidates and open a
@@ -118,9 +133,14 @@ public sealed partial class ObservationProcessor(
         // they touch no shared state, so serialising them would cost throughput and buy nothing.
         using var gate = await correlationGate.AcquireAsync(observation.EventType, cancellationToken);
 
+        using var correlateStage = diagnostics.StartStage(PipelineDiagnostics.Stages.Correlate);
+
         var assessment = await correlator.CorrelateAsync(observation, cancellationToken);
         var incidentCreated = false;
         GeopoliticalIncident incident;
+
+        correlateStage.Tag("correlation.confidence", assessment.Confidence);
+        correlateStage.Tag("correlation.matched", assessment.Incident is not null);
 
         if (assessment.Incident is { } existing)
         {
@@ -172,17 +192,28 @@ public sealed partial class ObservationProcessor(
             LogIncidentCreated(logger, incident.Id, observation.Id, assessment.Rationale);
         }
 
-        observation.LinkToIncident(incident.Id);
-        observation.MarkPersisted();
-        await observationRepository.AddAsync(observation, cancellationToken);
+        correlateStage.Tag("incident.id", incident.Id);
+        correlateStage.Tag("incident.created", incidentCreated);
 
-        // One save so the observation, the incident, and their linkage commit together. Nothing is
-        // announced to clients until this succeeds.
-        await incidentRepository.SaveChangesAsync(cancellationToken);
+        using (var persistStage = diagnostics.StartStage(PipelineDiagnostics.Stages.Persist))
+        {
+            observation.LinkToIncident(incident.Id);
+            observation.MarkPersisted();
+            await observationRepository.AddAsync(observation, cancellationToken);
+
+            // One save so the observation, the incident, and their linkage commit together. Nothing
+            // is announced to clients until this succeeds.
+            await incidentRepository.SaveChangesAsync(cancellationToken);
+            persistStage.Tag("incident.observation_count", incident.ObservationCount);
+        }
 
         diagnostics.ItemsProcessed.Add(1, new KeyValuePair<string, object?>("source", observation.SourceName));
 
-        await PublishAsync(observation, incident, incidentCreated, cancellationToken);
+        using (var stage = diagnostics.StartStage(PipelineDiagnostics.Stages.Publish))
+        {
+            await PublishAsync(observation, incident, incidentCreated, cancellationToken);
+            stage.Tag("incident.created", incidentCreated);
+        }
 
         return new ObservationProcessingResult(ProcessingOutcome.Persisted, observation.Id, incident.Id, incidentCreated, null);
     }
@@ -209,6 +240,8 @@ public sealed partial class ObservationProcessor(
             return;
         }
 
+        using var stage = diagnostics.StartStage(PipelineDiagnostics.Stages.ScoreSeverity);
+
         try
         {
             var prediction = await severityModel.PredictAsync(
@@ -229,8 +262,18 @@ public sealed partial class ObservationProcessor(
 
             observation.RecordModelSeverity(prediction.Severity, prediction.Confidence, prediction.ModelVersion);
 
+            diagnostics.ModelPredictions.Add(1, new KeyValuePair<string, object?>("model", prediction.ModelVersion));
+            stage.Tag("model.version", prediction.ModelVersion);
+            stage.Tag("model.severity", prediction.Severity.ToString());
+            stage.Tag("model.disagrees", observation.ModelDisagrees);
+
             if (observation.ModelDisagrees)
             {
+                diagnostics.ModelDisagreements.Add(
+                    1,
+                    new KeyValuePair<string, object?>("applied", observation.Severity.ToString()),
+                    new KeyValuePair<string, object?>("predicted", prediction.Severity.ToString()));
+
                 // Logged rather than silently stored. A run in which the model disagrees with
                 // everything is the signal that it has drifted from what the pipeline is seeing,
                 // and it should be visible without anyone querying for it.
@@ -249,6 +292,8 @@ public sealed partial class ObservationProcessor(
         }
         catch (Exception exception)
         {
+            diagnostics.ModelFailures.Add(1, new KeyValuePair<string, object?>("model", severityModel.Version));
+            stage.Fail(exception.Message);
             LogModelPredictionFailed(logger, exception, observation.Id);
         }
     }

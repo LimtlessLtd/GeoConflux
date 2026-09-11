@@ -39,6 +39,72 @@ public sealed class PipelineDiagnostics : IDisposable
         Publications = meter.CreateCounter<long>("signalr.publications", "{message}", "Realtime messages published after persistence.");
         PublicationFailures = meter.CreateCounter<long>("signalr.publication_failures", "{message}", "Realtime publications that failed after a successful save.");
         ProcessingDuration = meter.CreateHistogram<double>("pipeline.processing.duration", "ms", "End-to-end processing time for one observation.");
+        StageDuration = meter.CreateHistogram<double>("pipeline.stage.duration", "ms", "Wall-clock time for one pipeline stage, tagged by stage name.");
+        ModelPredictions = meter.CreateCounter<long>("ml.severity.predictions", "{prediction}", "Severity predictions recorded against an observation.");
+        ModelDisagreements = meter.CreateCounter<long>("ml.severity.disagreements", "{prediction}", "Predictions that differed from the severity the pipeline applied.");
+        ModelFailures = meter.CreateCounter<long>("ml.severity.failures", "{prediction}", "Prediction attempts that failed; the observation continued without a second opinion.");
+    }
+
+    /// <summary>
+    /// Names of the stages a single observation passes through, used as both span names and the
+    /// <c>stage</c> tag on <see cref="StageDuration"/> so a trace and a metric can be read against
+    /// each other rather than describing the pipeline in two different vocabularies.
+    /// </summary>
+    public static class Stages
+    {
+        public const string Deduplicate = "pipeline.deduplicate";
+        public const string Enrich = "pipeline.enrich";
+        public const string ScoreSeverity = "pipeline.score_severity";
+        public const string ResolveLocation = "pipeline.resolve_location";
+        public const string Correlate = "pipeline.correlate";
+        public const string Persist = "pipeline.persist";
+        public const string Publish = "pipeline.publish";
+    }
+
+    /// <summary>
+    /// Starts a child span for one stage and records its duration when disposed.
+    /// <para>
+    /// Both, from one call, deliberately. A span without a matching metric cannot be aggregated
+    /// across a run, and a metric without a span cannot be attributed to the observation that caused
+    /// it — and keeping the two in separate call sites is how they drift until the trace says a
+    /// stage is slow and the dashboard says it is not.
+    /// </para>
+    /// </summary>
+    public StageScope StartStage(string stageName) => new(this, stageName);
+
+    /// <summary>Span and timer for one stage. Ends both on dispose, including on the exception path.</summary>
+    public readonly struct StageScope : IDisposable
+    {
+        private readonly PipelineDiagnostics diagnostics;
+        private readonly Activity? activity;
+        private readonly long startedAt;
+        private readonly string stageName;
+
+        internal StageScope(PipelineDiagnostics diagnostics, string stageName)
+        {
+            this.diagnostics = diagnostics;
+            this.stageName = stageName;
+            activity = diagnostics.ActivitySource.StartActivity(stageName, ActivityKind.Internal);
+            startedAt = Stopwatch.GetTimestamp();
+        }
+
+        /// <summary>Adds detail to the stage span. A no-op when nothing is listening, as spans are.</summary>
+        public void Tag(string key, object? value) => activity?.SetTag(key, value);
+
+        /// <summary>
+        /// Marks the stage as failed on the span. The metric is still recorded: how long a stage took
+        /// before it failed is one of the more useful things to know about it.
+        /// </summary>
+        public void Fail(string reason) => activity?.SetStatus(ActivityStatusCode.Error, reason);
+
+        public void Dispose()
+        {
+            diagnostics.StageDuration.Record(
+                Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds,
+                new KeyValuePair<string, object?>("stage", stageName));
+
+            activity?.Dispose();
+        }
     }
 
     public ActivitySource ActivitySource { get; } = new(ActivitySourceName);
@@ -84,6 +150,23 @@ public sealed class PipelineDiagnostics : IDisposable
     public Counter<long> PublicationFailures { get; }
 
     public Histogram<double> ProcessingDuration { get; }
+
+    /// <summary>
+    /// Per-stage duration, tagged by stage. Separate from <see cref="ProcessingDuration"/> because
+    /// the end-to-end figure answers "is the pipeline slow" and this one answers "which part".
+    /// </summary>
+    public Histogram<double> StageDuration { get; }
+
+    public Counter<long> ModelPredictions { get; }
+
+    /// <summary>
+    /// How often the trained model differed from the severity applied. Worth a counter rather than
+    /// only a log line: a rate that moves is the signal the model has drifted from the traffic it is
+    /// seeing, and that is a trend, not an event.
+    /// </summary>
+    public Counter<long> ModelDisagreements { get; }
+
+    public Counter<long> ModelFailures { get; }
 
     public void Dispose()
     {

@@ -2,32 +2,33 @@
 
 ## Boundary model
 
-```text
-                  +------------------------+
-                  | API / Workers          |
-                  | HTTP, SignalR,         |
-                  | hosting, composition   |
-                  +-----------+------------+
-                              |
-                  +-----------v------------+
-                  | Infrastructure         |
-                  | EF Core, SQLite, queue,|
-                  | sources, gazetteer,    |
-                  | AI providers           |
-                  +-----------+------------+
-                              |
-                  +-----------v------------+
-                  | Application            |
-                  | pipeline, use cases,   |
-                  | contracts, abstractions|
-                  +-----------+------------+
-                              |
-                  +-----------v------------+
-                  | Domain                 |
-                  | incidents, observations|
-                  | locations, invariants  |
-                  +------------------------+
+Arrows are compile-time references. Every one of them points inward, and the Domain project has no
+outward reference at all — which is what makes "the domain does not know about EF Core" a fact the
+compiler enforces rather than a convention anyone has to remember.
+
+```mermaid
+flowchart TD
+    API["<b>API / Workers</b><br/>HTTP, SignalR, hosting, composition"]
+    INF["<b>Infrastructure</b><br/>EF Core, SQLite, queue, sources,<br/>gazetteer, AI providers, ML model"]
+    APP["<b>Application</b><br/>pipeline, use cases, contracts, abstractions"]
+    DOM["<b>Domain</b><br/>incidents, observations, locations, invariants"]
+
+    API --> INF
+    API --> APP
+    INF --> APP
+    APP --> DOM
+    INF --> DOM
+
+    classDef outer fill:#121c2a,stroke:#64dfdf,color:#e6edf5
+    classDef inner fill:#0d141f,stroke:#8ea3bb,color:#e6edf5
+    class API,INF outer
+    class APP,DOM inner
 ```
+
+Infrastructure depends on Application rather than the reverse: the pipeline declares what it needs as
+an interface — `ILocationResolver`, `IEventEnrichmentService`, `ISeverityModel`, `IObservationQueue` —
+and Infrastructure supplies an implementation. That inversion is what lets the gazetteer, the AI
+provider, and the severity model be swapped, disabled, or faked without the pipeline changing.
 
 ## Ingestion adapters
 
@@ -80,8 +81,50 @@ ObservationProcessor
       |-- resolve location     deterministic resolver only          (ADR 005)
       |-- correlate            positional ceiling + corroboration   (ADR 006, 016)
       |                        serialised per category across the commit
+      |-- score severity       trained model; recorded, never applied (ADR 020)
       |-- persist              observation, incident, inference     (one save)
       +-- publish              SignalR, after commit, best effort   (ADR 008)
+```
+
+The same thing as a graph, with the failure edges that make the ordering load-bearing. Every dashed
+edge is a path where something went wrong and the observation survived anyway:
+
+```mermaid
+flowchart TD
+    SRC["Sources<br/><i>replay, RSS, FIRMS, ACLED, manual</i>"]
+    ING["Ingestion service<br/><i>validation</i>"]
+    Q(["Bounded channel<br/><i>backpressure</i>"])
+    NORM["Normalise"]
+    DEDUP{"Seen this<br/>payload before?"}
+    ENRICH["Enrich<br/><i>AI, schema-validated</i>"]
+    SCORE["Score severity<br/><i>trained model</i>"]
+    LOC{"Resolvable<br/>place name?"}
+    CORR{"Matches an open<br/>incident?"}
+    NEW["Open incident"]
+    LINK["Link as evidence"]
+    SAVE[("Persist<br/><i>one transaction</i>")]
+    PUB["Publish<br/><i>SignalR</i>"]
+    DROP["Recorded as duplicate<br/><i>kept, not deleted</i>"]
+    UNPLACED["Stored unplaced<br/><i>no invented coordinates</i>"]
+
+    SRC --> ING
+    ING -->|rejected| X1["Counted and dropped<br/><i>never queued</i>"]
+    ING --> Q --> NORM --> DEDUP
+    DEDUP -->|yes| DROP
+    DEDUP -->|no| ENRICH --> SCORE --> LOC
+    ENRICH -.->|"provider down, timeout,<br/>or invalid output"| SCORE
+    SCORE -.->|"model unavailable<br/>or failed"| LOC
+    LOC -->|yes| CORR
+    LOC -->|no| UNPLACED --> CORR
+    CORR -->|no| NEW --> SAVE
+    CORR -->|yes| LINK --> SAVE
+    SAVE --> PUB
+    PUB -.->|"no clients, or hub failure"| DONE["Committed regardless"]
+
+    classDef gate fill:#121c2a,stroke:#ffd166,color:#e6edf5
+    classDef survive fill:#121c2a,stroke:#8ea3bb,color:#8ea3bb
+    class DEDUP,LOC,CORR gate
+    class DROP,UNPLACED,X1,DONE survive
 ```
 
 ## AI enrichment
@@ -119,6 +162,63 @@ The model names a place. It cannot position one: the response schema has no lati
 field, so the deterministic resolver is the only path to coordinates (ADR 005). What is persisted is
 a re-serialisation of the validated projection, so no chain-of-thought or unexpected field can
 reach the database.
+
+### The trust boundary, drawn
+
+Everything to the left of the boundary is untrusted. Nothing crosses it except through validation,
+and the two things a model is never permitted to produce are shown as what they are — absent from the
+schema rather than filtered out after the fact, because a field that does not exist cannot be
+smuggled through a validator that forgot to check it.
+
+```mermaid
+flowchart LR
+    subgraph UNTRUSTED["Untrusted"]
+        TEXT["Source text"]
+        MODEL["Language model"]
+        OUT["Raw response"]
+    end
+
+    subgraph GATE["Trust boundary"]
+        VAL["Schema validation<br/><i>versioned, bounded, all errors collected</i>"]
+        REPAIR["One repair turn<br/><i>and only one</i>"]
+        CONF{"Confidence<br/>above threshold?"}
+    end
+
+    subgraph TRUSTED["Trusted"]
+        KEY["Keyword classification<br/><i>deterministic fallback</i>"]
+        GAZ["Gazetteer resolver<br/><i>the only source of coordinates</i>"]
+        STORE[("Persisted state")]
+        AUDIT[("AiInference audit row<br/><i>written either way</i>")]
+    end
+
+    TEXT --> MODEL --> OUT --> VAL
+    VAL -->|"invalid"| REPAIR --> VAL
+    VAL -->|"still invalid"| KEY
+    VAL -->|"valid"| CONF
+    CONF -->|"no"| KEY
+    CONF -->|"yes"| STORE
+    KEY --> STORE
+    OUT -. "place NAME only" .-> GAZ
+    GAZ -->|"coordinates"| STORE
+    VAL --> AUDIT
+    KEY --> AUDIT
+
+    NEVER["<b>Never crosses:</b><br/>latitude, longitude<br/><i>absent from the schema entirely</i>"]
+    MODEL -.->|"cannot"| NEVER
+
+    classDef danger fill:#1a1016,stroke:#ef476f,color:#e6edf5
+    classDef safe fill:#0d141f,stroke:#64dfdf,color:#e6edf5
+    classDef gate fill:#121c2a,stroke:#ffd166,color:#e6edf5
+    class TEXT,MODEL,OUT danger
+    class KEY,GAZ,STORE,AUDIT safe
+    class VAL,REPAIR,CONF gate
+    class NEVER danger
+```
+
+The trained severity model sits on the trusted side but has its own limit, for a different reason.
+Its inputs are already-validated fields, so nothing untrusted reaches it — but it is fitted to a small
+synthetic corpus, so what it produces is recorded beside the applied severity and never replaces one
+(ADR 020).
 
 ### Why the stages are in this order
 
@@ -223,14 +323,38 @@ be processed" are both facts worth auditing.
 ## Observability
 
 `PipelineDiagnostics` owns one meter (`Geopolitics.Pipeline`) and one activity source of the same
-name. Counters cover ingestion, processing, deduplication, incident creation and correlation,
-geocoding outcomes, AI requests, failures, validation failures and repair attempts, and realtime
-publication; histograms record end-to-end processing time tagged by outcome, per-attempt AI latency
-tagged by provider, and per-poll provider latency tagged by provider and outcome. Provider latency
-and provider failures are kept separate from the pipeline counters, because a slow upstream feed and
-a slow pipeline call for different fixes. `Microsoft.Extensions.AI`'s own OpenTelemetry instrumentation is attached
-to the chat client under the `Geopolitics.Ai` activity source. Each processed item opens an activity carrying its source, identifier, and fingerprint,
-so a single observation can be followed from ingestion through to delivery.
+name.
+
+**Counters** cover ingestion, processing, deduplication, incident creation and correlation, geocoding
+outcomes, AI requests, failures, validation failures and repair attempts, realtime publication, and
+the severity model's predictions, disagreements, and failures. Provider latency and provider failures
+are kept separate from the pipeline counters, because a slow upstream feed and a slow pipeline call
+for different fixes.
+
+**Histograms** record end-to-end processing time tagged by outcome, per-attempt AI latency tagged by
+provider, per-poll provider latency tagged by provider and outcome, and per-stage duration tagged by
+stage. The last is the one worth having: the end-to-end figure answers *is the pipeline slow*, and
+only the per-stage one answers *which part*.
+
+**Spans** nest. Each processed item opens a `pipeline.process` activity carrying its source,
+identifier, and fingerprint, and every stage opens a child span under it — `pipeline.deduplicate`,
+`pipeline.enrich`, `pipeline.score_severity`, `pipeline.resolve_location`, `pipeline.correlate`,
+`pipeline.persist`, `pipeline.publish` — tagged with the decision that stage reached: whether the
+payload was a duplicate, what classified it and how confidently, whether a location resolved, the
+correlation confidence and which incident was matched, and what the model predicted. A trace is
+therefore a readable account of one observation's journey rather than a single timed box.
+
+Stage spans and the `pipeline.stage.duration` metric are emitted from one call
+(`PipelineDiagnostics.StartStage`) and share the same stage names. Keeping them in separate call
+sites is how a trace and a dashboard come to describe the same pipeline in two vocabularies, and then
+to disagree about which stage is slow.
+
+`Microsoft.Extensions.AI`'s own OpenTelemetry instrumentation is attached to the chat client under
+the `Geopolitics.Ai` activity source.
+
+That the telemetry is actually emitted is asserted by tests, because instrumentation is the code most
+likely to be silently wrong: a span that never starts and a metric recorded under a name nothing
+subscribes to both look identical to a working system, right up until the incident they existed for.
 
 ## Hosting topology
 

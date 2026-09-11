@@ -34,6 +34,18 @@ public static class SeverityEndpoints
                     return Results.BadRequest(new { error = "A report body is required." });
                 }
 
+                // Bounded to the same ceiling the ingestion path applies to an observation body.
+                // Text featurisation is linear in input length and runs under a lock, so an
+                // unbounded body on this endpoint is a cheap way to stall every other prediction —
+                // and the request-size limit alone would still admit megabytes of it.
+                if (request.Content.Length > MaxContentLength || (request.Title?.Length ?? 0) > MaxTitleLength)
+                {
+                    return Results.BadRequest(new
+                    {
+                        error = $"A report may be at most {MaxContentLength} characters, with a title of at most {MaxTitleLength}.",
+                    });
+                }
+
                 if (!model.IsReady)
                 {
                     // 503 rather than a default severity. A disabled or unfitted model has no opinion,
@@ -80,6 +92,11 @@ public static class SeverityEndpoints
 
         return builder;
     }
+
+    /// <summary>Matches the column width an observation body is stored in, so the two agree.</summary>
+    private const int MaxContentLength = 20_000;
+
+    private const int MaxTitleLength = 300;
 
     private const string Notice =
         "A conventional model trained on a small synthetic, author-labelled corpus. It is a second "

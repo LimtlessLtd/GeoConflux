@@ -27,7 +27,7 @@ dotnet run --project src/Geopolitics.Api
 
 ## What works today
 
-Sprints 1 to 5 are complete. The application ingests a recorded observation stream, enriches each
+Sprints 1 to 6 are complete. The application ingests a recorded observation stream, enriches each
 item through a schema-validated AI stage, processes it asynchronously, scores it with a trained
 severity model, streams results to the dashboard in realtime, and summarises what it has stored
 across four time windows. Adapters for RSS, NASA FIRMS, and ACLED feed the same pipeline when they
@@ -263,6 +263,19 @@ Full per-class tables, every case where the two disagreed, the labelling rubric,
   street, and topographic basemaps down to building level, with borders and place names layered on
   the satellite view. If the tile host is unreachable the globe falls back to the texture bundled
   with CesiumJS and says so, rather than going blank ([ADR 014](docs/adr/014-basemap-imagery.md)).
+- **A trace says which stage was slow, not just that something was.** Every processed item opens a
+  span per stage — deduplicate, enrich, score severity, resolve location, correlate, persist,
+  publish — tagged with the decision that stage reached, and each emits a duration metric under the
+  same stage name from the same call. Spans and metrics kept in separate call sites are how a trace
+  and a dashboard come to describe one pipeline in two vocabularies and then disagree about which
+  part is slow. That the telemetry is emitted at all is asserted by tests, because a span that never
+  starts looks exactly like a working system until the incident it existed for.
+- **Per-item cost must not grow with what is already stored.** A throughput test drives 400
+  observations through the real pipeline and the real database and compares the median cost of the
+  first half against the second. That comparison, not the absolute number, is the assertion: a
+  correlator that rescores every incident ever recorded, or a lookup that quietly became a table
+  scan, shows up as a second half that costs more than the first. Measured on the development
+  machine: 400 observations in 2.1s, median 3.3 ms per item in both halves.
 - **An external integration fails in its own blast radius.** Timeout, exponential backoff with
   jitter, `Retry-After`, and a circuit breaker come from the standard .NET resilience handler; a
   4xx that means "your request is wrong" is not retried, so a bad credential fails once rather than
@@ -414,7 +427,7 @@ dotnet format GeopoliticsDashboard.sln --verify-no-changes
 docker build -t geopolitics-dashboard .
 ```
 
-216 tests cover domain invariants, fingerprinting, classification, correlation scoring, queue
+272 tests cover domain invariants, fingerprinting, classification, correlation scoring, queue
 backpressure and cancellation, gazetteer resolution, and the processor's failure paths; the AI trust
 boundary (malformed JSON, unknown enums, out-of-range confidence, oversized payloads, control
 characters, prompt-injection fixtures, provider timeout, provider exception, repair success and
@@ -431,7 +444,11 @@ isolation by id and by text, class coverage in both splits, training reproducibi
 negative cases that keep it a second opinion — no override, null rather than a default, a throwing
 model absorbed, and a disabled one silent); end-to-end integration tests that drive the real host
 and assert on what the API then serves, including a concurrency test that reproduces the correlation
-race and is verified to fail when the gate is removed; and the evaluation harness above.
+race and is verified to fail when the gate is removed; the telemetry itself (a span per stage, all
+under one trace, carrying the decision each stage made, and the matching stage-duration and model
+counters); a throughput run of 400 observations through the real database that asserts per-item cost
+does not grow as the table fills; a cancellation run that asserts processing stops promptly and
+leaves nothing half-committed; and the evaluation harnesses above.
 
 ## Not yet implemented
 

@@ -11,6 +11,17 @@ using Microsoft.AspNetCore.SignalR;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 
+// Container health probe. Handled before the host is built because it is not a mode of the
+// application: it is a separate, short-lived process that asks a running one whether it is alive.
+//
+// It exists because the ASP.NET runtime image ships no curl or wget, so a Docker HEALTHCHECK has
+// nothing to call the endpoint with. Re-running this assembly with a flag is the approach that needs
+// no extra package in the image and no shell.
+if (args.Contains("--health-probe", StringComparer.Ordinal))
+{
+    return await HealthProbe.RunAsync();
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.ClearProviders();
@@ -164,7 +175,43 @@ app.MapHealthChecks(
 // slow database must not cause an orchestrator to restart a process that is working correctly.
 app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
 
-app.Run();
+await app.RunAsync();
+return 0;
+
+/// <summary>
+/// Asks a running instance whether it is alive, and reports the answer as an exit code.
+/// </summary>
+internal static class HealthProbe
+{
+    /// <summary>
+    /// Liveness, not readiness. <c>/health/live</c> runs no checks by design, so a saturated queue or
+    /// a slow database cannot cause an orchestrator to kill a process that is working correctly.
+    /// </summary>
+    private const string Path = "/health/live";
+
+    public static async Task<int> RunAsync()
+    {
+        // The same URL the host was told to listen on, so the probe follows a port change rather
+        // than needing to be kept in step with one.
+        var origin = Environment.GetEnvironmentVariable("ASPNETCORE_URLS")?.Split(';')[0]
+            ?.Replace("+", "localhost", StringComparison.Ordinal)
+            ?.Replace("*", "localhost", StringComparison.Ordinal)
+            ?? "http://localhost:8080";
+
+        try
+        {
+            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
+            using var response = await client.GetAsync(new Uri($"{origin.TrimEnd('/')}{Path}"));
+            return response.IsSuccessStatusCode ? 0 : 1;
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or UriFormatException)
+        {
+            // Unreachable, too slow, or misconfigured all mean the same thing to an orchestrator.
+            await Console.Error.WriteLineAsync($"Health probe failed: {exception.Message}");
+            return 1;
+        }
+    }
+}
 
 public partial class Program
 {

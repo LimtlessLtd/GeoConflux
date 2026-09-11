@@ -85,6 +85,22 @@ public sealed class SeverityModelEndpointTests
     }
 
     [Fact]
+    public async Task AnOversizedReportIsRejectedBeforeItReachesTheModel()
+    {
+        using var factory = new PipelineFactory(runPipeline: false, runSources: false);
+        using var client = factory.CreateClient();
+
+        // Featurisation is linear in input length and runs under a lock, so an unbounded body here
+        // would stall every other prediction. The request-size limit alone still admits megabytes.
+        var response = await client.PostAsJsonAsync(
+            "/api/severity/predict",
+            new { content = new string('a', 20_001) },
+            Json);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
     public async Task ADisabledModelAnswersUnavailableRatherThanGuessing()
     {
         using var factory = new PipelineFactory(
