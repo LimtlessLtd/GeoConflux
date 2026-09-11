@@ -1,5 +1,6 @@
 using Geopolitics.Application.Abstractions;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.AI;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +16,18 @@ namespace Geopolitics.IntegrationTests;
 /// while the production behaviour it claims to cover went unverified.
 /// </para>
 /// </summary>
-public sealed class PipelineFactory(bool runPipeline, bool runSources) : WebApplicationFactory<Program>
+/// <param name="settings">
+/// Extra configuration applied last, so a test can override any default this factory sets.
+/// </param>
+/// <param name="chatClient">
+/// Replaces the configured provider. Supplied when a test needs a provider that can read the text
+/// it is given, which the offline stand-in deliberately cannot.
+/// </param>
+public sealed class PipelineFactory(
+    bool runPipeline,
+    bool runSources,
+    IReadOnlyDictionary<string, string?>? settings = null,
+    IChatClient? chatClient = null) : WebApplicationFactory<Program>
 {
     private readonly string databasePath = Path.Combine(
         Path.GetTempPath(),
@@ -40,14 +52,31 @@ public sealed class PipelineFactory(bool runPipeline, bool runSources) : WebAppl
                 ["Pipeline:SourcesEnabled"] = runSources ? "true" : "false",
                 ["Pipeline:ProcessorEnabled"] = runPipeline ? "true" : "false",
 
-                // One worker keeps assertions about ordering deterministic.
+                // One worker keeps assertions about ordering deterministic, and avoids the
+                // read-then-write race two workers have when simultaneous reports describe one event.
                 ["Pipeline:ProcessorConcurrency"] = "1",
+
+                // No credentials in tests: the deterministic stand-in is the provider, which is the
+                // same default the application ships with.
+                ["Ai:Provider"] = "Mock",
             }));
+
+        if (settings is { Count: > 0 })
+        {
+            builder.ConfigureAppConfiguration((_, configuration) =>
+                configuration.AddInMemoryCollection(settings));
+        }
 
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<IIncidentNotifier>();
             services.AddSingleton<IIncidentNotifier>(Notifier);
+
+            if (chatClient is not null)
+            {
+                services.RemoveAll<IChatClient>();
+                services.AddSingleton(chatClient);
+            }
         });
     }
 

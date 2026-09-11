@@ -66,6 +66,9 @@ public sealed class FakeIncidentRepository : IIncidentRepository
     /// <summary>Shares a unit of work with the observation repository, as the EF versions do.</summary>
     public FakeObservationRepository? Observations { get; set; }
 
+    /// <summary>Also part of that unit of work: one EF context backs all three in production.</summary>
+    public FakeAiInferenceRepository? Inferences { get; set; }
+
     public void Seed(GeopoliticalIncident incident) => committed.Add(incident);
 
     public Task<GeopoliticalIncident?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
@@ -96,6 +99,52 @@ public sealed class FakeIncidentRepository : IIncidentRepository
     {
         committed.AddRange(pending);
         pending.Clear();
+        Inferences?.Commit();
         return Observations is null ? Task.CompletedTask : Observations.SaveChangesAsync(cancellationToken);
+    }
+}
+
+/// <summary>
+/// In-memory audit store. Like the EF implementation it stages on add and commits on save, so a
+/// test asserting that an inference was recorded is asserting that it would have been committed
+/// alongside the observation rather than merely handed to a repository.
+/// </summary>
+public sealed class FakeAiInferenceRepository : IAiInferenceRepository
+{
+    private readonly List<AiInference> committed = [];
+    private readonly List<AiInference> pending = [];
+
+    public IReadOnlyList<AiInference> Committed => committed;
+
+    /// <summary>Set to make the next add throw, for exercising audit-failure tolerance.</summary>
+    public Exception? AddException { get; set; }
+
+    public Task AddAsync(AiInference inference, CancellationToken cancellationToken)
+    {
+        if (AddException is { } exception)
+        {
+            AddException = null;
+            throw exception;
+        }
+
+        pending.Add(inference);
+        return Task.CompletedTask;
+    }
+
+    public Task<IReadOnlyList<AiInference>> ListByObservationAsync(Guid observationId, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<AiInference>>(
+            committed.Where(value => value.ObservationId == observationId).ToArray());
+
+    public Task SaveChangesAsync(CancellationToken cancellationToken)
+    {
+        Commit();
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Called by the repositories that share this unit of work.</summary>
+    public void Commit()
+    {
+        committed.AddRange(pending);
+        pending.Clear();
     }
 }

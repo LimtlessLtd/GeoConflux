@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="10.10.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
@@ -19,8 +20,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The labelled fixtures travel with the test assembly so the harness can never silently
+         evaluate zero cases and report a perfect score. -->
+    <Content Include="..\data\ai-evaluation\fixtures.json" Link="ai-evaluation\fixtures.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Geopolitics.Application\Geopolitics.Application.csproj" />
     <ProjectReference Include="..\..\src\Geopolitics.Domain\Geopolitics.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Geopolitics.Infrastructure\Geopolitics.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

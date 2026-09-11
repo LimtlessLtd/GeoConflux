@@ -1,5 +1,6 @@
 using Geopolitics.Application.Abstractions;
 using Geopolitics.Application.Contracts;
+using Geopolitics.Application.Enrichment;
 using Geopolitics.Application.Pipeline;
 using Geopolitics.Domain;
 using System.Diagnostics.Metrics;
@@ -78,6 +79,64 @@ public sealed class RecordingNotifier : IIncidentNotifier
     }
 }
 
+/// <summary>
+/// Enrichment stub. Its default is a skipped result, so a test that does not care about AI sees the
+/// deterministic pipeline exactly as it behaves when enrichment is switched off.
+/// </summary>
+public sealed class StubEnrichmentService : IEventEnrichmentService
+{
+    public Func<EnrichmentRequest, EnrichmentResult> Behaviour { get; set; } =
+        _ => EnrichmentResult.Skipped("No enrichment configured.");
+
+    public List<EnrichmentRequest> Requests { get; } = [];
+
+    public Task<EnrichmentResult> EnrichAsync(EnrichmentRequest request, CancellationToken cancellationToken)
+    {
+        Requests.Add(request);
+        return Task.FromResult(Behaviour(request));
+    }
+
+    /// <summary>Builds a successful result, so tests state only the values they actually assert on.</summary>
+    public static EnrichmentResult Success(
+        string summary = "An enriched English summary of the report.",
+        EventType eventType = EventType.MaritimeIncident,
+        Severity severity = Severity.High,
+        double confidence = 0.85,
+        string? language = "en",
+        string? locationName = null,
+        IReadOnlyList<ExtractedEntity>? entities = null) => new(
+            new ValidatedEnrichment(
+                summary,
+                eventType,
+                severity,
+                confidence,
+                language,
+                "Because the report describes an exchange of fire.",
+                locationName,
+                entities ?? []),
+            AiInferenceOutcome.Succeeded,
+            "Mock",
+            "deterministic-stub",
+            EnrichmentPrompt.Version,
+            EnrichmentContract.SchemaVersion,
+            Attempts: 1,
+            LatencyMilliseconds: 12,
+            StructuredOutput: "{\"schemaVersion\":1}",
+            Error: null);
+
+    public static EnrichmentResult Failure(AiInferenceOutcome outcome, string error) => new(
+        null,
+        outcome,
+        "Mock",
+        "deterministic-stub",
+        EnrichmentPrompt.Version,
+        EnrichmentContract.SchemaVersion,
+        Attempts: 1,
+        LatencyMilliseconds: 5,
+        StructuredOutput: null,
+        error);
+}
+
 /// <summary>Correlator stub for isolating processor behaviour from correlation scoring.</summary>
 public sealed class StubCorrelator : IIncidentCorrelator
 {
@@ -98,17 +157,23 @@ public sealed class PipelineTestHarness
     public PipelineTestHarness(PipelineOptions? options = null)
     {
         Options = options ?? new PipelineOptions();
+        Enrichment = new EnrichmentOptions();
         Clock = new FakeTimeProvider(new DateTimeOffset(2026, 3, 1, 12, 0, 0, TimeSpan.Zero));
         Diagnostics = new PipelineDiagnostics(new TestMeterFactory());
         Observations = new FakeObservationRepository();
         Incidents = new FakeIncidentRepository { Observations = Observations };
         Notifier = new RecordingNotifier();
+        Inferences = new FakeAiInferenceRepository();
+        EnrichmentService = new StubEnrichmentService();
+        Incidents.Inferences = Inferences;
         LocationResolver = new StubLocationResolver();
         Correlator = new DeterministicIncidentCorrelator(Incidents, Microsoft.Extensions.Options.Options.Create(Options));
         Normaliser = new ObservationNormaliser(new KeywordEventClassifier());
     }
 
     public PipelineOptions Options { get; }
+
+    public EnrichmentOptions Enrichment { get; }
 
     public FakeTimeProvider Clock { get; }
 
@@ -120,6 +185,10 @@ public sealed class PipelineTestHarness
 
     public RecordingNotifier Notifier { get; }
 
+    public FakeAiInferenceRepository Inferences { get; }
+
+    public StubEnrichmentService EnrichmentService { get; }
+
     public StubLocationResolver LocationResolver { get; }
 
     public IIncidentCorrelator Correlator { get; set; }
@@ -130,6 +199,9 @@ public sealed class PipelineTestHarness
         Normaliser,
         Observations,
         Incidents,
+        Inferences,
+        EnrichmentService,
+        Microsoft.Extensions.Options.Options.Create(Enrichment),
         LocationResolver,
         Correlator,
         Notifier,
