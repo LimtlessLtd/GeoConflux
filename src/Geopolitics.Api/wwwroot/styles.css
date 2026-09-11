@@ -434,3 +434,172 @@ html, body {
 
 .about-links { margin-top: 1rem; }
 .about-links a { color: var(--accent); font-size: .8rem; }
+
+/* ---------------------------------------------------------------- classification provenance
+
+   A category shown on its own reads as a fact. Every place the dashboard names one, it names the
+   confidence and the method beside it, and the colour distinguishes an inference from a heuristic
+   from something the source stated itself. */
+
+.conf {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .66rem;
+  letter-spacing: .04em;
+  color: var(--muted);
+  cursor: help;
+}
+
+.conf-meter {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 4px;
+  border-radius: 2px;
+  background: #1e2c3f;
+  overflow: hidden;
+}
+
+.conf-meter i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  display: block;
+  background: var(--muted);
+}
+
+.conf-value { font-variant-numeric: tabular-nums; color: var(--text); }
+.conf-method { text-transform: uppercase; letter-spacing: .06em; opacity: .8; }
+
+/* A model inference and a keyword match deserve to look different at a glance. */
+.conf-model .conf-meter i { background: var(--accent); }
+.conf-model .conf-method { color: var(--accent); }
+.conf-declared .conf-meter i { background: #9bd97d; }
+.conf-declared .conf-method { color: #9bd97d; }
+.conf-mixed .conf-meter i { background: linear-gradient(90deg, #9bd97d, var(--accent)); }
+.conf-heuristic .conf-meter i { background: var(--medium); }
+.conf-heuristic .conf-method { color: var(--medium); }
+.conf-none { font-style: italic; opacity: .75; }
+
+.incident-conf { margin-top: .35rem; }
+.feed-conf { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: .35rem; }
+.evidence-conf { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: .3rem; }
+.assessment-note { margin-top: .3rem; font-size: .68rem; line-height: 1.45; }
+
+.lang-chip {
+  padding: .05rem .3rem;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  font-size: .62rem;
+  letter-spacing: .05em;
+  color: var(--muted);
+}
+
+.rationale {
+  margin-top: .3rem;
+  padding-left: .5rem;
+  border-left: 2px solid var(--line);
+  font-size: .7rem;
+  line-height: 1.45;
+  color: #b6c6d8;
+}
+
+.entities { display: flex; flex-wrap: wrap; gap: .25rem; margin-top: .35rem; }
+
+.entity-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: .25rem;
+  padding: .1rem .35rem;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--panel-2);
+  font-size: .65rem;
+}
+
+.entity-chip em {
+  font-style: normal;
+  font-size: .55rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ---------------------------------------------------------------- submission form */
+
+.submit { padding: 1rem; overflow-y: auto; }
+.submit h3 { margin: 0 0 .5rem; font-size: .74rem; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.submit-intro { margin: 0 0 .6rem; font-size: .78rem; line-height: 1.5; color: #c6d4e4; }
+
+.submit-warning {
+  margin: 0 0 .9rem;
+  padding: .5rem .6rem;
+  border: 1px solid #4a3a1c;
+  border-left: 3px solid var(--high);
+  border-radius: 4px;
+  background: #1b1508;
+  font-size: .72rem;
+  line-height: 1.45;
+  color: #e6d9bd;
+}
+
+.field { display: block; margin-bottom: .7rem; }
+
+.field > span {
+  display: block;
+  margin-bottom: .25rem;
+  font-size: .68rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.field > span em { font-style: normal; text-transform: none; letter-spacing: 0; opacity: .7; }
+
+.field input,
+.field textarea {
+  width: 100%;
+  padding: .45rem .55rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel-2);
+  color: var(--text);
+  font: inherit;
+  font-size: .8rem;
+  resize: vertical;
+}
+
+.field input:focus,
+.field textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.field small { display: block; margin-top: .25rem; font-size: .65rem; color: var(--muted); }
+
+.submit-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin-top: .3rem; }
+
+#submitButton {
+  padding: .45rem .9rem;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: .75rem;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+#submitButton:hover:not(:disabled) { background: rgba(100, 223, 223, .12); }
+#submitButton:disabled { opacity: .5; cursor: progress; }
+
+.submit-status { font-size: .72rem; line-height: 1.4; color: var(--muted); }
+.submit-status[data-state="ok"] { color: #9bd97d; }
+.submit-status[data-state="error"] { color: var(--critical); }
+
+.submit-disabled {
+  padding: .6rem;
+  border: 1px dashed var(--line);
+  border-radius: 4px;
+  font-size: .76rem;
+  line-height: 1.5;
+  color: var(--muted);
+}

@@ -62,6 +62,7 @@
         <button class="tab" role="tab" data-tab="feed" aria-selected="false">
           Feed <span id="feedCount" class="count">0</span>
         </button>
+        <button class="tab" role="tab" data-tab="submit" aria-selected="false" id="submitTabButton">Submit</button>
         <button class="tab" role="tab" data-tab="about" aria-selected="false">About</button>
       </nav>
 
@@ -75,6 +76,50 @@
           <button id="replayButton" class="replay-button" type="button" hidden>Replay the recorded run</button>
         </div>
         <div id="feedList" class="feed-list" aria-live="polite"></div>
+      </div>
+
+      <div id="submitTab" class="tab-panel submit" role="tabpanel" hidden>
+        <h3>Submit an observation</h3>
+        <p class="submit-intro">
+          Queues a report for the same pipeline the ingestion adapters feed. It is enriched,
+          schema-validated, located by the deterministic resolver, and correlated like any other
+          observation. Text in another language is fine — the enrichment stage identifies it.
+        </p>
+        <p class="submit-warning" role="note">
+          Submissions are stored as <strong>unverified user-supplied evidence</strong> and are
+          labelled as such wherever they appear. Do not submit anything sensitive.
+        </p>
+
+        <form id="submitForm" novalidate>
+          <label class="field">
+            <span>Source <em>optional</em></span>
+            <input type="text" id="submitSource" maxlength="80" placeholder="analyst-desk">
+          </label>
+          <label class="field">
+            <span>Headline <em>optional</em></span>
+            <input type="text" id="submitTitle" maxlength="300" placeholder="Short headline">
+          </label>
+          <label class="field">
+            <span>Report <em>required</em></span>
+            <textarea id="submitContent" rows="6" maxlength="20000" required
+              placeholder="What was reported, where, and when."></textarea>
+          </label>
+          <label class="field">
+            <span>Place name <em>optional</em></span>
+            <input type="text" id="submitLocation" maxlength="120" placeholder="Strait of Hormuz">
+            <small>A name only. Coordinates come from the gazetteer, never from this form or a model.</small>
+          </label>
+
+          <div class="submit-actions">
+            <button type="submit" id="submitButton">Queue observation</button>
+            <span id="submitStatus" class="submit-status" role="status" aria-live="polite"></span>
+          </div>
+        </form>
+
+        <p id="submitDisabled" class="submit-disabled" hidden>
+          This page is a static snapshot with no backend, so there is nowhere to submit to. Run the
+          application locally to use this form.
+        </p>
       </div>
 
       <div id="aboutTab" class="tab-panel about" role="tabpanel" hidden>
@@ -99,16 +144,35 @@
 
         <h3>What is actually running</h3>
         <p>
-          <strong>No AI or ML model is used yet.</strong> Categories and severities come from a
-          deterministic keyword classifier. The AI enrichment stage is designed and has an interface
-          waiting for it, but it is not built, so nothing here is a model output.
+          Every observation passes through an <strong>AI enrichment stage</strong> that translates,
+          summarises, classifies, assesses severity, extracts named actors, and <em>names</em> a
+          place. Its response is validated against a versioned schema before anything is adopted.
+        </p>
+        <p>
+          The provider is configurable. With none configured — which is the default, and what the
+          published snapshot was built with — enrichment runs against a
+          <strong>deterministic in-process stand-in</strong>: a keyword classifier and a script-based
+          language detector. It is labelled <code>ai:Mock/deterministic-stub</code> wherever it
+          appears, and it is <strong>not a language model</strong>. Point the application at Ollama,
+          OpenAI, or Azure OpenAI and the same pipeline uses that instead.
+        </p>
+        <p>
+          Every classification on this page carries the confidence and the method that produced it.
+          When the enrichment stage is unavailable, times out, or returns output that fails
+          validation, the keyword classification is kept and the failure is recorded rather than
+          hidden.
+        </p>
+        <p>
+          No classical ML model exists yet. Severity comes from enrichment or from keywords, and a
+          trained model is a later increment.
         </p>
 
         <h3>Rules the pipeline enforces</h3>
         <ul>
-          <li>Only a deterministic resolver may produce coordinates. An unmappable report stays
-            visibly unplaced rather than being given plausible-looking ones. This is a standing
-            constraint on the AI stage that comes later, so it can name a place but never place it.</li>
+          <li>Only a deterministic resolver may produce coordinates. The enrichment schema has no
+            latitude or longitude field at all, so a model can name a place but can never place it.
+            An unmappable report stays visibly unplaced rather than being given plausible-looking
+            coordinates.</li>
           <li>Realtime messages are published only after state is committed, so a client can always
             recover by re-querying.</li>
           <li>A failed geocode or correlation retains the source payload with a reason instead of

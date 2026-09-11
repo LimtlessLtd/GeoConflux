@@ -59,6 +59,14 @@
     replayButton: document.querySelector('#replayButton'),
     feedHint: document.querySelector('#feedHint'),
     aboutModeText: document.querySelector('#aboutModeText'),
+    submitForm: document.querySelector('#submitForm'),
+    submitSource: document.querySelector('#submitSource'),
+    submitTitle: document.querySelector('#submitTitle'),
+    submitContent: document.querySelector('#submitContent'),
+    submitLocation: document.querySelector('#submitLocation'),
+    submitButton: document.querySelector('#submitButton'),
+    submitStatus: document.querySelector('#submitStatus'),
+    submitDisabled: document.querySelector('#submitDisabled'),
   };
 
   /** Full, authoritative state. Replay renders a subset of this rather than mutating it. */
@@ -118,6 +126,56 @@
   const asCount = (value) => (Number.isFinite(Number(value)) ? Number(value) : 0);
 
   const plural = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;
+
+  /**
+   * Turns a classification method into something a reader can judge.
+   *
+   * The distinction that matters on screen is not which vendor answered but whether a judgement was
+   * inferred at all, so the three cases are named rather than the providers.
+   */
+  function describeMethod(method) {
+    const value = String(method ?? '');
+    if (value.startsWith('source-declared+')) {
+      return { kind: 'mixed', label: 'source + model', detail: value };
+    }
+    if (value === 'source-declared') {
+      return { kind: 'declared', label: 'stated by source', detail: value };
+    }
+    if (value.startsWith('ai:')) {
+      return { kind: 'model', label: value.slice(3), detail: value };
+    }
+    if (value === 'keyword') {
+      return { kind: 'heuristic', label: 'keyword match', detail: value };
+    }
+    return { kind: 'unknown', label: value || 'unrecorded', detail: value };
+  }
+
+  /**
+   * Renders confidence as a number and a bar next to the method that produced it.
+   *
+   * A category shown on its own reads as a fact. Showing "HIGH" beside "41% · keyword match" is the
+   * whole point of carrying provenance through the pipeline, so this is used everywhere a category
+   * is displayed rather than only in the drawer.
+   */
+  function confidenceChip(confidence, method) {
+    const value = Number(confidence);
+    if (!Number.isFinite(value) || value <= 0) {
+      const unscored = describeMethod(method);
+      return `<span class="conf conf-none" title="No confidence was recorded for this classification.">
+        unscored · ${escapeHtml(unscored.label)}</span>`;
+    }
+
+    const percent = Math.round(value * 100);
+    const described = describeMethod(method);
+    const title = `${percent}% confidence, produced by ${described.detail}. `
+      + 'This is a stated confidence in a classification, not a probability that the event occurred.';
+
+    return `<span class="conf conf-${escapeHtml(described.kind)}" title="${escapeHtml(title)}">
+      <span class="conf-meter" aria-hidden="true"><i style="width:${percent}%"></i></span>
+      <span class="conf-value">${percent}%</span>
+      <span class="conf-method">${escapeHtml(described.label)}</span>
+    </span>`;
+  }
 
   function setStatus(state, message) {
     dom.dot.dataset.state = state;
@@ -355,6 +413,7 @@
           <span>${escapeHtml(incident.eventType)}</span>
           <span>${escapeHtml(formatRelative(incident.occurredAt))}</span>
         </div>
+        <div class="incident-conf">${confidenceChip(incident.classificationConfidence, incident.classificationMethod)}</div>
         <div class="incident-sub">
           ${incident.location ? escapeHtml(incident.location.name) : 'Location unresolved'}
           · ${sources} source${sources === 1 ? '' : 's'}
@@ -423,6 +482,12 @@
           ${observation.kind === 'Manual' ? '<span class="manual-chip">USER-SUBMITTED · UNVERIFIED</span>' : ''}
         </div>
         ${observation.status === 'Duplicate'
+          ? ''
+          : `<div class="feed-conf">${confidenceChip(observation.classificationConfidence, observation.classificationMethod)}
+             ${observation.detectedLanguage && observation.detectedLanguage !== 'en'
+               ? `<span class="lang-chip" title="Language of the original text, identified during enrichment.">${escapeHtml(observation.detectedLanguage)} → en</span>`
+               : ''}</div>`}
+        ${observation.status === 'Duplicate'
           ? '<div class="feed-note">Rejected as an exact re-delivery. Kept for audit.</div>'
           : ''}
         ${observation.locationResolutionNote
@@ -461,6 +526,14 @@
         <dt>Location</dt><dd>${location}</dd>
         <dt>Occurred</dt><dd>${escapeHtml(formatTime(incident.occurredAt))}</dd>
         <dt>Evidence</dt><dd>${sources} correlated observation${sources === 1 ? '' : 's'}</dd>
+        <dt>Assessment</dt>
+        <dd>
+          ${confidenceChip(incident.classificationConfidence, incident.classificationMethod)}
+          <div class="muted assessment-note">
+            Confidence in the classification, from the best-supported evidence linked here. It is not
+            a probability that the event occurred.
+          </div>
+        </dd>
       </dl>
       <div class="evidence"><p class="muted">Loading evidence…</p></div>`;
 
@@ -502,6 +575,23 @@
               <span class="pill pill-${escapeHtml(observation.status)}">${escapeHtml(observation.status)}</span>
               <div>${escapeHtml(observation.title ?? '')}</div>
               <div class="muted">${escapeHtml(formatTime(observation.receivedAt))}</div>
+              ${observation.status === 'Duplicate'
+                ? ''
+                : `<div class="evidence-conf">
+                     ${confidenceChip(observation.classificationConfidence, observation.classificationMethod)}
+                     ${observation.detectedLanguage && observation.detectedLanguage !== 'en'
+                       ? `<span class="lang-chip">${escapeHtml(observation.detectedLanguage)} → en</span>`
+                       : ''}
+                   </div>`}
+              ${observation.severityRationale
+                ? `<div class="rationale">${escapeHtml(observation.severityRationale)}</div>`
+                : ''}
+              ${Array.isArray(observation.entities) && observation.entities.length > 0
+                ? `<div class="entities" title="Named actors reported by the enrichment stage. Claims about the text, not verified facts.">
+                     ${observation.entities.slice(0, 8).map((entity) =>
+                       `<span class="entity-chip">${escapeHtml(entity.name)}<em>${escapeHtml(entity.type)}</em></span>`).join('')}
+                   </div>`
+                : ''}
             </li>`).join('')}
         </ul>`;
     } catch (error) {
@@ -721,6 +811,8 @@
     [dom.severityFilter, dom.typeFilter, dom.locatedOnly]
       .forEach((control) => control.addEventListener('change', renderIncidents));
 
+    dom.submitForm.addEventListener('submit', submitObservation);
+
     document.querySelectorAll('.tab').forEach((tab) => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach((other) => {
@@ -728,11 +820,85 @@
           other.classList.toggle('is-active', active);
           other.setAttribute('aria-selected', String(active));
         });
-        document.querySelector('#incidentsTab').hidden = tab.dataset.tab !== 'incidents';
-        document.querySelector('#feedTab').hidden = tab.dataset.tab !== 'feed';
-        document.querySelector('#aboutTab').hidden = tab.dataset.tab !== 'about';
+        document.querySelectorAll('.tab-panel').forEach((panel) => {
+          panel.hidden = panel.id !== `${tab.dataset.tab}Tab`;
+        });
       });
     });
+  }
+
+  // ---------------------------------------------------------------- manual submission
+
+  /**
+   * Queues a report through the same endpoint an ingestion adapter would use.
+   *
+   * Two things this deliberately does not do. It does not claim an incident was created: the API
+   * answers 202 because the observation has been queued and may still turn out to be a duplicate or
+   * fail enrichment, and the message says exactly that. And it does not accept coordinates — only a
+   * place name — so the form cannot become a second route around the deterministic resolver.
+   */
+  async function submitObservation(event) {
+    event.preventDefault();
+
+    const content = dom.submitContent.value.trim();
+
+    if (content.length === 0) {
+      setSubmitStatus('error', 'A report is required.');
+      dom.submitContent.focus();
+      return;
+    }
+
+    dom.submitButton.disabled = true;
+    setSubmitStatus('pending', 'Queueing…');
+
+    try {
+      const response = await fetch('./api/observations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sourceName: dom.submitSource.value.trim() || null,
+          title: dom.submitTitle.value.trim() || null,
+          content,
+          locationName: dom.submitLocation.value.trim() || null,
+        }),
+      });
+
+      if (response.status === 202) {
+        setSubmitStatus('ok', 'Queued. Watch the Feed tab — it may be enriched, correlated, '
+          + 'or recorded as a duplicate.');
+        dom.submitForm.reset();
+
+        // The pipeline is asynchronous, so there is nothing to show yet. Move to the feed and let
+        // the realtime subscription deliver the outcome rather than pretending to know it.
+        document.querySelector('.tab[data-tab="feed"]')?.click();
+        return;
+      }
+
+      if (response.status === 400 || response.status === 422) {
+        const problem = await response.json().catch(() => null);
+        const reason = problem?.errors?.submission?.[0] ?? 'The submission was rejected.';
+        setSubmitStatus('error', reason);
+        return;
+      }
+
+      setSubmitStatus('error', `The server responded with ${response.status}.`);
+    } catch (error) {
+      console.error(error);
+      setSubmitStatus('error', 'The submission could not be sent. Is the application still running?');
+    } finally {
+      dom.submitButton.disabled = false;
+    }
+  }
+
+  function setSubmitStatus(state, message) {
+    dom.submitStatus.dataset.state = state;
+    dom.submitStatus.textContent = message;
+  }
+
+  /** A snapshot has no backend to submit to, so the form is removed rather than left to fail. */
+  function disableSubmission() {
+    dom.submitForm.hidden = true;
+    dom.submitDisabled.hidden = false;
   }
 
   /**
@@ -815,6 +981,7 @@
 
     if (dataSource.mode === 'static') {
       describeStaticMode();
+      disableSubmission();
       setStatus('snapshot', snapshotStatusText());
 
       const recorded = [...feed];
