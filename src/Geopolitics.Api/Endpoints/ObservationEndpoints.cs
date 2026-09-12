@@ -2,6 +2,7 @@ using Geopolitics.Application;
 using Geopolitics.Application.Abstractions;
 using Geopolitics.Application.Contracts;
 using Geopolitics.Domain;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Geopolitics.Api.Endpoints;
 
@@ -40,7 +41,27 @@ public static class ObservationEndpoints
                     return Results.BadRequest(new { error = "A submission body is required." });
                 }
 
-                var result = await ingestion.IngestAsync(submission.ToEnvelope(), cancellationToken);
+                // The queue makes producers wait when it is full. An adapter should wait; an HTTP
+                // caller should be answered. Bounding the wait here keeps a saturated pipeline from
+                // being expressible as an unbounded number of held-open connections.
+                using var queueWait = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                queueWait.CancelAfter(SubmissionProtection.QueueWait);
+
+                IngestionResult result;
+
+                try
+                {
+                    result = await ingestion.IngestAsync(submission.ToEnvelope(), queueWait.Token);
+                }
+                catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+                {
+                    // The caller is still there; it is this process that could not take the work.
+                    // 503 with Retry-After says that honestly, where a 500 would blame the request.
+                    return Results.Problem(
+                        title: "The pipeline is saturated.",
+                        detail: "The processing queue is full. The submission was not accepted; retry shortly.",
+                        statusCode: StatusCodes.Status503ServiceUnavailable);
+                }
 
                 if (!result.Accepted)
                 {
@@ -58,7 +79,8 @@ public static class ObservationEndpoints
                     new { status = "queued", detail = "The observation was queued for processing." });
             })
             .WithName("SubmitObservation")
-            .WithSummary("Queues a manually submitted observation for processing.");
+            .WithSummary("Queues a manually submitted observation for processing.")
+            .RequireRateLimiting(SubmissionProtection.PolicyName);
 
         return builder;
     }

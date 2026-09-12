@@ -3,6 +3,29 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Declared in the page rather than as a response header because the published dashboard is served
+       by GitHub Pages, which serves files and sets no headers. A policy that existed only in the API's
+       middleware would protect the locally hosted page and leave the public one bare.
+
+       The dashboard renders text from public news feeds and from an open submission endpoint. Every
+       render path escapes it; this is the layer that limits the blast radius if one of them is ever
+       written wrongly. The allowances are all Cesium's: it is delivered from its own CDN, runs its
+       workers from blob URLs, decodes terrain through WebAssembly, and fetches globe imagery from
+       ArcGIS. Everything not needed to draw a globe is denied. -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'none';
+    script-src 'self' https://cesium.com blob: 'wasm-unsafe-eval';
+    worker-src 'self' blob:;
+    child-src 'self' blob:;
+    style-src 'self' 'unsafe-inline' https://cesium.com;
+    img-src 'self' data: blob: https://cesium.com https://services.arcgisonline.com;
+    font-src 'self' data: https://cesium.com;
+    connect-src 'self' https://cesium.com https://services.arcgisonline.com;
+    base-uri 'none';
+    form-action 'none';
+    object-src 'none';
+    manifest-src 'none'">
   <title>GeoConflux | Geopolitical Intelligence</title>
   <meta name="description" content="A .NET event-processing platform that correlates geopolitical observations into incidents. Demonstration built on synthetic replay data.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%230d141f' stroke='%2364dfdf' stroke-width='2'/%3E%3Cellipse cx='16' cy='16' rx='6' ry='14' fill='none' stroke='%2364dfdf' stroke-width='1.5' opacity='.7'/%3E%3Cpath d='M2 16h28' stroke='%2364dfdf' stroke-width='1.5' opacity='.7'/%3E%3Ccircle cx='21' cy='11' r='3' fill='%23ff9f1c'/%3E%3C/svg%3E">

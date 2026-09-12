@@ -4,17 +4,60 @@ on:
   push:
   pull_request:
 
+# Read-only. This workflow builds and tests; it publishes nothing and needs no write scope, and
+# stating that here means the job's token cannot be used for more than it does regardless of what the
+# repository's default permissions are set to.
+permissions:
+  contents: read
+
+# Third-party actions are pinned to commit SHAs rather than to moving tags. A tag is a pointer its
+# owner can move, so `@v4` means "whatever that repository decides v4 is on the day this runs" — and
+# an action runs with access to this workflow's token. The trailing comment records which release each
+# SHA was, because a bare hash is unreviewable.
 jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
         with:
           dotnet-version: 10.0.x
           global-json-file: global.json
       - run: dotnet restore GeopoliticsDashboard.sln
       - run: dotnet build GeopoliticsDashboard.sln --configuration Release --no-restore
       - run: dotnet test GeopoliticsDashboard.sln --configuration Release --no-build
+      # The evaluation suites rewrite their own RESULTS.md as they run, so after the test step those
+      # files hold what the current code actually produces. If that differs from what is committed,
+      # the repository is publishing measurements that no longer describe it — which is exactly the
+      # drift that went unnoticed when the gazetteer grew and the enrichment figures were not
+      # regenerated. Latency is excluded because it is wall-clock time and varies between runs; every
+      # other figure in these reports is deterministic, which is why the rest can be enforced.
+      - name: Published evaluation figures must match what the code produces
+        run: |
+          set -euo pipefail
+          reports="tests/data/ai-evaluation/RESULTS.md tests/data/severity-model/RESULTS.md"
+          drift=$(git diff -U0 -- $reports | grep -E '^[+-][^+-]' | grep -v 'Latency median' || true)
+          if [ -n "$drift" ]; then
+            echo "::error::Committed evaluation results do not match this code. Run the evaluation suite and commit the regenerated RESULTS.md."
+            git --no-pager diff -- $reports
+            exit 1
+          fi
+
+          # The README quotes several of these figures so a reader does not have to open another
+          # file. That copy is where drift hides next, so every row it shares verbatim with the
+          # generated report has to agree with it.
+          quoted=$(grep -cE '^\| (Structured output success rate|Language accuracy|Location name|Entities) ' README.md || true)
+          if [ "$quoted" -lt 4 ]; then
+            echo "::error::The README no longer quotes the evaluation rows this check compares. Update the check or restore the rows; do not let it pass by matching nothing."
+            exit 1
+          fi
+
+          while IFS= read -r row; do
+            grep -Fqx "$row" tests/data/ai-evaluation/RESULTS.md || {
+              echo "::error::README quotes an evaluation figure the harness did not produce: $row"
+              exit 1
+            }
+          done < <(grep -E '^\| (Structured output success rate|Language accuracy|Location name|Entities) ' README.md)
+
       - run: dotnet format GeopoliticsDashboard.sln --verify-no-changes --no-restore
       - run: docker build -t geopolitics-dashboard .

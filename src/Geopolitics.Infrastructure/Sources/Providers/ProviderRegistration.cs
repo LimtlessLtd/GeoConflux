@@ -1,6 +1,8 @@
+using System.Net;
 using System.Net.Http.Headers;
 using Geopolitics.Application.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
 
@@ -38,6 +40,14 @@ public static class ProviderRegistration
         services.AddOptions<ProviderOptions>()
             .BindConfiguration(ProviderOptions.SectionName)
             .ValidateOnStart();
+
+        services.AddSingleton<IValidateOptions<ProviderOptions>, ProviderOptionsValidator>();
+        services.AddSingleton<ProviderSecretRedactor>();
+
+        // Registered explicitly because AddLogger<T> resolves the type rather than constructing it,
+        // and an unresolvable logger fails when the client is created — which a polling adapter would
+        // absorb as "this provider is having a bad day" and retry forever.
+        services.AddTransient<RedactingHttpClientLogger>();
 
         // No base address: each feed is configured as an absolute URL, because the whole point of the
         // RSS adapter is that it is not bound to one publisher's host.
@@ -91,6 +101,23 @@ public static class ProviderRegistration
 
             configureClient(provider.GetRequiredService<IOptions<ProviderOptions>>().Value, client);
         })
+
+        // Every connection these adapters open is screened against the resolved address, which is
+        // what makes a redirect into a private network fail rather than succeed quietly. The redirect
+        // cap is lowered from the framework default of 50 at the same time: a feed that needs more
+        // than a couple of hops is misconfigured, and a long chain is a way to burn a poll slot.
+        .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+        {
+            ConnectCallback = PublicInternetConnector.ConnectAsync,
+            MaxAutomaticRedirections = 3,
+            AutomaticDecompression = DecompressionMethods.All,
+        })
+
+        // The runtime's own HTTP logger is removed rather than left alongside this one. It writes the
+        // request path verbatim, and the FIRMS map key is a path segment, so leaving it registered
+        // would keep publishing the credential no matter what this logger does.
+        .RemoveAllLoggers()
+        .AddLogger<RedactingHttpClientLogger>()
         .AddStandardResilienceHandler(options =>
         {
             // One attempt. Generous for a feed, short enough that a hung connection does not occupy

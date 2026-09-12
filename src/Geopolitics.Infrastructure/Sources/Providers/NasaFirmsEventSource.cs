@@ -53,8 +53,11 @@ public sealed partial class NasaFirmsEventSource(
         var client = httpClientFactory.CreateClient(HttpClientName);
         var dayRange = Math.Clamp(settings.DayRange, 1, 10);
 
-        // The key is a path segment in the FIRMS area API. It is escaped and never logged; the log
-        // messages below name the dataset and area only.
+        // The key is a path segment in the FIRMS area API, which is their design, not a choice
+        // available here. That is exactly why outbound logging for these clients is redacted rather
+        // than left to the framework: the runtime masks query strings and header values by default
+        // but writes the path verbatim, so this key would otherwise be published on every poll. See
+        // ProviderSecretRedactor.
         var requestUri = new Uri(
             $"api/area/csv/{Uri.EscapeDataString(settings.ApiKey)}/{Uri.EscapeDataString(settings.Dataset)}"
                 + $"/{Uri.EscapeDataString(settings.Area)}/{dayRange.ToString(CultureInfo.InvariantCulture)}",

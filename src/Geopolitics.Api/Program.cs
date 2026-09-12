@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Geopolitics.Api;
 using Geopolitics.Api.Endpoints;
 using Geopolitics.Api.Realtime;
 using Geopolitics.Application.Abstractions;
@@ -24,12 +25,22 @@ if (args.Contains("--health-probe", StringComparer.Ordinal))
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Two orders of magnitude below the 30 MB default and far above any legitimate submission. The
+// observation content cap is enforced during validation, but that runs after the body has been read,
+// so this is what stops an oversized payload from being parsed before it is refused. It is set on the
+// server rather than per endpoint because every request this application accepts is small JSON, and
+// because the per-endpoint metadata minimal APIs expose for this is not honoured by the request
+// pipeline. Note that TestServer bypasses Kestrel, so the integration tests do not exercise it.
+builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 256 * 1024);
+
 builder.Logging.ClearProviders();
 builder.Logging.AddJsonConsole();
 builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
 builder.Services.AddHealthChecks();
+
+builder.Services.AddSubmissionRateLimiting();
 
 builder.Services.AddSignalR()
     .AddJsonProtocol(options => options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
@@ -61,6 +72,8 @@ else
     app.UseExceptionHandler();
 }
 
+app.UseSecurityHeaders();
+app.UseRateLimiter();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.MapOpenApi();

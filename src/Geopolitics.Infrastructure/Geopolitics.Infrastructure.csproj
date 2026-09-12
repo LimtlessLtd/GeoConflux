@@ -24,6 +24,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The outbound address policy and the provider options validator are internal because nothing
+         outside this assembly composes them, but they carry security rules that deserve to be
+         asserted directly rather than only through the adapters that use them. -->
+    <InternalsVisibleTo Include="Geopolitics.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Recorded demo data is embedded so the replay source works from a published single file. -->
     <EmbeddedResource Include="Sources/Data/replay-observations.json" />
 

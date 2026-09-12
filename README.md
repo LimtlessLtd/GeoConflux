@@ -45,8 +45,11 @@ dotnet run --project src/Geopolitics.Api
 
 ## What works today
 
-Sprints 1 to 5 are complete, and Sprint 6 has delivered its observability, performance, container,
-and documentation work; a formal dependency and security review is still outstanding.
+Sprints 1 to 6 are complete. Sprint 6's last outstanding items — a formal dependency review and a
+security review — are done and written up in [docs/dependency-review.md](docs/dependency-review.md)
+and [docs/security-review.md](docs/security-review.md). The security review found and fixed a
+credential that was being written to the logs on every poll, a redirect path that could have sent this
+process into a private network, and an open write path that could hold requests open indefinitely.
 
 The application ingests a recorded observation stream, enriches each item through a schema-validated
 AI stage, processes it asynchronously, scores it with a trained severity model, streams results to
@@ -194,13 +197,19 @@ provider. It is not a measurement of any language model.
 | Language accuracy | 1.00 |
 | Event type — accuracy / macro F1 | 0.62 / 0.68 |
 | Severity — accuracy / macro F1 | 0.75 / 0.74 |
-| Location name — precision / recall / F1 | 1.00 / 0.75 / 0.86 |
-| Entities — precision / recall / F1 | 0.12 / 0.67 / 0.21 |
+| Location name — precision / recall / F1 | 0.82 / 0.75 / 0.78 |
+| Entities — precision / recall / F1 | 0.11 / 0.67 / 0.19 |
 
 The entity figure is poor because the stand-in finds capitalised runs, which recovers most of the
 right names and a lot of noise. Location recall is 0.75 because the baseline cannot read the Arabic,
 Russian, and Chinese fixtures. Both are reported rather than tuned away: they are the gap a real
 model is expected to close.
+
+Location precision fell from 1.00 to 0.82 when the gazetteer grew from 66 entries to 214 to cover
+real reporting. With more names to match, the stand-in now sometimes names a place the fixture did
+not label — a wider net catching more, including more of what was not asked for. That is the trade
+that made 86% of live reports placeable, and it is recorded here rather than smoothed over, because a
+table of metrics that only ever improves is a table nobody is really reading.
 
 Sixteen synthetic, author-labelled cases cannot support a claim about geopolitical classification
 ability. The set exists to catch regressions. Full method, per-class tables, and limitations:
@@ -303,6 +312,30 @@ Full per-class tables, every case where the two disagreed, the labelling rubric,
   and nothing else ([ADR 015](docs/adr/015-live-provider-ingestion.md)).
 - **Evidence survives failure.** A failed enrichment, geocode, or correlation retains the source
   payload with a recorded reason instead of discarding it.
+- **What a poll may reach is decided at the socket, not at the URL.** A feed URL is a deployment
+  decision and can be trusted; the response cannot. Redirects are screened against the address a name
+  actually resolved to, so loopback, link-local, and private space are refused whether they are
+  reached directly, through a redirect chain, or through a hostname that resolves there. Checking the
+  hostname instead would catch only the naive attempt
+  ([ADR 021](docs/adr/021-outbound-trust-boundary.md)).
+- **A credential is never written down, and that is asserted rather than commented.** One upstream
+  API takes its key as a URL path segment, which the runtime's default HTTP logging writes verbatim.
+  Outbound logging for the provider clients is replaced with one that masks configured credentials
+  and drops query values. The tests capture every line the container emits and assert the credential
+  was sent but does not appear, so they prove redaction rather than absence of a request
+  ([ADR 021](docs/adr/021-outbound-trust-boundary.md)).
+- **Running without accounts is paid for, not assumed free.** The bounded queue makes producers wait
+  when it is full, which is right for a polling adapter and wrong for an HTTP caller whose wait costs
+  a held connection. The submission endpoint bounds its wait and answers `503`, is rate limited per
+  client with `Retry-After`, and the request body cap is two orders of magnitude below the framework
+  default ([ADR 022](docs/adr/022-open-write-path-and-content-policy.md)).
+- **The dashboard's escaping has something behind it.** Every render path escapes untrusted feed text,
+  and that is what prevents injection; a content security policy is what limits the damage if one of
+  those paths is ever written wrongly. It is declared in the page rather than as a header, because the
+  published dashboard is served by GitHub Pages, which sets no headers — a policy in the API alone
+  would protect the local page and leave the public one bare. It was verified in a real browser:
+  enforced, no violations, and the globe still loads its detailed imagery rather than silently falling
+  back ([ADR 022](docs/adr/022-open-write-path-and-content-policy.md)).
 - **Model output is untrusted input.** It is schema-validated, bounded, and given exactly one repair
   attempt before the deterministic classifier takes over
   ([ADR 012](docs/adr/012-ai-output-is-untrusted-input.md)).
