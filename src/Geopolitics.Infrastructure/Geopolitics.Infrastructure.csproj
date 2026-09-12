@@ -37,6 +37,12 @@
     <!-- The severity model is trained from this corpus at runtime rather than loaded from a
          committed binary, so the dataset has to travel with the assembly. -->
     <EmbeddedResource Include="Ml/Data/severity-dataset.json" />
+
+    <!-- Theatre place names, extracted once from Wikidata by tools/gazetteer/extract.py and
+         committed. Embedded rather than read from disk so the lexicon travels with the assembly and
+         a published single-file build still has it. The build never fetches this: see
+         docs/adr/026-gazetteer-sourcing.md. -->
+    <EmbeddedResource Include="Location/Data/theatre-places.json" />
   </ItemGroup>
 
   <ItemGroup>

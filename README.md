@@ -533,6 +533,20 @@ credential is ever read from a committed file.
 | `Providers:Ucdp:AccessToken` | none | **Never put this in a file.** Requested from UCDP by email. Dormant without it. |
 | `Providers:Ucdp:Resource` / `:Version` | `gedevents` / `26.0.7` | GED Candidate, the monthly series |
 | `Providers:Ucdp:Countries` | empty | Gleditsch and Ward numbers, not ISO codes. Empty means no filter. |
+
+### Place names
+
+The gazetteer has two layers. A small curated core — chokepoints, seas, country centroids, and the
+alias judgements that make ordinary reporting language resolve — is hand-written in `Gazetteer.cs`.
+Beside it sit 2,750 places for Ukraine, Yemen and Tigray with 9,179 alternate spellings, extracted
+once from Wikidata (CC0) and committed as an embedded resource.
+
+Coordinates are sourced rather than typed. That is the point of the arrangement: a latitude written
+from recollection is indistinguishable in the file from a correct one, which is the same failure
+[ADR 005](docs/adr/005-location-resolution.md) refuses when a model proposes a coordinate.
+
+To refresh the extract, run `python tools/gazetteer/extract.py`. The build never fetches it.
+[ADR 026](docs/adr/026-gazetteer-sourcing.md) has the licence comparison and the collision rules.
 | `Providers:*:PollInterval` | 15 min / 1 h / 6 h | Per-provider polling cadence |
 | `Providers:*:MaxItemsPerPoll` | 25 / 50 / 50 | Ceiling on envelopes emitted from one poll |
 | `Replay:Enabled` | true | Whether the recorded demo stream runs |

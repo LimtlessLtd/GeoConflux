@@ -563,6 +563,13 @@ At a few hundred entries this stops being something to hand-write in a C# array.
 GeoNames or OSM raises licensing, artefact-size and build-time questions that require an ADR rather
 than a quiet edit to `Gazetteer.cs`.
 
+**Resolved in Sprint 9 by [ADR 026](docs/adr/026-gazetteer-sourcing.md).** The lexicon now has two
+layers: the curated core above, and 2,750 places with 9,179 alternate spellings extracted once from
+Wikidata (CC0) and committed. Mekelle carries its Ge'ez spellings and four unstable Latin ones;
+Pokrovsk carries Ukrainian, Russian, and the Krasnoarmiisk that Russian-language reporting still uses.
+Coordinates are sourced rather than typed, which is the part that matters — a hand-written latitude is
+indistinguishable in the file from a remembered one.
+
 ---
 
 # 13. AI Traceability
@@ -2545,13 +2552,16 @@ Sprint 9 progress:
    the schema differences that came with it.
 2. **UCDP GED Candidate adapter.** Done, along with the `DeclaredPrecision` seam it needed —
    which also carries ACLED's `geo_precision`, so neither source overstates a borrowed coordinate.
-3. **Gazetteer depth for the three theatres.** Not started, and it is the binding constraint on every
-   text source: 41 settlement-precision places worldwide, none in Ethiopia. Adding adapters does not
-   substitute for it. Section 12 has the figures. Record the sourcing ADR before writing the data.
+3. **Gazetteer depth for the three theatres.** Done. 2,750 sourced places and 9,179 alternate
+   spellings beside the curated core, from a committed Wikidata (CC0) extract — Ukraine 2,105, Yemen
+   482, Tigray 163. Sourcing, the collision rules, and the measured cost are in
+   [ADR 026](docs/adr/026-gazetteer-sourcing.md).
 4. **FIRMS conflict filtering.** Not started.
 5. **Theatre-level coverage reporting.** Not started.
 6. **Territorial control layer.** Deferred whole, per the sprint definition: the DeepState licence
    question is unsettled.
+7. **Troop movements.** Declined and recorded, as the sprint requires, in
+   [ADR 027](docs/adr/027-no-troop-movement-mapping.md).
 
 Items 1, 2 and 4 need credentials that cannot be obtained from inside this repository, so each ships
 pinned by recorded fixtures and disabled, in the pattern NASA FIRMS already follows. Item 3 is the

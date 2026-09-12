@@ -220,17 +220,15 @@ means nobody reported, not that nothing happened.
 2. ~~**Add a UCDP GED Candidate adapter** as `ObservationKind.ExternalEvent`.~~ Done in Sprint 9.
    `where_prec` is carried through `ObservationEnvelope.DeclaredPrecision`, and the same seam carries
    ACLED's `geo_precision`.
-3. **Expand the gazetteer for the three theatres, with script variants.** The binding constraint on
-   every text path. At a few hundred entries this stops being something to hand-write in a C# array —
-   sourcing from GeoNames or OSM raises licensing, size and build-time questions that deserve their
-   own ADR rather than a quiet change to `Gazetteer.cs`.
+3. ~~**Expand the gazetteer for the three theatres, with script variants.**~~ Done in Sprint 9, from
+   a committed Wikidata (CC0) extract rather than by hand. ADR 026 records the sourcing, the licence
+   comparison, and the collision rules.
 4. **Model territorial control as polygons.** The domain currently has point observations and
    incidents; a control layer is a new concept, not a new adapter, and needs an ADR. DeepState's
    licence question should be settled first.
 5. **Enable FIRMS only behind conflict filtering** — persistent-flare mask, cropland mask, FRP
    threshold, night-only. Without those it is an agricultural burn map.
-6. **Do not build troop-movement mapping.** Record it as a deliberate gap, in the ADR 025 tradition
-   of writing down what was declined and why.
+6. ~~**Do not build troop-movement mapping.**~~ Declined and recorded in Sprint 9, as ADR 027.
 
 Items 1 and 2 need no new domain concepts and no gazetteer work, because both sources are permitted
 to state their own coordinates. They are the shortest path from here to real conflict data on the

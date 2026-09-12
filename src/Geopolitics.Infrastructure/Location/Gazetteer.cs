@@ -439,6 +439,47 @@ public static class Gazetteer
         ("पाकिस्तान", "Pakistan"),
     ];
 
+    /// <summary>
+    /// Spellings the sourced extract does not carry, for places it does.
+    /// <para>
+    /// The extract is only as good as the alternate labels the source happens to hold, and for small
+    /// places it frequently holds none. Tigray is the sharp case the plan called out: Latin
+    /// transliteration of Tigrinya and Amharic names is genuinely unstable, so a town appears as
+    /// Zalambesa in one report and Zalambessa in the next, and a lexicon holding one of them places
+    /// half the reporting and drops the rest.
+    /// </para>
+    /// <para>
+    /// This is the editorial layer doing what it is for. Asserting that two spellings name one place
+    /// is a judgement a person can make and defend; it is emphatically not the same act as writing a
+    /// coordinate, which stays sourced. The target must already exist in the extract, so an entry
+    /// here can add a way of saying a name and can never add a place or move one.
+    /// </para>
+    /// </summary>
+    private static readonly (string Alias, string Target)[] SourcedAliases =
+    [
+        // Tigray, where the source holds a single Latin spelling and reporting uses several.
+        ("Zalambesa", "Zalambessa"),
+        ("Zalambassa", "Zalambessa"),
+        ("Mekelle", "Mekele"),
+        ("Mek'ele", "Mekele"),
+    ];
+
+    /// <summary>
+    /// Every spelling the lexicon knows, paired with the place it denotes.
+    /// <para>
+    /// Built once and shared by both entry points, so a name that resolves cannot be a name that is
+    /// not searched for, or the reverse. Keeping two parallel constructions in step by hand was fine
+    /// at two hundred entries and is not at several thousand.
+    /// </para>
+    /// </summary>
+    private static readonly (string Name, GazetteerEntry Entry)[] Names = BuildNames();
+
+    /// <summary>
+    /// Names in the sourced layer that denote more than one place and were therefore dropped. Counted
+    /// rather than discarded silently, because it is a real and reportable limit on coverage.
+    /// </summary>
+    public static int AmbiguousSourcedNames { get; private set; }
+
     private static readonly FrozenDictionary<string, GazetteerEntry> Lookup = BuildLookup();
 
     /// <summary>
@@ -518,49 +559,290 @@ public static class Gazetteer
         return new string(buffer[..length]);
     }
 
-    private static FrozenDictionary<string, GazetteerEntry> BuildLookup()
+    /// <summary>
+    /// How far apart two records with the same name may sit and still be taken for one place, in
+    /// degrees — roughly five kilometres.
+    /// <para>
+    /// The sourced layer contains genuine duplicates: the same town entered twice in Wikidata with
+    /// coordinates that differ in the fourth decimal. Treating those as a name that means two places
+    /// would throw away a real place for the sake of a rounding difference. Two records this close
+    /// describe one town at globe zoom whichever of them is kept.
+    /// </para>
+    /// </summary>
+    private const double SamePlaceDegrees = 0.05;
+
+    /// <summary>
+    /// How far apart nested administrative units sharing a name may sit — roughly 160 km, which
+    /// comfortably holds a governorate and the district and town inside it that carry its name.
+    /// </summary>
+    private const double NestedDegrees = 1.5;
+
+    /// <summary>
+    /// How many times larger one candidate must be than every other before its name is taken to mean
+    /// it. Reporting that says "Kostiantynivka" without qualification means the town of sixty-seven
+    /// thousand on the front line, not one of the four villages that share the name — but the margin
+    /// has to be wide enough that this is a fact about the places rather than a coin toss.
+    /// </summary>
+    private const int DominantPopulationRatio = 10;
+
+    /// <summary>
+    /// The floor under that rule. Ten times the size of nothing much is still nothing much, and a
+    /// hamlet of three hundred should not win a name from four hamlets of thirty.
+    /// </summary>
+    private const int DominantPopulationFloor = 5_000;
+
+    /// <summary>
+    /// Merges the curated table with the sourced extract, under the rules ADR 026 settles.
+    /// <para>
+    /// The two layers behave differently on a collision, and deliberately. A collision inside the
+    /// curated table is a mistake — it is small, hand-written, and argued for — so it throws at first
+    /// touch, in every test, rather than becoming a wrong pin on a globe. A collision inside the
+    /// sourced extract is not a mistake at all: a country has many villages sharing a name, and there
+    /// is no editorial answer to choose between them. Those names are dropped, because an unplaced
+    /// report is visibly unplaced while a confidently misplaced one is not.
+    /// </para>
+    /// <para>
+    /// Where the two layers name the same place the curated entry wins, because somebody chose it.
+    /// </para>
+    /// </summary>
+    private static (string Name, GazetteerEntry Entry)[] BuildNames()
     {
-        var map = new Dictionary<string, GazetteerEntry>(StringComparer.Ordinal);
+        var curated = new Dictionary<string, GazetteerEntry>(StringComparer.Ordinal);
+        var names = new List<(string Name, GazetteerEntry Entry)>(Entries.Length);
 
         foreach (var entry in Entries)
         {
-            map[NormaliseKey(entry.CanonicalName)] = entry;
+            curated[NormaliseKey(entry.CanonicalName)] = entry;
+            names.Add((entry.CanonicalName, entry));
         }
 
         foreach (var (alias, canonical) in Aliases.Concat(NativeScriptAliases))
         {
             var key = NormaliseKey(alias);
-            var target = map[NormaliseKey(canonical)];
+            var target = curated[NormaliseKey(canonical)];
 
             // Two aliases normalising to one key would silently place a city somewhere else, and
             // the reader of the map would have no way to tell. With the lexicon now spanning six
             // scripts the chance of an accidental collision is real, so it fails here — at first
             // touch, in every test — rather than becoming a wrong pin on a globe.
-            if (map.TryGetValue(key, out var existing) && existing != target)
+            if (curated.TryGetValue(key, out var existing) && existing != target)
             {
                 throw new InvalidOperationException(
                     $"Gazetteer alias '{alias}' collides with an entry already resolving to '{existing.CanonicalName}'.");
             }
 
-            map[key] = target;
+            curated[key] = target;
+            names.Add((alias, target));
+        }
+
+        var sourced = SourcedNames(curated);
+        names.AddRange(sourced);
+        names.AddRange(SourcedAliasNames(curated, sourced));
+        return [.. names];
+    }
+
+    /// <summary>
+    /// Attaches the editorial spellings above to the sourced places they name.
+    /// <para>
+    /// Applied after the extract has been merged, because that is the only point at which the targets
+    /// exist. An alias whose target is missing is a mistake in this table rather than a fact about the
+    /// world, and it throws for the same reason a curated alias collision does: it is small, hand
+    /// written, and fixable at first touch.
+    /// </para>
+    /// </summary>
+    private static List<(string Name, GazetteerEntry Entry)> SourcedAliasNames(
+        Dictionary<string, GazetteerEntry> curated,
+        List<(string Name, GazetteerEntry Entry)> sourced)
+    {
+        var byKey = new Dictionary<string, GazetteerEntry>(StringComparer.Ordinal);
+
+        foreach (var (name, entry) in sourced)
+        {
+            byKey[NormaliseKey(name)] = entry;
+        }
+
+        var added = new List<(string Name, GazetteerEntry Entry)>(SourcedAliases.Length);
+
+        foreach (var (alias, target) in SourcedAliases)
+        {
+            if (!byKey.TryGetValue(NormaliseKey(target), out var entry))
+            {
+                throw new InvalidOperationException(
+                    $"Gazetteer alias '{alias}' names '{target}', which is not in the extract. Either the "
+                    + "extract has changed or the target is misspelt; an alias may add a spelling but "
+                    + "never a place.");
+            }
+
+            var key = NormaliseKey(alias);
+
+            // The curated table and an unambiguous sourced name both outrank this, because both are
+            // already a settled answer for that spelling.
+            if (curated.ContainsKey(key) || byKey.ContainsKey(key))
+            {
+                continue;
+            }
+
+            byKey[key] = entry;
+            added.Add((alias, entry));
+        }
+
+        return added;
+    }
+
+    /// <summary>
+    /// The sourced layer, with curated names left alone and ambiguous ones removed.
+    /// </summary>
+    /// <summary>
+    /// A sourced name together with the facts that exist only to settle a collision. Rank and
+    /// population ride along here rather than on <see cref="GazetteerEntry"/> because the curated
+    /// layer shares that type and has no use for either, and because carrying them in a static side
+    /// table would make the lexicon depend on the order its own fields happen to be declared in.
+    /// </summary>
+    private readonly record struct Candidate(string Name, GazetteerEntry Entry, int Rank, int Population);
+
+    private static List<(string Name, GazetteerEntry Entry)> SourcedNames(
+        Dictionary<string, GazetteerEntry> curated)
+    {
+        // Grouped by key first rather than added one at a time, because ambiguity is only visible
+        // once every candidate for a name has been seen. Adding as we go and removing later would
+        // leave whichever entry arrived first in the search terms.
+        var candidates = new Dictionary<string, List<Candidate>>(StringComparer.Ordinal);
+
+        foreach (var place in TheatrePlaces.All)
+        {
+            var entry = new GazetteerEntry(
+                place.Name,
+                place.Latitude,
+                place.Longitude,
+                place.CountryCode,
+                place.Precision);
+
+            foreach (var name in place.Aliases.Prepend(place.Name))
+            {
+                var key = NormaliseKey(name);
+
+                // A name that normalises to nothing — punctuation or digits only — cannot be looked
+                // up, and the curated layer owns any key it already holds.
+                if (key.Length == 0 || curated.ContainsKey(key))
+                {
+                    continue;
+                }
+
+                if (!candidates.TryGetValue(key, out var forKey))
+                {
+                    candidates[key] = forKey = [];
+                }
+
+                forKey.Add(new Candidate(name, entry, place.Rank, place.Population ?? 0));
+            }
+        }
+
+        var accepted = new List<(string Name, GazetteerEntry Entry)>(candidates.Count);
+        var ambiguous = 0;
+
+        foreach (var (_, forKey) in candidates)
+        {
+            if (Disambiguate(forKey) is { } chosen)
+            {
+                accepted.Add((chosen.Name, chosen.Entry));
+                continue;
+            }
+
+            ambiguous++;
+        }
+
+        AmbiguousSourcedNames = ambiguous;
+        return accepted;
+    }
+
+    /// <summary>
+    /// Decides which place a shared name denotes, or that it denotes none usefully.
+    /// <para>
+    /// Three rules, each answering a different reason two rows can carry one name, and a refusal when
+    /// none of them applies. The refusal is the important part: resolving to whichever candidate came
+    /// back first would put a pin in the wrong place at full confidence, and a reader has no way to
+    /// tell that from a right one.
+    /// </para>
+    /// </summary>
+    private static Candidate? Disambiguate(List<Candidate> candidates)
+    {
+        var first = candidates[0];
+
+        // One place, entered twice. The source genuinely holds duplicates of the same town whose
+        // coordinates differ in the fourth decimal, and dropping a real place over a rounding
+        // difference would be absurd. At globe zoom either row draws the same dot.
+        if (candidates.All(candidate => IsSamePlace(first.Entry, candidate.Entry)))
+        {
+            return first;
+        }
+
+        // Nested administrative units. Marib is a governorate, a district and a city; Taiz is a city
+        // and a governorate. These are not competing places, they are one place described at three
+        // scales, so the containing unit is chosen — it is the answer that is certainly right, and
+        // its Region precision already tells the reader it is an area rather than a position.
+        var nested = candidates
+            .Where(candidate => candidates.All(other => IsNested(candidate.Entry, other.Entry)))
+            .ToArray();
+
+        if (nested.Length == candidates.Count)
+        {
+            var smallestRank = candidates.Min(candidate => candidate.Rank);
+
+            if (candidates.Count(candidate => candidate.Rank == smallestRank) == 1)
+            {
+                return candidates.First(candidate => candidate.Rank == smallestRank);
+            }
+        }
+
+        // Genuinely different places that happen to share a name, where one of them is what anyone
+        // saying the bare name means. The margin is deliberately wide: this is meant to catch a town
+        // among villages, not to pick a winner between two towns.
+        var ordered = candidates
+            .OrderByDescending(candidate => candidate.Population)
+            .ToArray();
+
+        var leader = ordered[0].Population;
+        var runnerUp = ordered[1].Population;
+
+        return leader >= DominantPopulationFloor && leader >= runnerUp * DominantPopulationRatio
+            ? ordered[0]
+            : null;
+    }
+
+    private static bool IsSamePlace(GazetteerEntry first, GazetteerEntry second) =>
+        Math.Abs(first.Latitude - second.Latitude) <= SamePlaceDegrees
+        && Math.Abs(first.Longitude - second.Longitude) <= SamePlaceDegrees;
+
+    private static bool IsNested(GazetteerEntry first, GazetteerEntry second) =>
+        Math.Abs(first.Latitude - second.Latitude) <= NestedDegrees
+        && Math.Abs(first.Longitude - second.Longitude) <= NestedDegrees;
+
+    /// <summary>
+    /// Indexes every known spelling by its normalised key.
+    /// <para>
+    /// Assignment rather than <c>Add</c>, because several spellings legitimately normalise to one key
+    /// while meaning the same place: the key strips punctuation and case, so "Bab-el-Mandeb", "Bab el
+    /// Mandeb" and "Bab al-Mandeb" are one key and one entry. The collisions that would actually be
+    /// wrong — two spellings meaning two different places — have already been dealt with by the time
+    /// this runs: the curated layer throws on them and the sourced layer drops them.
+    /// </para>
+    /// </summary>
+    private static FrozenDictionary<string, GazetteerEntry> BuildLookup()
+    {
+        var map = new Dictionary<string, GazetteerEntry>(Names.Length, StringComparer.Ordinal);
+
+        foreach (var (name, entry) in Names)
+        {
+            map[NormaliseKey(name)] = entry;
         }
 
         return map.ToFrozenDictionary(StringComparer.Ordinal);
     }
 
-    private static (string Term, GazetteerEntry Entry)[] BuildSearchTerms()
-    {
-        var aliases = Aliases.Concat(NativeScriptAliases).ToArray();
-        var terms = new List<(string Term, GazetteerEntry Entry)>(Entries.Length + aliases.Length);
-        terms.AddRange(Entries.Select(entry => (FoldForSearch(entry.CanonicalName), entry)));
-
-        foreach (var (alias, canonical) in aliases)
-        {
-            terms.Add((FoldForSearch(alias), Entries.First(entry => entry.CanonicalName == canonical)));
-        }
-
-        return [.. terms.OrderByDescending(item => item.Term.Length)];
-    }
+    private static (string Term, GazetteerEntry Entry)[] BuildSearchTerms() =>
+        [.. Names
+            .Select(pair => (Term: FoldForSearch(pair.Name), pair.Entry))
+            .OrderByDescending(item => item.Term.Length)];
 
     /// <summary>
     /// Case- and compatibility-folded form used for searching prose, keeping punctuation and spacing
