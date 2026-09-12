@@ -350,7 +350,7 @@ the result is carried with it, so a country centroid is not drawn as though it w
 **Performance.** `PipelineThroughputTests` asserts per-item cost is flat rather than asserting a wall
 clock, which is the right shape for a test that has to pass on shared CI hardware.
 
-## The one real gap left open
+## The one real gap left open — since closed
 
 The dashboard has **no automated test coverage at all**. `wwwroot/app.js` is 78 KB of application logic
 — the render paths whose `escapeHtml` discipline is the first half of the XSS defence, the snapshot
@@ -360,9 +360,28 @@ including against the published page, and that is genuinely how the content secu
 globe fallback were checked. But hand verification does not survive a refactor, and this is the one part
 of the system where a regression reaches a reader directly.
 
-This is not fixed here. Adding a JavaScript test runner to a .NET solution is an increment with its own
-dependency decision to make and record, not a change to fold into a review. It is stated as an open gap
-rather than left for someone to discover.
+This was not fixed in the review itself. Adding a JavaScript test runner to a .NET solution is an
+increment with its own dependency decision to make and record, not a change to fold into a review, so
+it was stated as an open gap rather than left for someone to discover.
+
+**It has since been closed.** [ADR 024](adr/024-dashboard-test-runner.md) records the decision. The
+logic that does not need a browser moved to `wwwroot/lib`, and 81 tests now cover it using
+`node:test` — no dependencies, no lockfile, no third-party code. All three things named above are
+among them: the escaping discipline is pushed hostile input and checked for markup, the snapshot
+fallback is exercised against sources that return false and sources that throw, and the relative-time
+basis is asserted to give a demo record the same answer whether the page is read the same day or the
+following year.
+
+Seven deliberate mutations were introduced afterwards to confirm the suite catches them — a dropped
+quote character in `escapeHtml`, a basis that always uses the reader's clock, a demo notice that
+ignores a snapshot's own declaration, an empty database read as live, a reversed sort, an unescaped
+chip, and a renamed export — and all seven failed the suite. That is the property the gap was about:
+hand verification would have caught none of them.
+
+What remains uncovered is stated in the ADR rather than implied here: rendering, the globe, the
+SignalR client, the replay timer and the analytics fetches are still verified by loading the page. The
+suite covers the logic that decides what those render paths are told to say, which is where a
+regression reaches a reader as a false statement rather than as a visibly broken screen.
 
 ## Verification
 
@@ -371,11 +390,14 @@ Run after every change above:
 ```powershell
 dotnet build GeopoliticsDashboard.sln          # 0 warnings, 0 errors
 dotnet test GeopoliticsDashboard.sln           # 312 passed, 0 failed
+npm test                                       # 81 passed, 0 failed (dashboard client)
 dotnet format GeopoliticsDashboard.sln --verify-no-changes
 ```
 
-312 tests: 260 unit, 10 AI evaluation, 42 integration. Seven of them are new here, and all seven
-failed against the code as it stood. `docker build` runs on CI rather than locally, because Docker is not
+312 .NET tests: 260 unit, 10 AI evaluation, 42 integration. Seven of them are new here, and all seven
+failed against the code as it stood. The 80 dashboard tests are a separate suite and a separate
+command, for the reason [ADR 024](adr/024-dashboard-test-runner.md) gives: `dotnet test` keeps
+meaning "the .NET suites", and `dotnet build` does not start depending on Node being installed. `docker build` runs on CI rather than locally, because Docker is not
 installed on the machine this review was performed on — stated rather than reported as passing.
 
 The two concurrency tests were run five times consecutively to check they are not timing-flaky, since

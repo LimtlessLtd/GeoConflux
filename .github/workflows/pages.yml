@@ -48,6 +48,18 @@ jobs:
       - name: Test
         run: dotnet test GeopoliticsDashboard.sln --configuration Release --no-build
 
+# The dashboard client is JavaScript and is not part of the .NET solution, so it gets its own
+      # step. No setup-node action is needed: the runner image ships Node, and the suite has no
+      # dependencies to install — that is the point of it. See docs/adr/024-dashboard-test-runner.md.
+      #
+      # An unmatched glob fails rather than passing vacuously, so deleting the suite breaks the build
+      # instead of quietly turning it green.
+      - name: Test the dashboard client
+        run: |
+          set -euo pipefail
+          node --version
+          npm test
+
       - name: Assemble the static dashboard
         # The trailing "/." copies the directory CONTENTS. Without it, cp nests the source inside
         # dist whenever dist already exists, which would publish a site one directory too deep.
@@ -95,6 +107,17 @@ jobs:
                       dist/data/analytics/30d.json dist/data/analytics/90d.json; do
             test -s "$file" || { echo "::error::Missing or empty: $file"; exit 1; }
           done
+          # app.js imports its logic from ./lib, so a module that failed to copy breaks the page
+          # on load — and breaks it in a console nobody is watching. The list is read out of the
+          # published app.js rather than repeated here, so it cannot drift from what the page asks
+          # for. See docs/adr/024-dashboard-test-runner.md.
+          modules=$(grep -oE "from './lib/[^']+'" dist/app.js | sed "s|from './||; s|'||" | sort -u)
+          test -n "$modules" || { echo "::error::app.js imports no modules; the published file is not the one that was tested."; exit 1; }
+          for module in $modules; do
+            test -s "dist/$module" || { echo "::error::app.js imports $module, which is missing or empty in the published output."; exit 1; }
+          done
+          echo "Verified $(echo "$modules" | wc -l) dashboard module(s) reached the published output."
+
           # An empty run would publish a blank dashboard, which is worse than failing the build.
           incidents=$(jq '.incidentCount' dist/data/meta.json)
           observations=$(jq '.observationCount' dist/data/meta.json)

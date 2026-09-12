@@ -26,6 +26,19 @@ jobs:
       - run: dotnet restore GeopoliticsDashboard.sln
       - run: dotnet build GeopoliticsDashboard.sln --configuration Release --no-restore
       - run: dotnet test GeopoliticsDashboard.sln --configuration Release --no-build
+
+      # The dashboard client is JavaScript and is not part of the .NET solution, so it gets its own
+      # step. No setup-node action is needed: the runner image ships Node, and the suite has no
+      # dependencies to install — that is the point of it. See docs/adr/024-dashboard-test-runner.md.
+      #
+      # An unmatched glob fails rather than passing vacuously, so deleting the suite breaks the build
+      # instead of quietly turning it green.
+      - name: Test the dashboard client
+        run: |
+          set -euo pipefail
+          node --version
+          npm test
+
       # The evaluation suites rewrite their own RESULTS.md as they run, so after the test step those
       # files hold what the current code actually produces. If that differs from what is committed,
       # the repository is publishing measurements that no longer describe it — which is exactly the

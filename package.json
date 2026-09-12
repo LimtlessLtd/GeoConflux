@@ -1,0 +1,13 @@
+{
+  "name": "geoconflux-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tests for the dashboard client. Deliberately dependency-free: the runner is node:test and the assertions are node:assert, both of which ship with Node, so this file adds no packages to install, no lockfile to audit, and no third-party code to the repository. See docs/adr/024-dashboard-test-runner.md.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/dashboard/*.test.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

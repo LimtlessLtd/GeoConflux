@@ -496,11 +496,12 @@ Serving `dist/` with any static file server reproduces the published page.
 ```powershell
 dotnet build GeopoliticsDashboard.sln
 dotnet test GeopoliticsDashboard.sln
+npm test                                    # the dashboard client; needs Node, installs nothing
 dotnet format GeopoliticsDashboard.sln --verify-no-changes
 docker build -t geopolitics-dashboard .
 ```
 
-272 tests cover domain invariants, fingerprinting, classification, correlation scoring, queue
+312 .NET tests cover domain invariants, fingerprinting, classification, correlation scoring, queue
 backpressure and cancellation, gazetteer resolution, and the processor's failure paths; the AI trust
 boundary (malformed JSON, unknown enums, out-of-range confidence, oversized payloads, control
 characters, prompt-injection fixtures, provider timeout, provider exception, repair success and
@@ -522,6 +523,15 @@ under one trace, carrying the decision each stage made, and the matching stage-d
 counters); a throughput run of 400 observations through the real database that asserts per-item cost
 does not grow as the table fills; a cancellation run that asserts processing stops promptly and
 leaves nothing half-committed; and the evaluation harnesses above.
+
+A further **81 tests cover the dashboard client**, which is JavaScript and so is a separate suite and
+a separate command. They cover the escaping that stops a hostile feed title becoming markup, the
+fallback from a live backend to the exported snapshot, the time basis that keeps a replayed record
+from reading as though it happened today, the fail-safe rule that decides whether the demo-data
+notice may come down, incident filtering and ordering, and the confidence and model-opinion chips.
+The runner is `node:test`, so the suite installs nothing and the repository carries no JavaScript
+dependencies; [ADR 024](docs/adr/024-dashboard-test-runner.md) records that decision and states what
+is still verified by loading the page rather than by a test.
 
 ## Not yet implemented
 

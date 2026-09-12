@@ -9,6 +9,9 @@
 - Demo/replay data is explicitly labelled and must not be presented as live reporting.
 - Treat AI outputs and all external payloads as untrusted input. Never let an LLM authoritatively set coordinates.
 - Build, test, and format after meaningful changes. Do not bypass failures.
+- Dashboard logic that does not need a browser belongs in `wwwroot/lib` and must be tested; `app.js`
+  keeps only what touches the DOM, the network, or the globe. The suite is `npm test` and it has no
+  dependencies — keep it that way. See `docs/adr/024-dashboard-test-runner.md`.
 - Do not add secrets, credentials, or inferred external API results to the repository.
 - Never credit an AI tool as an author or contributor anywhere. See **Attribution** below.
 
@@ -55,6 +58,7 @@ non-empty, and publishes. The whole rule is therefore *get the verified incremen
 ```powershell
 dotnet build GeopoliticsDashboard.sln
 dotnet test GeopoliticsDashboard.sln
+npm test
 dotnet format GeopoliticsDashboard.sln --verify-no-changes
 git checkout main
 git merge --ff-only <branch>
@@ -71,6 +75,7 @@ it means "pushed" and "published" are not the same claim.
 ```powershell
 dotnet build GeopoliticsDashboard.sln
 dotnet test GeopoliticsDashboard.sln
+npm test                                       # the dashboard client (Node; installs nothing)
 dotnet format GeopoliticsDashboard.sln --verify-no-changes
 dotnet run --project src/Geopolitics.Api
 ```

@@ -10,3 +10,4 @@ appsettings.Local.json
 secrets.json
 dist/
 .claude/
+node_modules/

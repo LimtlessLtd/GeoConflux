@@ -16,17 +16,32 @@
  *  - Nothing is presented as more certain than it is. Demo data is labelled wherever it appears,
  *    and the static mode says plainly that it is a recording rather than a live system.
  */
+
+/**
+ * The logic below that does not need a browser lives in ./lib, so that it can be tested.
+ *
+ * Everything in this file reaches for the DOM, the network, or the globe, and is verified by
+ * loading the page. Everything in ./lib is a pure function of its arguments — escaping, time
+ * bases, provenance wording, filtering, source selection — and is covered by tests/dashboard.
+ * The split is drawn at that line and nowhere else: a helper moves out when it stops needing a
+ * document, not because it looked tidier elsewhere.
+ *
+ * The wrapper below is now redundant, because a module already has its own scope. It is kept so
+ * that this file's structure and indentation still match the version that was verified by hand.
+ */
+import { escapeHtml } from './lib/html.js';
+import { asCount, colourFor, humanise, plural } from './lib/format.js';
+import {
+  exactTimeHint, formatDate, formatRelative, formatTime, setRunBasis, statesOwnTime,
+} from './lib/time.js';
+import { confidenceChip, modelOpinion } from './lib/classification.js';
+import { canHideDemoNotice, provenanceSummary } from './lib/provenance.js';
+import { selectVisibleIncidents } from './lib/incidents.js';
+import { resolveDataSource as resolveSourceOrder } from './lib/datasource.js';
+
 (() => {
   'use strict';
 
-  const SEVERITY_RANK = { Critical: 4, High: 3, Medium: 2, Low: 1, Unknown: 0 };
-  const SEVERITY_COLOUR = {
-    Critical: '#ef476f',
-    High: '#ff9f1c',
-    Medium: '#ffd166',
-    Low: '#64dfdf',
-    Unknown: '#aebdca',
-  };
   const POLL_INTERVAL_MS = 15000;
   const MAX_FEED_ITEMS = 60;
   const REPLAY_STEP_MS = 900;
@@ -137,17 +152,6 @@
   let pollTimer = null;
   let dataSource = null;
 
-  /**
-   * What relative times are measured against.
-   *
-   * In live mode that is the visitor's clock, because the events really did just arrive. In static
-   * mode it must NOT be: the snapshot describes a recorded run, and measuring it against "now" would
-   * stamp synthetic events on real straits and cities as though they happened this afternoon. The
-   * basis becomes the moment the run was recorded, and the suffix says so.
-   */
-  let timeBasis = null;
-  let timeSuffix = 'ago';
-
   /** When active, only these incidents render, with counts as they stood at that point. */
   const replay = { active: false, revealed: new Set(), counts: new Map(), played: new Set(), timer: null };
 
@@ -166,160 +170,6 @@
   ];
   const analyticsCache = new Map();
   let analyticsLoaded = false;
-
-  const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-  }[character]));
-
-  const colourFor = (severity) => SEVERITY_COLOUR[severity] ?? SEVERITY_COLOUR.Unknown;
-
-  const formatTime = (value) => (value
-    ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
-    : 'Unknown');
-
-  const formatDate = (value) => (value
-    ? new Intl.DateTimeFormat(undefined, { dateStyle: 'long' }).format(new Date(value))
-    : 'an unknown date');
-
-  /**
-   * Which clock a given record's age should be measured against.
-   *
-   * A live report carries a real publication time from a real publisher, so the honest basis is the
-   * visitor's own clock: it went out six hours ago, and saying "6hr ago" is a fact that stays true
-   * however long after the run the page is read. A demo record carries an invented timestamp that
-   * only means anything relative to the recorded run, and measuring that against now would stamp a
-   * fabricated event on a real strait as though it had happened this afternoon.
-   *
-   * So the basis is chosen per record rather than per page. That is what lets the published snapshot
-   * carry both kinds at once — which it does, and labels individually — without either one
-   * misrepresenting the other.
-   */
-  const relativeBasis = (measureAgainstRun) => (measureAgainstRun && timeBasis !== null
-    ? { at: timeBasis, suffix: timeSuffix }
-    : { at: Date.now(), suffix: 'ago' });
-
-  const formatRelative = (value, measureAgainstRun = false) => {
-    if (!value) return '';
-
-    const { at, suffix } = relativeBasis(measureAgainstRun);
-    const minutes = Math.round((at - new Date(value).getTime()) / 60000);
-
-    // A source clock running slightly fast puts a publication time marginally in the future. The
-    // pipeline already clamps that on the way in; this is the display-side equivalent, so a report
-    // can never read as being from the future.
-    if (minutes < 1) return suffix === 'ago' ? 'just now' : 'at the start of the run';
-    if (minutes < 60) return `${minutes}m ${suffix}`;
-
-    const hours = Math.round(minutes / 60);
-    if (hours < 24) return `${hours}hr ${suffix}`;
-
-    const days = Math.round(hours / 24);
-    return `${plural(days, 'day')} ${suffix}`;
-  };
-
-  /**
-   * The exact timestamp, phrased for a tooltip on a relative one.
-   *
-   * The relative form is what a reader wants at a glance; the exact form is what they want when the
-   * glance raises a question, and a hover is cheaper than a click for that.
-   */
-  const exactTimeHint = (value) => (value
-    ? `Source timestamp: ${formatTime(value)}`
-    : 'This source stated no time of its own.');
-
-  /**
-   * Whether a source actually gave a time for what it reported.
-   *
-   * When a source states none, normalisation falls back to the moment the report arrived, leaving
-   * the two timestamps equal. Printing both would then present this system's own arrival time as
-   * though the source had reported it, which is precisely the kind of borrowed authority the rest of
-   * this dashboard is careful to avoid.
-   */
-  const statesOwnTime = (observation) => Boolean(observation.occurredAt)
-    && Math.abs(new Date(observation.occurredAt).getTime() - new Date(observation.receivedAt).getTime()) > 60_000;
-
-  /** Coerces a snapshot-supplied count to a number, so it can never carry markup into innerHTML. */
-  const asCount = (value) => (Number.isFinite(Number(value)) ? Number(value) : 0);
-
-  const plural = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;
-
-  /**
-   * Turns a classification method into something a reader can judge.
-   *
-   * The distinction that matters on screen is not which vendor answered but whether a judgement was
-   * inferred at all, so the three cases are named rather than the providers.
-   */
-  function describeMethod(method) {
-    const value = String(method ?? '');
-    if (value.startsWith('source-declared+')) {
-      return { kind: 'mixed', label: 'source + model', detail: value };
-    }
-    if (value === 'source-declared') {
-      return { kind: 'declared', label: 'stated by source', detail: value };
-    }
-    if (value.startsWith('ai:')) {
-      return { kind: 'model', label: value.slice(3), detail: value };
-    }
-    if (value === 'keyword') {
-      return { kind: 'heuristic', label: 'keyword match', detail: value };
-    }
-    return { kind: 'unknown', label: value || 'unrecorded', detail: value };
-  }
-
-  /**
-   * Renders confidence as a number and a bar next to the method that produced it.
-   *
-   * A category shown on its own reads as a fact. Showing "HIGH" beside "41% · keyword match" is the
-   * whole point of carrying provenance through the pipeline, so this is used everywhere a category
-   * is displayed rather than only in the drawer.
-   */
-  function confidenceChip(confidence, method) {
-    const value = Number(confidence);
-    if (!Number.isFinite(value) || value <= 0) {
-      const unscored = describeMethod(method);
-      return `<span class="conf conf-none" title="No confidence was recorded for this classification.">
-        unscored · ${escapeHtml(unscored.label)}</span>`;
-    }
-
-    const percent = Math.round(value * 100);
-    const described = describeMethod(method);
-    const title = `${percent}% confidence, produced by ${described.detail}. `
-      + 'This is a stated confidence in a classification, not a probability that the event occurred.';
-
-    return `<span class="conf conf-${escapeHtml(described.kind)}" title="${escapeHtml(title)}">
-      <span class="conf-meter" aria-hidden="true"><i style="width:${percent}%"></i></span>
-      <span class="conf-value">${percent}%</span>
-      <span class="conf-method">${escapeHtml(described.label)}</span>
-    </span>`;
-  }
-
-  /**
-   * The trained model's second opinion on one observation.
-   *
-   * Rendered as a distinct row rather than mixed in with the classification chips, and only ever
-   * described as an opinion. The pipeline's severity is the one that was acted on; this one has no
-   * standing over it, and a reader must not have to work that out from the layout.
-   *
-   * Agreement is shown as well as disagreement. A panel that only appeared when the two differed
-   * would make disagreement look like an error state rather than the ordinary outcome it is.
-   */
-  function modelOpinion(opinion, appliedSeverity) {
-    if (!opinion) return '';
-
-    const agrees = !opinion.disagreesWithApplied;
-    const percent = Math.round((opinion.confidence ?? 0) * 100);
-
-    return `<div class="model-opinion${agrees ? '' : ' is-divergent'}"
-      title="A conventional model trained on a small synthetic corpus. It is recorded for comparison and never sets the severity an incident is stored with. Model: ${escapeHtml(opinion.modelVersion)}">
-      <span class="model-tag">ML</span>
-      <span>${agrees
-        ? `agrees: <strong class="sev sev-${escapeHtml(opinion.severity)}">${escapeHtml(opinion.severity)}</strong>`
-        : `would have said <strong class="sev sev-${escapeHtml(opinion.severity)}">${escapeHtml(opinion.severity)}</strong>,
-           not <strong class="sev sev-${escapeHtml(appliedSeverity ?? 'Unknown')}">${escapeHtml(appliedSeverity ?? 'Unknown')}</strong>`}
-      </span>
-      <span class="model-confidence">${percent}%</span>
-    </div>`;
-  }
 
   function setStatus(state, message) {
     dom.dot.dataset.state = state;
@@ -412,19 +262,7 @@
    * which is what makes the same build work both locally and on a static host.
    */
   async function resolveDataSource() {
-    try {
-      if (await apiSource.probe()) return apiSource;
-    } catch {
-      // A network or CORS failure here just means no backend; fall through to the snapshot.
-    }
-
-    try {
-      if (await staticSource.probe()) return staticSource;
-    } catch {
-      // Handled by the caller, which reports that no data source could be reached.
-    }
-
-    return null;
+    return resolveSourceOrder([apiSource, staticSource]);
   }
 
   // ---------------------------------------------------------------- globe
@@ -710,16 +548,11 @@
   }
 
   function visibleIncidents() {
-    const minSeverity = SEVERITY_RANK[dom.severityFilter.value] ?? 0;
-    const type = dom.typeFilter.value;
-    const locatedOnly = dom.locatedOnly.checked;
-
-    return [...incidents.values()]
-      .filter((incident) => !replay.active || replay.revealed.has(incident.id))
-      .filter((incident) => (SEVERITY_RANK[incident.severity] ?? 0) >= minSeverity)
-      .filter((incident) => !type || incident.eventType === type)
-      .filter((incident) => !locatedOnly || Boolean(incident.location))
-      .sort((left, right) => new Date(right.occurredAt) - new Date(left.occurredAt));
+    return selectVisibleIncidents(incidents.values(), {
+      severity: dom.severityFilter.value,
+      type: dom.typeFilter.value,
+      locatedOnly: dom.locatedOnly.checked,
+    }, replay);
   }
 
   function renderIncidents() {
@@ -1046,26 +879,14 @@
    * dismissed as a demo, and recorded demo records must never be passed off as reporting.
    */
   function describeProvenance(observations) {
-    const live = observations.filter((observation) => !observation.isDemo).length;
-    const demo = observations.length - live;
+    const summary = provenanceSummary(observations);
 
-    if (live > 0 && demo > 0) {
+    if (summary.reveal) {
       dom.demoNotice.hidden = false;
-      dom.demoNotice.querySelector('strong').textContent = 'MIXED';
-      dom.demoNoticeText.textContent =
-        `${live} live report${live === 1 ? '' : 's'} from public feeds, ${demo} replayed demo record${demo === 1 ? '' : 's'} — each labelled individually`;
-      return;
+      dom.demoNotice.querySelector('strong').textContent = summary.label;
     }
 
-    if (live > 0) {
-      dom.demoNotice.hidden = false;
-      dom.demoNotice.querySelector('strong').textContent = 'LIVE';
-      dom.demoNoticeText.textContent =
-        'Real headlines from public news and humanitarian feeds. Categories and severities are this system\u2019s assessments, not the publishers\u2019';
-      return;
-    }
-
-    dom.demoNoticeText.textContent = 'Synthetic replay data \u2014 not live reporting';
+    dom.demoNoticeText.textContent = summary.text;
   }
 
   function snapshotStatusText() {
@@ -1187,16 +1008,6 @@
     elevated: '#ff9f1c',
     high: '#ef476f',
   };
-
-  /** Turns `MARITIME_INCIDENT` or `MaritimeIncident` into `Maritime incident` for display. */
-  function humanise(value) {
-    const spaced = String(value ?? '')
-      .replace(/_/g, ' ')
-      .replace(/([a-z])([A-Z])/g, '$1 $2')
-      .toLowerCase()
-      .trim();
-    return spaced ? spaced[0].toUpperCase() + spaced.slice(1) : '—';
-  }
 
   function element(tag, className, text) {
     const node = document.createElement(tag);
@@ -1551,17 +1362,11 @@
     loadedIncidents.forEach((incident) => incidents.set(incident.id, incident));
     feed = loadedObservations;
 
-    // Fail safe. The notice is hidden ONLY on positive evidence that nothing on screen is demo
-    // data: records were actually loaded, none of them are flagged, and the snapshot (if any) does
-    // not declare itself demo. An empty database must not be mistaken for a live deployment, which
-    // is exactly what a plain "any record flagged?" test would do on a fresh start.
-    const records = loadedIncidents.length + loadedObservations.length;
-    const flaggedDemo = loadedIncidents.some((incident) => incident.isDemo)
-      || loadedObservations.some((observation) => observation.isDemo);
-    const snapshotDeclaresDemo = dataSource.mode === 'static'
-      && (staticSource.meta?.isDemoData ?? true) !== false;
-
-    dom.demoNotice.hidden = records > 0 && !flaggedDemo && !snapshotDeclaresDemo;
+    // Fail safe, and deliberately not a plain "is any record flagged?" test — see canHideDemoNotice,
+    // which states why an empty database must not be mistaken for a live deployment.
+    dom.demoNotice.hidden = canHideDemoNotice(
+      loadedIncidents, loadedObservations, dataSource.mode, staticSource.meta,
+    );
     describeProvenance(loadedObservations);
 
     renderIncidents();
@@ -1762,12 +1567,7 @@
    * nothing re-renders afterwards to correct it.
    */
   function applyStaticTimeBasis() {
-    const recordedAt = Date.parse(staticSource.meta?.generatedAt ?? '');
-
-    if (Number.isFinite(recordedAt)) {
-      timeBasis = recordedAt;
-      timeSuffix = 'before the run';
-    }
+    setRunBasis(staticSource.meta?.generatedAt);
   }
 
   function describeStaticMode() {
