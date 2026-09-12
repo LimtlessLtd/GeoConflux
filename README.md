@@ -154,6 +154,62 @@ limit, a server outage, and a rejected credential — driven through the applica
 That is what can be verified without a credential, and it is not the same claim as having polled the
 real endpoints.
 
+## Agent-collected OSINT
+
+Polling only finds what a publisher chose to broadcast. A feed cannot be tasked at a region or a
+topic, never reads past the headline, and decides what is visible by what happened to fall inside its
+window. So there is a second intake shape alongside it: an OSINT agent works against a committed
+brief, reads the documents, and records a **collection bundle** — a JSON file of cited items that the
+application reads from disk.
+
+That is what lets the published page show real reporting. A bundle needs no credential, opens no
+connection, is reviewable in a diff, and reads the same on every run, so the deploy can publish cited
+material rather than a recorded demo.
+
+**The collector may state a citation and nothing resembling a conclusion.** It reports who published
+what, when, where to read it, a bounded verbatim excerpt, and place names appearing in that text. It
+may not report a coordinate, an event type, a severity, a paraphrase in place of a quotation, or
+anything it did not retrieve. That is not enforced by asking nicely: the bundle schema has *no field*
+for a coordinate, a category, or a severity, and a test asserts their absence so adding one fails
+with a message saying why it must not exist.
+
+A bundle is untrusted input and gets no credit for who wrote it. It is validated by the same kind of
+pure parser the provider adapters use, pinned to recorded fixtures covering the malformed cases:
+unknown schema version, unmapped property, future dates, an excerpt over the cap, a cited URL
+pointing into private address space, a disallowed platform, a duplicate URL, a bad hash. A structural
+fault rejects the file; a bad item is skipped with a stated reason and the rest survives.
+
+Records now carry one of three provenances rather than a demo/live boolean, because a bundle is real
+reporting gathered at a stated moment — calling it demo data would be a lie in one direction and
+calling it a live feed a lie in the other:
+
+| Provenance | Meaning | Shown as |
+| --- | --- | --- |
+| `Recorded` | The synthetic replay stream | `DEMO` |
+| `Polled` | An adapter reached its provider during this run | no chip |
+| `Collected` | An agent gathered it into a bundle | `COLLECTED`, with the collection date |
+
+The bundle committed here was collected on 2026-09-12 against
+[`data/osint/briefs/maritime-chokepoints.md`](data/osint/briefs/maritime-chokepoints.md): seven items
+from UN News in English and Arabic and from the Times of Israel. Two of them are the same story in
+one publisher's two language editions, kept separate on purpose — the divergence between editions is
+itself the observation.
+
+Three of the seven are Arabic, and all three are placed on the globe, which is only true because the
+gazetteer gained native-script aliases at the same time. Collecting in twenty languages while
+resolving in one produces a dashboard that sees more of the world and plots less of it.
+
+**What is not read.** X answers an unauthenticated request with HTTP 402 and Weibo redirects to an
+authentication wall (both checked, 2026-09-12). Neither is scraped around, and no account is created
+to present an automated collector as a person — the gate exists to prevent exactly that. They are
+recorded as gaps, because an unrecorded gap reads as coverage the system does not have. A paid
+credential would move such a source into the ordinary authenticated-adapter pattern ACLED uses.
+Telegram public channel previews and Bluesky author feeds *are* publicly readable and are specified
+but not yet built: a single uncorroborated post must not be able to form an incident, and the
+corroboration gate that stops it does not exist yet.
+
+Full reasoning: [ADR 025](docs/adr/025-agent-collected-osint.md).
+
 ## The AI stage
 
 Enrichment translates, summarises, classifies, assesses severity, extracts named actors, and
@@ -216,19 +272,29 @@ provider. It is not a measurement of any language model.
 | Language accuracy | 1.00 |
 | Event type — accuracy / macro F1 | 0.62 / 0.68 |
 | Severity — accuracy / macro F1 | 0.75 / 0.74 |
-| Location name — precision / recall / F1 | 0.82 / 0.75 / 0.78 |
+| Location name — precision / recall / F1 | 1.00 / 0.92 / 0.96 |
 | Entities — precision / recall / F1 | 0.11 / 0.67 / 0.19 |
 
 The entity figure is poor because the stand-in finds capitalised runs, which recovers most of the
-right names and a lot of noise. Location recall is 0.75 because the baseline cannot read the Arabic,
-Russian, and Chinese fixtures. Both are reported rather than tuned away: they are the gap a real
-model is expected to close.
+right names and a lot of noise. It is reported rather than tuned away: it is the gap a real model is
+expected to close.
 
-Location precision fell from 1.00 to 0.82 when the gazetteer grew from 66 entries to 214 to cover
-real reporting. With more names to match, the stand-in now sometimes names a place the fixture did
-not label — a wider net catching more, including more of what was not asked for. That is the trade
-that made 86% of live reports placeable, and it is recorded here rather than smoothed over, because a
-table of metrics that only ever improves is a table nobody is really reading.
+The location figures have a history worth keeping. Precision fell from 1.00 to 0.82 when the
+gazetteer grew from 66 entries to 214, and that was recorded here as the honest cost of a wider net —
+more names to match meaning more names matched wrongly. **That explanation was wrong.** The real
+cause was that place names were matched as bare substrings, so the two-letter alias `US` hit inside
+"because", "thus", and "Russia", and because the search took the earliest match in the text, one such
+hit outranked the real place name later in the sentence. Every extra alias made a genuine bug look
+more like a reasonable trade-off.
+
+Matching is now boundary-aware, and script-aware about what a boundary is, since Han, Kana, Hangul
+and Thai write without word breaks. Precision returned to 1.00 — the false positives are gone
+entirely, which is what that number means. Recall rose from 0.75 to 0.92 separately, because the
+gazetteer gained native-script aliases and the baseline can now read the Arabic, Russian, and Chinese
+fixtures it previously could not.
+
+The episode is left in rather than tidied away, because the failure it illustrates is the expensive
+kind: a plausible explanation attached to a real regression, which stops the next person looking.
 
 Sixteen synthetic, author-labelled cases cannot support a claim about geopolitical classification
 ability. The set exists to catch regressions. Full method, per-class tables, and limitations:
