@@ -1078,8 +1078,11 @@ Field rules:
   best-effort read.
 - `bundleId` is stable and unique. Re-ingesting the same bundle is a no-op, because each item's
   source identifier is its canonical URL and Layer 1 of Section 16 already suppresses it.
-- `contentHash` is taken over the retrieved text the excerpt came from, so a later verification pass
-  can re-fetch and detect that the document changed underneath the citation.
+- `contentHash` is over the **excerpt exactly as recorded**, not over the retrieved page. Hashing the
+  page is the obvious choice and the wrong one: news HTML changes on every request, so the value would
+  never match on re-fetch and would prove nothing. Hashing the quotation proves it was not edited
+  after collection, which is checkable offline on every build. Whether the document still *says* it is
+  the re-fetch tool's job, and that is a different question asked at a different time.
 - `placeNames` are candidates only. They enter the same path as a name extracted by the enrichment
   model: the gazetteer resolves them, or the observation stays unresolved.
 - `relatedTo` is advisory. It is recorded, and may be offered to the correlator as one more signal; it
@@ -1200,8 +1203,13 @@ Collection reads what a service chooses to serve publicly, and stops there.
 The point of recording a URL, a retrieval time, and a hash is that a collection can be checked rather
 than trusted.
 
-- **Offline lint.** Every committed bundle is validated against the schema in CI, with no network. A
-  malformed or expired bundle fails the build before it can reach the published page.
+- **Offline lint.** Every committed bundle is validated against the schema on every build, with no
+  network, by the same parser that reads it at runtime — inside the existing test suite rather than as
+  a separate CI step, because one gate that cannot be forgotten beats two that can. The lint also
+  recomputes each excerpt hash and enforces the brief's per-publisher cap.
+  Expiry is deliberately *not* a build failure. A bundle going stale is a runtime condition the source
+  already warns about and skips, and failing the build for it would break unrelated work a fortnight
+  after the last collection run, for a reason no commit caused.
 - **Re-fetch verification.** A separate, explicitly invoked tool re-fetches each cited URL and reports
   which documents are unchanged, changed, or gone. It is deliberately not part of the build: a build
   that fails whenever a publisher reorganises its site is a build that gets ignored.

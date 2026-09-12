@@ -35,12 +35,22 @@ import {
   exactTimeHint, formatDate, formatRelative, formatTime, setRunBasis, statesOwnTime,
 } from './lib/time.js';
 import { confidenceChip, modelOpinion } from './lib/classification.js';
-import { canHideDemoNotice, provenanceSummary } from './lib/provenance.js';
+import { canHideDemoNotice, provenanceChip, provenanceSummary } from './lib/provenance.js';
 import { selectVisibleIncidents } from './lib/incidents.js';
 import { resolveDataSource as resolveSourceOrder } from './lib/datasource.js';
 
 (() => {
   'use strict';
+
+  /**
+   * The provenance chip for one record, already escaped. Empty for a polled feed item, which is the
+   * unremarkable case — chipping everything would cost the DEMO label the attention it exists to
+   * command.
+   */
+  const chipFor = (record) => {
+    const chip = provenanceChip(record);
+    return chip ? `<span class="${chip.className}">${escapeHtml(chip.text)}</span>` : '';
+  };
 
   const POLL_INTERVAL_MS = 15000;
   const MAX_FEED_ITEMS = 60;
@@ -587,7 +597,7 @@ import { resolveDataSource as resolveSourceOrder } from './lib/datasource.js';
           ${incident.location ? escapeHtml(incident.location.name) : 'Location unresolved'}
           · ${sources} source${sources === 1 ? '' : 's'}
           ${sources > 1 ? '<span class="corr-chip">CORRELATED</span>' : ''}
-          ${incident.isDemo ? '<span class="demo-chip">DEMO</span>' : ''}
+          ${chipFor(incident)}
         </div>`;
       button.addEventListener('click', () => selectIncident(incident.id, true));
       dom.incidentList.append(button);
@@ -647,7 +657,7 @@ import { resolveDataSource as resolveSourceOrder } from './lib/datasource.js';
           ${observation.location
             ? `<span>${escapeHtml(observation.location.name)}</span>`
             : '<span class="muted">no coordinates</span>'}
-          ${observation.isDemo ? '<span class="demo-chip">DEMO</span>' : ''}
+          ${chipFor(observation)}
           ${observation.kind === 'Manual' ? '<span class="manual-chip">USER-SUBMITTED · UNVERIFIED</span>' : ''}
         </div>
         ${observation.status === 'Duplicate'
@@ -687,7 +697,7 @@ import { resolveDataSource as resolveSourceOrder } from './lib/datasource.js';
       <div class="detail-badges">
         <span class="badge sev-${escapeHtml(incident.severity)}">${escapeHtml(incident.severity)}</span>
         <span class="badge">${escapeHtml(incident.eventType)}</span>
-        ${incident.isDemo ? '<span class="badge demo-chip">DEMO DATA</span>' : ''}
+        ${incident.isDemo ? '<span class="badge demo-chip">DEMO DATA</span>' : (provenanceChip(incident) ? '<span class="badge collected-chip">COLLECTED</span>' : '')}
       </div>
       <h3>${escapeHtml(incident.title)}</h3>
       <p>${escapeHtml(incident.summary)}</p>

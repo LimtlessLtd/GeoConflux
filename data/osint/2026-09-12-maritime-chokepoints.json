@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-09-12T1610Z-maritime-chokepoints",
+  "collectedAt": "2026-09-12T16:10:00Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 1,
+    "windowFrom": "2026-09-06T00:00:00Z",
+    "windowTo": "2026-09-12T16:00:00Z"
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "6aa988b5"
+  },
+  "items": [
+    {
+      "kind": "document",
+      "url": "https://www.timesofisrael.com/houthis-seize-key-red-sea-island-complete-takeover-of-vital-bab-al-mandab-shipping-lane/",
+      "publisher": "The Times of Israel",
+      "title": "Houthis seize key Red Sea islands, complete takeover of vital Bab el-Mandeb shipping lane",
+      "publishedAt": "2026-09-11T00:00:00Z",
+      "retrievedAt": "2026-09-12T16:08:51Z",
+      "contentHash": "sha256:e611745d098a891d0b5cfdfde257361bc36ba44c76a44157f9b54396c87a7f00",
+      "language": "en",
+      "excerpt": "After a week-long offensive that has left hundreds dead, the Houthis appeared to be in control of territory along the Yemeni side of the Bab el-Mandeb Strait, the southern gateway to the Red Sea and, in turn, the Suez Canal.",
+      "placeNames": [
+        "Bab el-Mandeb",
+        "Red Sea",
+        "Suez Canal"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "document",
+      "url": "https://news.un.org/feed/view/en/story/2026/09/1168314",
+      "publisher": "UN News",
+      "title": "Surge in displacement following fighting in southwest Yemen",
+      "publishedAt": "2026-09-11T12:00:00Z",
+      "retrievedAt": "2026-09-12T16:08:51Z",
+      "contentHash": "sha256:56670498ed232ad3afa0fd27e09677dd72f43e91d8fb20cfd5809dc4db71c210",
+      "language": "en",
+      "excerpt": "At least 46,000 people have been displaced since renewed fighting last week between Houthi rebels and pro-government forces in southwestern Yemen, the International Organization for Migration (IOM) reported on Friday.",
+      "placeNames": [
+        "Yemen"
+      ],
+      "relatedTo": [
+        "https://news.un.org/feed/view/ar/story/2026/09/1145310"
+      ]
+    },
+    {
+      "kind": "document",
+      "url": "https://news.un.org/feed/view/en/story/2026/09/1168309",
+      "publisher": "UN News",
+      "title": "Security Council LIVE: Fresh attacks prompt emergency meeting on Yemen",
+      "publishedAt": "2026-09-10T12:00:00Z",
+      "retrievedAt": "2026-09-12T16:08:51Z",
+      "contentHash": "sha256:8d22907ed14394728c9c89badf8e7019444cebed113cb375921854506899f84b",
+      "language": "en",
+      "excerpt": "On the heels of reported Houthi attacks on Saudi Arabia on Tuesday and the capture of another key port by the militants on Yemen's Red Sea coast – including the seizure of eight UN vehicles from a key aid hub there – the Security Council is meeting on Thursday at 3pm in New York to discuss the latest developments.",
+      "placeNames": [
+        "Saudi Arabia",
+        "Yemen",
+        "Red Sea"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "document",
+      "url": "https://news.un.org/feed/view/en/story/2026/09/1168297",
+      "publisher": "UN News",
+      "title": "Ships and seafarers increasingly caught in the crossfire of unrelated wars",
+      "publishedAt": "2026-09-08T12:00:00Z",
+      "retrievedAt": "2026-09-12T16:08:51Z",
+      "contentHash": "sha256:cf6a1815782df9053c3955de6741d3adec77538d3b95a6288a111096fedcc50b",
+      "language": "en",
+      "excerpt": "The global shipping industry is facing a “genuinely unprecedented” convergence of maritime crises, with vessels and seafarers increasingly used as “leverage” in conflicts that have nothing to do with them.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "document",
+      "url": "https://news.un.org/feed/view/ar/story/2026/09/1145310",
+      "publisher": "UN News (Arabic)",
+      "title": "اليمن – نزوح أكثر من 46 ألف شخص منذ الأسبوع الماضي والعدد يتزايد ساعة تلو الأخرى",
+      "publishedAt": "2026-09-11T12:00:00Z",
+      "retrievedAt": "2026-09-12T16:08:51Z",
+      "contentHash": "sha256:2df4c6eeba6627d5c6ae21aba9726a801e5c35d091833947561cd92ae9843447",
+      "language": "ar",
+      "excerpt": "أفادت المنظمة الدولية للهجرة بأن ما لا يقل عن 46 ألف شخص قد نزحوا في اليمن منذ تصاعد القتال الأسبوع الماضي",
+      "placeNames": [
+        "اليمن"
+      ],
+      "relatedTo": [
+        "https://news.un.org/feed/view/en/story/2026/09/1168314"
+      ]
+    },
+    {
+      "kind": "document",
+      "url": "https://news.un.org/feed/view/ar/story/2026/09/1145304",
+      "publisher": "UN News (Arabic)",
+      "title": "الأمم المتحدة أمام مجلس الأمن: اليمن يدخل مرحلة أخطر من الصراع، وعواقبها لن تبقى داخل حدوده",
+      "publishedAt": "2026-09-10T12:00:00Z",
+      "retrievedAt": "2026-09-12T16:08:51Z",
+      "contentHash": "sha256:3bee6f72b7fd97d61c6789f69bab5038f59af17b470884eda020fb50908d0f55",
+      "language": "ar",
+      "excerpt": "حذّر المبعوث الخاص للأمم المتحدة إلى اليمن هانس غروندبرغ من دخول اليمن 'مرحلة جديدة أشد خطورة'",
+      "placeNames": [
+        "اليمن"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "document",
+      "url": "https://news.un.org/feed/view/ar/story/2026/09/1145311",
+      "publisher": "UN News (Arabic)",
+      "title": "السودان - تمديد تقني بمجلس الأمن للعقوبات وولاية فريق الخبراء",
+      "publishedAt": "2026-09-11T12:00:00Z",
+      "retrievedAt": "2026-09-12T16:08:51Z",
+      "contentHash": "sha256:1852cf7ad514199d8243eba12fb671bfe7c6217208cf9a16656356656bd59588",
+      "language": "ar",
+      "excerpt": "بالإجماع، اعتمد مجلس الأمن - اليوم الجمعة - قرارا مدد بموجبه بصورة تقنية، ولاية لجنة الخبراء",
+      "placeNames": [
+        "السودان"
+      ],
+      "relatedTo": []
+    }
+  ]
+}

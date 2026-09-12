@@ -62,6 +62,13 @@ public sealed class PipelineFactory(
                 // read-then-write race two workers have when simultaneous reports describe one event.
                 ["Pipeline:ProcessorConcurrency"] = "1",
 
+                // Off by default so a test asserting on the recorded stream sees the recorded stream.
+                // Collection bundles ship with the build, so leaving this on would mean every bundle
+                // committed from now on silently changed the expected counts of unrelated tests — and
+                // the failure would look like a pipeline regression rather than new data. A test that
+                // wants them enables them explicitly.
+                ["Providers:AgentBriefs:Enabled"] = "false",
+
                 // No credentials in tests: the deterministic stand-in is the provider, which is the
                 // same default the application ships with.
                 ["Ai:Provider"] = "Mock",

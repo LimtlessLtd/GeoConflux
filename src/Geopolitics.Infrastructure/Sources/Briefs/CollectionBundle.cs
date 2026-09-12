@@ -44,7 +44,7 @@ public sealed record CollectionBundle(
 /// <param name="Title">Headline, where the source has one.</param>
 /// <param name="PublishedAt">When the source says it was published or posted.</param>
 /// <param name="RetrievedAt">When the collector actually fetched it.</param>
-/// <param name="ContentHash">Hash of the retrieved text, so a later pass can detect that it changed.</param>
+/// <param name="ContentHash">sha256 of the excerpt as recorded, so an edited quotation is detectable offline.</param>
 /// <param name="Language">BCP-47 tag for the original text, where the collector could determine it.</param>
 /// <param name="Excerpt">Contiguous verbatim quotation, in the original script.</param>
 /// <param name="PlaceNames">Place names appearing verbatim in the text. Candidates for the gazetteer, never coordinates.</param>

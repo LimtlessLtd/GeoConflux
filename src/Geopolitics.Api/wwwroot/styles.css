@@ -273,15 +273,27 @@ html, body {
   letter-spacing: .05em;
 }
 
-.demo-chip {
+.demo-chip,
+.collected-chip {
   padding: .05rem .35rem;
-  border: 1px solid #7a4b12;
   border-radius: 3px;
-  background: rgba(122, 75, 18, .3);
-  color: #ffce8a;
   font-size: .6rem;
   font-weight: 700;
   letter-spacing: .05em;
+}
+
+.demo-chip {
+  border: 1px solid #7a4b12;
+  background: rgba(122, 75, 18, .3);
+  color: #ffce8a;
+}
+
+/* Cool where DEMO is warm. The two say different things — synthetic versus real but gathered at a
+   stated earlier moment — and a reader should be able to tell them apart without reading either. */
+.collected-chip {
+  border: 1px solid #1d5a6b;
+  background: rgba(29, 90, 107, .3);
+  color: #9fe0f0;
 }
 
 /* ---------------------------------------------------------------- feed */

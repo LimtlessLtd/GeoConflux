@@ -35,6 +35,14 @@
       <Link>osint\%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+
+    <!-- The bundles this repository actually publishes, linted by the same parser that reads them at
+         runtime. This is the offline bundle lint: it needs no separate CI step because "dotnet test"
+         already runs everywhere, and one gate that cannot be forgotten beats two that can. -->
+    <Content Include="..\..\data\osint\*.json">
+      <Link>committed-bundles\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
