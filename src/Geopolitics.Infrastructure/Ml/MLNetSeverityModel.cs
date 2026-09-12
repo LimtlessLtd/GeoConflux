@@ -117,10 +117,17 @@ public sealed partial class MLNetSeverityModel : ISeverityModel, IDisposable
             LogTrained(logger, trained.Version, SeverityDataset.Training.Count);
             return new Loaded(trained, engine);
         }
-        catch (Exception exception) when (exception is InvalidOperationException or ArgumentException or FormatException)
+        catch (Exception exception)
         {
-            // Broad on purpose, and narrow enough to exclude the failures that should crash. A model
-            // that cannot be fitted is a missing second opinion, not a broken platform.
+            // Deliberately unfiltered, which is the unusual choice and the correct one here. The
+            // filter this replaced listed the exceptions a bad dataset produces, and missed the ones
+            // a bad platform produces: a missing native dependency surfaces as DllNotFoundException
+            // or TypeInitializationException, neither of which was caught. Because the training runs
+            // behind a Lazy, an escape is not a one-off — the failure is cached and rethrown to every
+            // caller thereafter, including the readiness check the pipeline makes for every single
+            // observation. The class already states that a model which cannot be fitted must disable
+            // itself rather than fail the host; this is that decision applied to every way it can
+            // happen rather than to the three that were anticipated.
             LogTrainingFailed(logger, exception);
             return null;
         }

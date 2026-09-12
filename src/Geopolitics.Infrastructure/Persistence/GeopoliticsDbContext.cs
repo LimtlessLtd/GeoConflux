@@ -1,3 +1,4 @@
+using Geopolitics.Application.Abstractions;
 using Geopolitics.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -6,12 +7,52 @@ namespace Geopolitics.Infrastructure.Persistence;
 
 public sealed class GeopoliticsDbContext(DbContextOptions<GeopoliticsDbContext> options) : DbContext(options)
 {
+    /// <summary>SQLite extended result code for a unique-constraint violation.</summary>
+    private const int SqliteConstraintUnique = 2067;
+
     public DbSet<GeopoliticalIncident> Incidents => Set<GeopoliticalIncident>();
 
     public DbSet<RawObservation> Observations => Set<RawObservation>();
 
     /// <summary>Append-only audit trail of enrichment attempts, successful and otherwise.</summary>
     public DbSet<AiInference> Inferences => Set<AiInference>();
+
+    /// <summary>
+    /// Commits, translating a lost deduplication race into a signal the pipeline understands.
+    /// <para>
+    /// This lives on the context rather than in a repository because it is a property of the
+    /// database, not of whoever happened to call save. The observation and the incident commit
+    /// together in one unit of work, so the save that inserts an observation is frequently issued
+    /// through the incident repository — and when the translation lived in only one of the two, a
+    /// concurrent redelivery surfaced as an unhandled provider exception, was counted as a pipeline
+    /// failure, and cost the very evidence the duplicate path exists to retain.
+    /// </para>
+    /// </summary>
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException exception) when (IsFingerprintConflict(exception))
+        {
+            // The read-then-insert check cannot be atomic across concurrent processors, so the
+            // filtered unique index is the real authority. Translate rather than let a provider
+            // exception reach the Application layer.
+            throw new DuplicateObservationException(FingerprintOf(exception), exception);
+        }
+    }
+
+    private static bool IsFingerprintConflict(DbUpdateException exception) =>
+        exception.InnerException is Microsoft.Data.Sqlite.SqliteException { SqliteExtendedErrorCode: SqliteConstraintUnique } inner
+        && inner.Message.Contains("Fingerprint", StringComparison.OrdinalIgnoreCase);
+
+    private static string FingerprintOf(DbUpdateException exception) =>
+        exception.Entries
+            .Select(entry => entry.Entity)
+            .OfType<RawObservation>()
+            .Select(observation => observation.Fingerprint)
+            .FirstOrDefault() ?? "unknown";
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

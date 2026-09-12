@@ -311,11 +311,6 @@ public sealed class RawObservation
     }
 
     /// <summary>
-    /// Marks the payload as accepted for downstream processing. Separate from enrichment because an
-    /// observation reaches this state whether it was enriched by a model or classified
-    /// deterministically, and the pipeline treats both as validated input from here on.
-    /// </summary>
-    /// <summary>
     /// Records the trained model's assessment. Deliberately has no power to change
     /// <see cref="Severity"/>: a model fitted to a small synthetic corpus is evidence about the
     /// model, not authority over a source that declared its own severity.
@@ -343,6 +338,11 @@ public sealed class RawObservation
     /// </summary>
     public bool ModelDisagrees => ModelSeverity is { } predicted && predicted != Severity;
 
+    /// <summary>
+    /// Marks the payload as accepted for downstream processing. Separate from enrichment because an
+    /// observation reaches this state whether it was enriched by a model or classified
+    /// deterministically, and the pipeline treats both as validated input from here on.
+    /// </summary>
     public void MarkValidated()
     {
         Status = ObservationStatus.Validated;
@@ -422,6 +422,13 @@ public sealed class RawObservation
         }
 
         DuplicateOfObservationId = originalObservationId;
+
+        // A repeat delivery is evidence of nothing, so it belongs to no incident. Usually this is
+        // already true, because a duplicate is normally recognised before correlation runs. It is
+        // not true when the race is lost at the commit: by then this observation has been linked to
+        // an incident that was rolled back with the failed save, and keeping the link would leave
+        // the row pointing at a record that does not exist.
+        IncidentId = null;
         Status = ObservationStatus.Duplicate;
         FailureReason = null;
     }

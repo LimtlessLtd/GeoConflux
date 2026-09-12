@@ -41,6 +41,35 @@ internal sealed class ProviderOptionsValidator : IValidateOptions<ProviderOption
             }
         }
 
+        foreach (var (label, provider) in new (string, ProviderOptionsBase)[]
+        {
+            ("Providers:Rss", options.Rss),
+            ("Providers:NasaFirms", options.NasaFirms),
+            ("Providers:Acled", options.Acled),
+        })
+        {
+            // A non-positive interval does not mean "poll often". Zero completes the wait
+            // immediately, so the loop becomes a hot loop that requests as fast as the network
+            // allows — a flood of someone else's API issued in this project's name. A negative value
+            // throws from inside the iterator, where only cancellation is handled, which kills the
+            // source silently for the lifetime of the process.
+            if (provider.PollInterval <= TimeSpan.Zero)
+            {
+                failures.Add(
+                    $"{label}:PollInterval must be greater than zero, but was '{provider.PollInterval}'. "
+                    + "A non-positive interval either polls the provider continuously or stops the source outright.");
+            }
+
+            // Zero is not a smaller batch, it is a source that fetches on every cycle and throws the
+            // answer away, which is indistinguishable from a dead feed on the dashboard.
+            if (provider.MaxItemsPerPoll <= 0)
+            {
+                failures.Add(
+                    $"{label}:MaxItemsPerPoll must be at least 1, but was {provider.MaxItemsPerPoll}. "
+                    + "A source that emits nothing looks identical to one that is failing.");
+            }
+        }
+
         foreach (var (label, address) in new[]
         {
             ("Providers:NasaFirms:BaseAddress", options.NasaFirms.BaseAddress),

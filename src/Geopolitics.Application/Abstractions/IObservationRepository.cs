@@ -17,5 +17,17 @@ public interface IObservationRepository
 
     Task<IReadOnlyList<RawObservation>> ListByIncidentAsync(Guid incidentId, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Stores this observation and the audit trail of the attempt, discarding the incident that
+    /// attempt had staged.
+    /// <para>
+    /// Used on the recovery paths, where what was in flight has already failed. Those need to keep
+    /// the source payload without also committing an incident assembled from an observation the
+    /// pipeline went on to report as failed or duplicate — a record nothing in the system believes
+    /// in, which would nonetheless reach the dashboard.
+    /// </para>
+    /// </summary>
+    Task RetainEvidenceAsync(RawObservation observation, CancellationToken cancellationToken);
+
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }

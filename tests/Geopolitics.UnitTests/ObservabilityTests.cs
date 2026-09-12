@@ -63,6 +63,58 @@ public sealed class ObservabilityTests
         Assert.All(stageSpans, span => Assert.Equal(root.TraceId, span.TraceId));
     }
 
+    /// <summary>
+    /// The stages are siblings, not a chain.
+    /// <para>
+    /// Sharing a trace identifier is not enough, which is why this is separate from the test above.
+    /// A stage whose scope encloses the stages after it reports their cost as its own: the span
+    /// nests wrongly in a trace, and — because the same scope records the duration metric — the
+    /// <c>stage</c> histogram attributes persistence and publication to correlation. The per-stage
+    /// breakdown then sums to more than the end-to-end figure it is meant to decompose, which is the
+    /// one thing a cost breakdown must never do.
+    /// </para>
+    /// </summary>
+    [Fact]
+    public async Task EachStageIsMeasuredOnItsOwnRatherThanInsideTheStageBeforeIt()
+    {
+        using var trace = new TraceRecorder();
+
+        var harness = new PipelineTestHarness
+        {
+            SeverityModel = new ScriptedSeverityModel(Severity.High, 0.7),
+        };
+
+        await harness.BuildProcessor().ProcessAsync(
+            new ObservationEnvelope
+            {
+                SourceName = "fixture",
+                Kind = ObservationKind.News,
+                Content = "An explosion damaged a tanker in the Gulf of Aden. Two crew were injured.",
+                DeclaredLocationName = "Gulf of Aden",
+            },
+            CancellationToken.None);
+
+        var spans = trace.Spans;
+        var root = spans.Single(span => span.OperationName == "pipeline.process");
+
+        string[] stages =
+        [
+            PipelineDiagnostics.Stages.Deduplicate,
+            PipelineDiagnostics.Stages.Enrich,
+            PipelineDiagnostics.Stages.ScoreSeverity,
+            PipelineDiagnostics.Stages.ResolveLocation,
+            PipelineDiagnostics.Stages.Correlate,
+            PipelineDiagnostics.Stages.Persist,
+            PipelineDiagnostics.Stages.Publish,
+        ];
+
+        foreach (var stage in stages)
+        {
+            var span = spans.Single(value => value.OperationName == stage);
+            Assert.Equal(root.SpanId, span.ParentSpanId);
+        }
+    }
+
     [Fact]
     public async Task StageSpansCarryTheDecisionTheStageMade()
     {

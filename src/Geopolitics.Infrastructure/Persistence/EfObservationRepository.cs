@@ -6,9 +6,6 @@ namespace Geopolitics.Infrastructure.Persistence;
 
 public sealed class EfObservationRepository(GeopoliticsDbContext dbContext) : IObservationRepository
 {
-    /// <summary>SQLite error code raised when a unique index is violated.</summary>
-    private const int SqliteConstraintUnique = 2067;
-
     public async Task<Guid?> FindByFingerprintAsync(string fingerprint, CancellationToken cancellationToken)
     {
         // Only observations that were actually accepted can be the original of a duplicate; matching
@@ -42,29 +39,38 @@ public sealed class EfObservationRepository(GeopoliticsDbContext dbContext) : IO
             .OrderByDescending(value => value.ReceivedAt)
             .ToListAsync(cancellationToken);
 
-    public async Task SaveChangesAsync(CancellationToken cancellationToken)
+    /// <summary>
+    /// Stores the evidence from an attempt that failed, without the incident that attempt had
+    /// staged.
+    /// <para>
+    /// This is a repository operation rather than an <c>Add</c> and a <c>SaveChanges</c> at the call
+    /// site because a failed commit leaves every pending change still tracked. Saving again simply
+    /// re-attempts the work that just failed, so a transient fault would commit an incident sourced
+    /// entirely from an observation the caller is in the middle of marking as failed — a record on
+    /// the dashboard that nothing in the system believes in.
+    /// </para>
+    /// <para>
+    /// Incidents are detached specifically rather than the tracker being cleared wholesale. The
+    /// enrichment audit rows this attempt staged are evidence too: they carry no foreign key,
+    /// deliberately, so that the record of having called a model survives the observation it
+    /// describes. Discarding them here would quietly undo that decision on the one path where it
+    /// matters most.
+    /// </para>
+    /// </summary>
+    public async Task RetainEvidenceAsync(RawObservation observation, CancellationToken cancellationToken)
     {
-        try
+        ArgumentNullException.ThrowIfNull(observation);
+
+        foreach (var entry in dbContext.ChangeTracker.Entries<GeopoliticalIncident>().ToArray())
         {
-            await dbContext.SaveChangesAsync(cancellationToken);
+            entry.State = EntityState.Detached;
         }
-        catch (DbUpdateException exception) when (IsFingerprintConflict(exception))
-        {
-            // The read-then-insert duplicate check is not atomic across concurrent processors, so
-            // the unique index is the real authority. Translate to a domain-level signal rather than
-            // leaking a provider exception into the Application layer.
-            throw new DuplicateObservationException(FingerprintOf(exception), exception);
-        }
+
+        await dbContext.Observations.AddAsync(observation, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    private static bool IsFingerprintConflict(DbUpdateException exception) =>
-        exception.InnerException is Microsoft.Data.Sqlite.SqliteException { SqliteExtendedErrorCode: SqliteConstraintUnique } inner
-        && inner.Message.Contains("Fingerprint", StringComparison.OrdinalIgnoreCase);
-
-    private static string FingerprintOf(DbUpdateException exception) =>
-        exception.Entries
-            .Select(entry => entry.Entity)
-            .OfType<RawObservation>()
-            .Select(observation => observation.Fingerprint)
-            .FirstOrDefault() ?? "unknown";
+    // Translation of a lost deduplication race lives on the context, so it applies to every save
+    // through it rather than only to the ones issued from this class.
+    public Task SaveChangesAsync(CancellationToken cancellationToken) => dbContext.SaveChangesAsync(cancellationToken);
 }

@@ -162,10 +162,12 @@ public sealed class PipelineTestHarness
         Diagnostics = new PipelineDiagnostics(new TestMeterFactory());
         Observations = new FakeObservationRepository();
         Incidents = new FakeIncidentRepository { Observations = Observations };
+        Observations.Incidents = Incidents;
         Notifier = new RecordingNotifier();
         Inferences = new FakeAiInferenceRepository();
         EnrichmentService = new StubEnrichmentService();
         Incidents.Inferences = Inferences;
+        Observations.Inferences = Inferences;
         LocationResolver = new StubLocationResolver();
         Similarity = new LexicalTextSimilarity();
         CorrelationGate = new CorrelationGate();

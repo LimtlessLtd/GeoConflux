@@ -60,11 +60,15 @@ public sealed partial class ObservationProcessor(
         }
         catch (DuplicateObservationException exception)
         {
-            // Lost a race against a concurrent processor holding the same payload.
+            // Lost a race against a concurrent processor holding the same payload. This is an
+            // expected outcome, not an error: the read-then-insert check cannot be atomic, so the
+            // unique index settles it and the loser is simply the duplicate it always was.
             diagnostics.ItemsDeduplicated.Add(1, new KeyValuePair<string, object?>("source", envelope.SourceName));
             LogConcurrentDuplicate(logger, envelope.SourceName, exception.Fingerprint);
             RecordDuration(startedAt, ProcessingOutcome.Duplicate);
-            return new ObservationProcessingResult(ProcessingOutcome.Duplicate, observation?.Id, null, false, null);
+
+            var recorded = await TryRetainConcurrentDuplicateAsync(observation, cancellationToken);
+            return new ObservationProcessingResult(ProcessingOutcome.Duplicate, recorded, null, false, null);
         }
         catch (Exception exception)
         {
@@ -125,90 +129,100 @@ public sealed partial class ObservationProcessor(
             stage.Tag("location.resolved", observation.Location is not null);
         }
 
-        // Held from the candidate read through to the commit. Correlating outside it would let a
-        // second worker holding a report of the same event read the same candidates and open a
-        // second incident for it, because neither would see the other's uncommitted write.
-        //
-        // Enrichment and location resolution are deliberately outside: they are the slow stages and
-        // they touch no shared state, so serialising them would cost throughput and buy nothing.
-        using var gate = await correlationGate.AcquireAsync(observation.EventType, cancellationToken);
-
-        using var correlateStage = diagnostics.StartStage(PipelineDiagnostics.Stages.Correlate);
-
-        var assessment = await correlator.CorrelateAsync(observation, cancellationToken);
         var incidentCreated = false;
         GeopoliticalIncident incident;
 
-        correlateStage.Tag("correlation.confidence", assessment.Confidence);
-        correlateStage.Tag("correlation.matched", assessment.Incident is not null);
-
-        if (assessment.Incident is { } existing)
+        // Held from the candidate read through to the commit, and released there. Correlating
+        // outside it would let a second worker holding a report of the same event read the same
+        // candidates and open a second incident for it, because neither would see the other's
+        // uncommitted write.
+        //
+        // Enrichment and location resolution are deliberately outside: they are the slow stages and
+        // they touch no shared state, so serialising them would cost throughput and buy nothing.
+        // Publication is outside for a sharper reason — see below.
+        using (await correlationGate.AcquireAsync(observation.EventType, cancellationToken))
         {
-            incident = existing;
-            incident.LinkObservation(observation.Id, timeProvider.GetUtcNow());
-
-            // A later report may carry a harsher assessment or coordinates the first one lacked.
-            incident.Reassess(
-                incident.EventType,
-                Escalate(incident.Severity, observation.Severity),
-                incident.Summary,
-                timeProvider.GetUtcNow());
-
-            if (incident.Location is null && observation.Location is not null)
+            using (var correlateStage = diagnostics.StartStage(PipelineDiagnostics.Stages.Correlate))
             {
-                // Copied, not aliased: the observation and the incident each own their location, and
-                // sharing one instance across two owners makes the persistence layer track a single
-                // object under two identities.
-                incident.ResolveLocation(observation.Location.Copy(), timeProvider.GetUtcNow());
+                var assessment = await correlator.CorrelateAsync(observation, cancellationToken);
+
+                correlateStage.Tag("correlation.confidence", assessment.Confidence);
+                correlateStage.Tag("correlation.matched", assessment.Incident is not null);
+
+                if (assessment.Incident is { } existing)
+                {
+                    incident = existing;
+                    incident.LinkObservation(observation.Id, timeProvider.GetUtcNow());
+
+                    // A later report may carry a harsher assessment or coordinates the first one lacked.
+                    incident.Reassess(
+                        incident.EventType,
+                        Escalate(incident.Severity, observation.Severity),
+                        incident.Summary,
+                        timeProvider.GetUtcNow());
+
+                    if (incident.Location is null && observation.Location is not null)
+                    {
+                        // Copied, not aliased: the observation and the incident each own their location, and
+                        // sharing one instance across two owners makes the persistence layer track a single
+                        // object under two identities.
+                        incident.ResolveLocation(observation.Location.Copy(), timeProvider.GetUtcNow());
+                    }
+
+                    // Adopted only if this report is better supported than what the incident already holds.
+                    incident.RecordAssessment(
+                        observation.ClassificationConfidence,
+                        observation.ClassificationMethod,
+                        timeProvider.GetUtcNow());
+
+                    // The incident's cast of actors is the union of what its evidence has named, so a later
+                    // report naming someone new widens it. This is also what lets the next observation be
+                    // scored on shared actors without reloading every observation behind the incident.
+                    incident.MergeEntities(observation.Entities, timeProvider.GetUtcNow());
+
+                    diagnostics.IncidentsCorrelated.Add(1, new KeyValuePair<string, object?>("source", observation.SourceName));
+                    LogCorrelated(logger, observation.Id, incident.Id, assessment.Confidence, assessment.Rationale);
+                }
+                else
+                {
+                    incident = CreateIncident(observation);
+                    incident.LinkObservation(observation.Id, timeProvider.GetUtcNow());
+                    incident.MergeEntities(observation.Entities, timeProvider.GetUtcNow());
+                    incident.RecordAssessment(
+                        observation.ClassificationConfidence,
+                        observation.ClassificationMethod,
+                        timeProvider.GetUtcNow());
+                    await incidentRepository.AddAsync(incident, cancellationToken);
+                    incidentCreated = true;
+
+                    diagnostics.IncidentsCreated.Add(1, new KeyValuePair<string, object?>("source", observation.SourceName));
+                    LogIncidentCreated(logger, incident.Id, observation.Id, assessment.Rationale);
+                }
+
+                correlateStage.Tag("incident.id", incident.Id);
+                correlateStage.Tag("incident.created", incidentCreated);
             }
 
-            // Adopted only if this report is better supported than what the incident already holds.
-            incident.RecordAssessment(
-                observation.ClassificationConfidence,
-                observation.ClassificationMethod,
-                timeProvider.GetUtcNow());
+            using (var persistStage = diagnostics.StartStage(PipelineDiagnostics.Stages.Persist))
+            {
+                observation.LinkToIncident(incident.Id);
+                observation.MarkPersisted();
+                await observationRepository.AddAsync(observation, cancellationToken);
 
-            // The incident's cast of actors is the union of what its evidence has named, so a later
-            // report naming someone new widens it. This is also what lets the next observation be
-            // scored on shared actors without reloading every observation behind the incident.
-            incident.MergeEntities(observation.Entities, timeProvider.GetUtcNow());
-
-            diagnostics.IncidentsCorrelated.Add(1, new KeyValuePair<string, object?>("source", observation.SourceName));
-            LogCorrelated(logger, observation.Id, incident.Id, assessment.Confidence, assessment.Rationale);
-        }
-        else
-        {
-            incident = CreateIncident(observation);
-            incident.LinkObservation(observation.Id, timeProvider.GetUtcNow());
-            incident.MergeEntities(observation.Entities, timeProvider.GetUtcNow());
-            incident.RecordAssessment(
-                observation.ClassificationConfidence,
-                observation.ClassificationMethod,
-                timeProvider.GetUtcNow());
-            await incidentRepository.AddAsync(incident, cancellationToken);
-            incidentCreated = true;
-
-            diagnostics.IncidentsCreated.Add(1, new KeyValuePair<string, object?>("source", observation.SourceName));
-            LogIncidentCreated(logger, incident.Id, observation.Id, assessment.Rationale);
-        }
-
-        correlateStage.Tag("incident.id", incident.Id);
-        correlateStage.Tag("incident.created", incidentCreated);
-
-        using (var persistStage = diagnostics.StartStage(PipelineDiagnostics.Stages.Persist))
-        {
-            observation.LinkToIncident(incident.Id);
-            observation.MarkPersisted();
-            await observationRepository.AddAsync(observation, cancellationToken);
-
-            // One save so the observation, the incident, and their linkage commit together. Nothing
-            // is announced to clients until this succeeds.
-            await incidentRepository.SaveChangesAsync(cancellationToken);
-            persistStage.Tag("incident.observation_count", incident.ObservationCount);
+                // One save so the observation, the incident, and their linkage commit together.
+                // Nothing is announced to clients until this succeeds.
+                await incidentRepository.SaveChangesAsync(cancellationToken);
+                persistStage.Tag("incident.observation_count", incident.ObservationCount);
+            }
         }
 
         diagnostics.ItemsProcessed.Add(1, new KeyValuePair<string, object?>("source", observation.SourceName));
 
+        // Outside the gate, deliberately. This is a fan-out to every connected client, and its
+        // duration is set by the slowest of them rather than by anything this pipeline controls.
+        // Holding a per-category lock across it would let one stalled browser serialise the
+        // processing of every later observation in that category. Nothing here can change what was
+        // committed, so there is nothing left for the lock to protect.
         using (var stage = diagnostics.StartStage(PipelineDiagnostics.Stages.Publish))
         {
             await PublishAsync(observation, incident, incidentCreated, cancellationToken);
@@ -235,7 +249,11 @@ public sealed partial class ObservationProcessor(
     /// </summary>
     private async Task RecordModelSeverityAsync(RawObservation observation, CancellationToken cancellationToken)
     {
-        if (!severityModel.IsReady)
+        // Asking is already fallible, which is why this is guarded rather than read directly. In the
+        // shipped model, readiness is what forces the lazy training to run, so it is the likeliest
+        // member of the interface to throw — and it is not the pipeline's business whether some
+        // future implementation answers cheaply or expensively.
+        if (!IsModelReady(observation))
         {
             return;
         }
@@ -292,9 +310,47 @@ public sealed partial class ObservationProcessor(
         }
         catch (Exception exception)
         {
-            diagnostics.ModelFailures.Add(1, new KeyValuePair<string, object?>("model", severityModel.Version));
+            // Version is read through the same guard as readiness: on the shipped model it reaches
+            // the same lazily trained value, so a failure there would otherwise be thrown a second
+            // time from inside the handler meant to contain the first.
+            diagnostics.ModelFailures.Add(1, new KeyValuePair<string, object?>("model", DescribeModel()));
             stage.Fail(exception.Message);
             LogModelPredictionFailed(logger, exception, observation.Id);
+        }
+    }
+
+    /// <summary>
+    /// Whether the model can be asked for an opinion, treating the question itself as fallible.
+    /// Anything other than a plain "yes" means no second opinion and no other consequence.
+    /// </summary>
+    private bool IsModelReady(RawObservation observation)
+    {
+        try
+        {
+            return severityModel.IsReady;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            diagnostics.ModelFailures.Add(1, new KeyValuePair<string, object?>("model", "unavailable"));
+            LogModelPredictionFailed(logger, exception, observation.Id);
+            return false;
+        }
+    }
+
+    /// <summary>The model's version for tagging, or a placeholder when even that cannot be read.</summary>
+    private string DescribeModel()
+    {
+        try
+        {
+            return severityModel.Version;
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            return "unavailable";
         }
     }
 
@@ -518,13 +574,58 @@ public sealed partial class ObservationProcessor(
         try
         {
             observation.MarkFailed(exception.Message);
-            await observationRepository.AddAsync(observation, cancellationToken);
-            await observationRepository.SaveChangesAsync(cancellationToken);
+
+            // Retained alone. Saving again through the ordinary path would re-attempt everything the
+            // failed commit had staged, so a transient fault would commit an incident sourced
+            // entirely from an observation this method is in the middle of marking as failed.
+            await observationRepository.RetainEvidenceAsync(observation, cancellationToken);
             return observation.Id;
         }
         catch (Exception retentionException) when (retentionException is not OperationCanceledException)
         {
             LogRetentionFailed(logger, retentionException, observation.Id);
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Keeps the delivery that lost the uniqueness race, recorded as the duplicate it turned out to
+    /// be.
+    /// <para>
+    /// The sequential duplicate path stores its loser, and this one has to agree with it: whether a
+    /// repeat was spotted by the read or by the index is a timing accident, and it should not decide
+    /// whether the delivery is auditable afterwards. The filtered unique index exempts rows already
+    /// marked as duplicates, which is what makes storing it possible at all.
+    /// </para>
+    /// </summary>
+    private async Task<Guid?> TryRetainConcurrentDuplicateAsync(
+        RawObservation? observation,
+        CancellationToken cancellationToken)
+    {
+        if (observation is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            // The winner has committed by now, so this finds it. If it somehow does not, there is no
+            // original to point at and the delivery is left unrecorded rather than pointed at
+            // nothing.
+            var original = await observationRepository.FindByFingerprintAsync(observation.Fingerprint, cancellationToken);
+
+            if (original is not { } originalId || originalId == observation.Id)
+            {
+                return null;
+            }
+
+            observation.MarkDuplicate(originalId);
+            await observationRepository.RetainEvidenceAsync(observation, cancellationToken);
+            return observation.Id;
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            LogRetentionFailed(logger, exception, observation.Id);
             return null;
         }
     }

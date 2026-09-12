@@ -23,11 +23,17 @@ namespace Geopolitics.IntegrationTests;
 /// Replaces the configured provider. Supplied when a test needs a provider that can read the text
 /// it is given, which the offline stand-in deliberately cannot.
 /// </param>
+/// <param name="configureServices">
+/// Applied last, after every default registration. Tests that need to make a real dependency
+/// misbehave — a save that fails, a model that throws — substitute it here rather than reaching for
+/// a parallel host, so what runs is still the composed application.
+/// </param>
 public sealed class PipelineFactory(
     bool runPipeline,
     bool runSources,
     IReadOnlyDictionary<string, string?>? settings = null,
-    IChatClient? chatClient = null) : WebApplicationFactory<Program>
+    IChatClient? chatClient = null,
+    Action<IServiceCollection>? configureServices = null) : WebApplicationFactory<Program>
 {
     private readonly string databasePath = Path.Combine(
         Path.GetTempPath(),
@@ -77,6 +83,8 @@ public sealed class PipelineFactory(
                 services.RemoveAll<IChatClient>();
                 services.AddSingleton(chatClient);
             }
+
+            configureServices?.Invoke(services);
         });
     }
 

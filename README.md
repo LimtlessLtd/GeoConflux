@@ -52,11 +52,23 @@ dotnet run --project src/Geopolitics.Api
 
 ## What works today
 
-Sprints 1 to 6 are complete. Sprint 6's last outstanding items — a formal dependency review and a
-security review — are done and written up in [docs/dependency-review.md](docs/dependency-review.md)
-and [docs/security-review.md](docs/security-review.md). The security review found and fixed a
-credential that was being written to the logs on every poll, a redirect path that could have sent this
-process into a private network, and an open write path that could hold requests open indefinitely.
+Sprints 1 to 6 are complete, and so is the final architecture review that follows them.
+
+Three reviews are written up rather than summarised. The
+[security review](docs/security-review.md) found and fixed a credential that was being written to the
+logs on every poll, a redirect path that could have sent this process into a private network, and an
+open write path that could hold requests open indefinitely. The
+[dependency review](docs/dependency-review.md) covers all 465 resolved packages, the two CDN assets
+outside NuGet's reach, and the four GitHub Actions.
+
+The [architecture review](docs/architecture-review.md) is the hostile pass over the remaining
+eighteen dimensions. It found seven defects, no Critical ones, and fixed all seven. The three ranked
+High were a concurrent redelivery being reported as a pipeline failure and its evidence discarded, a
+failure-recovery path that re-committed the very unit of work it was recovering from, and a
+supplementary severity model that could fail the ingestion of real reporting — each one a case where
+a comment in the code asserted a guarantee the code did not keep. Every finding is demonstrated by a
+test that fails without the fix; the review also records what was examined and deliberately left
+alone, including an N+1 that was measured and judged not worth removing.
 
 The application ingests a recorded observation stream, enriches each item through a schema-validated
 AI stage, processes it asynchronously, scores it with a trained severity model, streams results to

@@ -21,6 +21,15 @@ public sealed class FakeObservationRepository : IObservationRepository
     /// <summary>Set to make the next save throw, for exercising failure paths.</summary>
     public Exception? SaveException { get; set; }
 
+    /// <summary>
+    /// The rest of the unit of work. Set so that abandoning it can be modelled the way the EF
+    /// change tracker behaves, which is the only reason <see cref="RetainAloneAsync"/> is
+    /// interesting to test at all.
+    /// </summary>
+    public FakeIncidentRepository? Incidents { get; set; }
+
+    public FakeAiInferenceRepository? Inferences { get; set; }
+
     public Task<Guid?> FindByFingerprintAsync(string fingerprint, CancellationToken cancellationToken) =>
         Task.FromResult(committed
             .Where(value => value.Fingerprint == fingerprint && value.Status != ObservationStatus.Duplicate)
@@ -40,6 +49,23 @@ public sealed class FakeObservationRepository : IObservationRepository
     public Task<IReadOnlyList<RawObservation>> ListByIncidentAsync(Guid incidentId, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<RawObservation>>(
             committed.Where(value => value.IncidentId == incidentId).ToArray());
+
+    /// <summary>
+    /// Drops the staged incident work and commits the evidence, which is what detaching the tracked
+    /// incidents achieves against the real database. A fake that simply committed the observation
+    /// would let a test pass against behaviour the database does not have; one that dropped the
+    /// audit rows too would hide the distinction this method exists to make.
+    /// </summary>
+    public Task RetainEvidenceAsync(RawObservation observation, CancellationToken cancellationToken)
+    {
+        pending.Clear();
+        Incidents?.DiscardPending();
+        Inferences?.Commit();
+
+        SaveCount++;
+        committed.Add(observation);
+        return Task.CompletedTask;
+    }
 
     public Task SaveChangesAsync(CancellationToken cancellationToken)
     {
@@ -113,6 +139,9 @@ public sealed class FakeIncidentRepository : IIncidentRepository
         return Task.CompletedTask;
     }
 
+    /// <summary>Drops staged work without committing it, as a cleared change tracker does.</summary>
+    public void DiscardPending() => pending.Clear();
+
     public Task SaveChangesAsync(CancellationToken cancellationToken)
     {
         committed.AddRange(pending);
@@ -165,4 +194,5 @@ public sealed class FakeAiInferenceRepository : IAiInferenceRepository
         committed.AddRange(pending);
         pending.Clear();
     }
+
 }

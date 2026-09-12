@@ -169,6 +169,55 @@ public sealed class ProviderSecurityTests
         Assert.Contains("bad", failure.Message, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// A poll interval is what stands between this process and someone else's rate limiter, so a
+    /// value that cannot be waited on has to stop the deployment rather than reach the loop.
+    /// <para>
+    /// Both cases below were checked against the runtime rather than assumed. Zero completes the
+    /// delay immediately, turning the poll loop into a hot loop that requests as fast as the network
+    /// allows — a self-inflicted flood of a third party's API. A negative value throws
+    /// <see cref="ArgumentOutOfRangeException"/> from inside the iterator, where only cancellation is
+    /// caught, so the source dies for the lifetime of the process and reports nothing but a single
+    /// log line.
+    /// </para>
+    /// </summary>
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void APollIntervalThatCannotBeWaitedOnStopsStartup(int seconds)
+    {
+        using var provider = BuildOptionsOnly(options =>
+        {
+            options.Rss.Feeds.Add(new RssFeedOptions { Name = "good", Url = "https://feeds.invalid/news.xml" });
+            options.Rss.PollInterval = TimeSpan.FromSeconds(seconds);
+        });
+
+        var failure = Assert.Throws<OptionsValidationException>(
+            () => provider.GetRequiredService<IOptions<ProviderOptions>>().Value);
+
+        Assert.Contains("PollInterval", failure.Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// The companion bound. A batch size of zero is not a smaller poll, it is a source that fetches
+    /// from the network on every cycle and discards the answer, which looks identical to a dead feed
+    /// from the dashboard.
+    /// </summary>
+    [Fact]
+    public void ABatchSizeOfZeroStopsStartup()
+    {
+        using var provider = BuildOptionsOnly(options =>
+        {
+            options.Rss.Feeds.Add(new RssFeedOptions { Name = "good", Url = "https://feeds.invalid/news.xml" });
+            options.Rss.MaxItemsPerPoll = 0;
+        });
+
+        var failure = Assert.Throws<OptionsValidationException>(
+            () => provider.GetRequiredService<IOptions<ProviderOptions>>().Value);
+
+        Assert.Contains("MaxItemsPerPoll", failure.Message, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void AWellFormedFeedUrlPassesValidation()
     {

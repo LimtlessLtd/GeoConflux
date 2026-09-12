@@ -149,6 +149,37 @@ public sealed class SeverityModelPipelineTests
         Assert.True(response.ModelSeverity.DisagreesWithApplied);
     }
 
+    /// <summary>
+    /// The same guarantee, at the other end of the interface.
+    /// <para>
+    /// <c>IsReady</c> is not a field read. In the shipped model it is what forces the lazy training
+    /// to run, so it is the call most likely to throw — and because <see cref="Lazy{T}"/> caches a
+    /// failure and rethrows it, once it does every later observation meets the same exception. A
+    /// second opinion that cannot be obtained must cost the opinion and nothing else, whichever
+    /// member of the interface fails to produce it.
+    /// </para>
+    /// </summary>
+    [Fact]
+    public async Task AModelThatCannotSayWhetherItIsReadyDoesNotFailTheObservation()
+    {
+        var harness = new PipelineTestHarness { SeverityModel = new UnreadableSeverityModel() };
+
+        var result = await harness.BuildProcessor().ProcessAsync(
+            new ObservationEnvelope
+            {
+                SourceName = "fixture",
+                Kind = ObservationKind.News,
+                Content = "Shelling damaged buildings in a border village overnight.",
+            },
+            CancellationToken.None);
+
+        var stored = Assert.Single(harness.Observations.Committed);
+
+        Assert.Equal(ProcessingOutcome.Persisted, result.Outcome);
+        Assert.Null(stored.FailureReason);
+        Assert.Null(stored.ModelSeverity);
+    }
+
     [Fact]
     public void TheDomainRefusesAPredictionItCannotAttribute()
     {
@@ -177,4 +208,18 @@ internal sealed class ThrowingSeverityModel : ISeverityModel
 
     public Task<SeverityPrediction?> PredictAsync(SeverityFeatures features, CancellationToken cancellationToken) =>
         throw new InvalidOperationException("The model failed.");
+}
+
+/// <summary>
+/// Throws from <c>IsReady</c> rather than from the prediction. This is what a model whose training
+/// failed on a platform missing its native dependencies actually looks like to the pipeline.
+/// </summary>
+internal sealed class UnreadableSeverityModel : ISeverityModel
+{
+    public string Version => "unreadable/v1";
+
+    public bool IsReady => throw new InvalidOperationException("The model could not be trained.");
+
+    public Task<SeverityPrediction?> PredictAsync(SeverityFeatures features, CancellationToken cancellationToken) =>
+        Task.FromResult<SeverityPrediction?>(null);
 }
