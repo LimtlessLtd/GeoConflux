@@ -108,10 +108,15 @@ major tags they previously used:
 
 | Action | Pinned SHA | Release |
 | --- | --- | --- |
-| `actions/checkout` | `11d5960a326750d5838078e36cf38b85af677262` | v4.4.0 |
+| `actions/checkout` | `fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09` | v5.1.0 |
 | `actions/setup-dotnet` | `26b0ec14cb23fa6904739307f278c14f94c95bf1` | v5.4.0 |
 | `actions/upload-pages-artifact` | `56afc609e74202658d3ffba0e8f6dda462b719fa` | v3.0.1 |
 | `actions/deploy-pages` | `d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e` | v4.0.5 |
+
+`actions/checkout` was moved from v4 to v5 in the course of this review: pinning it made the runner
+report that v4 targets the deprecated Node 20 and was being forced onto Node 24. A pinned dependency
+that a runner has to paper over is not really pinned, so it was taken to the release that runs on the
+runtime the runner actually provides.
 
 A tag is a pointer its owner can move; a SHA is not. Since an action runs with the workflow's token,
 and the Pages workflow's token can publish the site, the distinction is worth the small cost of
