@@ -42,6 +42,7 @@ When an existing ADR conflicts with this document, prefer the ADR and explain th
 - Introduce Kafka, RabbitMQ, Redis, Kubernetes, etc. without a demonstrated need.
 - Couple the processing pipeline to SignalR.
 - Allow an LLM to be the authoritative source of latitude/longitude.
+- Assert the position or movement of military units. No open source supports it at useful fidelity; inferring it is the coordinate rule failing through a door marked "analysis". See Sprint 9.
 - Put infrastructure concerns directly into the Domain layer.
 - Disable tests to make the build pass.
 - Remove error handling to simplify implementation.
@@ -528,6 +529,40 @@ Store resolution metadata such as:
 
 If the resolver fails, retain the observation and represent location as unresolved instead of inventing coordinates.
 
+## The gazetteer is the binding constraint, and must be sized for the theatres in scope
+
+`ObservationKindRules.MayDeclareCoordinates` permits only `Satellite` and `ExternalEvent` to state
+their own coordinates. That rule is correct and must not be relaxed. Its consequence is that **every
+textual source — RSS, collected bundles, manual submission — is placed exactly as precisely as the
+gazetteer can place it, and no better.**
+
+As assessed on 2026-09-12 (see [docs/conflict-source-assessment.md](docs/conflict-source-assessment.md)),
+`Gazetteer.cs` holds 205 entries: 148 whole countries, 16 seas and straits, and **41
+settlement-precision places for the entire world**. Against the three theatres the project is now
+being asked to map:
+
+| Theatre | Resolves today | Reported in |
+|---|---|---|
+| Ukraine | Kyiv, Kharkiv, Odesa, Donetsk, and two oblasts | Pokrovsk, Kupiansk, Kostiantynivka, Siversk, Huliaipole, Vovchansk, ~150 more |
+| Yemen | Sana'a, Aden | Marib, Hodeidah, Taiz, Saada, Al-Jawf, Shabwah, ~330 districts |
+| Tigray | nothing; `ET` is a country centroid ~600 km from Mekelle | Mekelle, Adigrat, Shire, Axum, Zalambesa, Tselemti |
+
+A country-precision entry is correctly *labelled* useless by `PlacePrecision.Country`, which is the
+enum working as designed. It is still useless. A Tigray report can be ingested, deduplicated,
+enriched, scored and correlated today and have nowhere to go on the map.
+
+Therefore: **adding sources does not substitute for gazetteer depth, and a new adapter whose output
+cannot be placed is not progress.** Expanding the gazetteer unlocks every text source at once.
+
+Name variants are part of the requirement, not a refinement of it. ADR 025 already found this for
+Arabic. Tigray needs Ge'ez script for Tigrinya and Amharic (መቐለ) plus Latin transliterations that are
+genuinely unstable (Mekelle / Mekele / Mek'ele / Makale); Ukraine needs Ukrainian names and the
+Russian exonyms that appear in Russian-language reporting of the same place.
+
+At a few hundred entries this stops being something to hand-write in a C# array. Sourcing from
+GeoNames or OSM raises licensing, artefact-size and build-time questions that require an ADR rather
+than a quiet edit to `Gazetteer.cs`.
+
 ---
 
 # 13. AI Traceability
@@ -751,6 +786,77 @@ Treat ACLED as an optional authenticated provider.
 The base application and CI must still work without an ACLED credential.
 
 Never commit credentials.
+
+**The shipped adapter is broken and must be migrated.** `AcledEventSource` requests
+`acled/read?key=…&email=…` against `https://api.acleddata.com/`, and that hostname no longer
+resolves — verified 2026-09-12, while every other candidate source host answered. ACLED retired that
+API; the old platform accepted existing keys until 15 September 2025 and issued no new ones. The
+current API is `https://acleddata.com/api/`, authenticating by OAuth against
+`https://acleddata.com/oauth/token` with access tokens valid 24 hours and refresh tokens valid 14
+days. The key-and-email query-parameter shape is gone, so `AcledOptions` needs a token flow rather
+than a second string field.
+
+Because the adapter ships disabled, nothing fails today and CI is unaffected. The failure would
+appear on the first live poll after someone supplied a credential. Fix it before adding any new
+source: ACLED is the only source covering Ukraine, Yemen **and** Ethiopia in one schema with
+coordinates, a coded event type and a fatality count, and it is the source this system already knows
+how to treat as authoritative about position.
+
+## UCDP Georeferenced Event Dataset
+
+Add the Uppsala Conflict Data Program GED as a second structured provider, as
+`ObservationKind.ExternalEvent`.
+
+It is the strongest free complement to ACLED and is currently unused. The API at
+`https://ucdpapi.pcr.uu.se/api/<resource>/<version>` is free of charge, requires a token obtained
+from the maintainer and sent as the `x-ucdp-access-token` header, and permits 5,000 requests a day.
+Yearly datasets are at v26.1; **GED Candidate** publishes monthly at under a month's lag.
+
+Its distinguishing property for this project is `where_prec`: an explicit statement of how precisely
+each coordinate is known. Map it onto `PlacePrecision` rather than discarding it. A borrowed
+coordinate whose precision travels with it is exactly the honest form this system requires, and it is
+the reason UCDP is worth having alongside ACLED rather than instead of it.
+
+## Sources that carry no coordinates
+
+Some authoritative datasets deliberately publish no latitude and longitude, and must not be made to
+appear more precise than they are.
+
+The **Yemen Data Project** is the definitive record of the air war — every Saudi-led coalition raid
+2015–2022, with separate sets for US–UK and Israeli strikes — and states locations only as
+governorate → district → area, because open-source collection cannot support more. It is usable here
+only once a Yemen district gazetteer exists, and it resolves at district precision.
+
+Do not synthesise a coordinate for such a record, and do not route it through the AI stage to obtain
+one. Section 12 applies unchanged.
+
+## Sources rejected as mapping inputs
+
+**GDELT** updates every fifteen minutes and is free, and is machine-coded from news text with coarse
+and frequently wrong geocoding. It is a tip-off and volume signal only. Ingesting it as coded event
+data would swamp the deterministic classifier and place high-confidence dots in wrong locations.
+
+**NASA FIRMS must not be enabled for these theatres without conflict filtering.** Fire is not war. In
+Yemen, gas flaring burns continuously and reads as permanent detection; in Ethiopia, seasonal
+agricultural burning produces thousands of detections a week across exactly the regions of interest.
+A persistent-flare mask, a cropland mask, a fire-radiative-power threshold and night-only selection
+are the work. The adapter already exists and is not the work.
+
+## Territorial control is a different data shape
+
+Front-line control is polygons, not points, and the domain currently models point observations and
+incidents only. A control layer is a new domain concept and requires an ADR before implementation —
+it is not another `IEventSource`.
+
+For Ukraine, DeepStateMap answers an unauthenticated GET at
+`https://deepstatemap.live/api/history/last` with a GeoJSON `FeatureCollection` of bilingually named
+status polygons, and a community mirror republishes a daily versioned snapshot. Two constraints:
+the payload carries **no timestamp**, so a consumer must stamp fetch time itself; and DeepState is a
+volunteer organisation with no published data licence, which must be settled before derived polygons
+are republished on the dashboard.
+
+No machine-readable control product exists for Yemen or for Tigray. Record that as a gap rather than
+approximating one.
 
 ## Agent-collected OSINT
 
@@ -2095,7 +2201,12 @@ category, or a severity.
 The published dashboard distinguishes recorded, polled, and collected data, and shows when collected
 data was gathered.
 
-A malformed or expired bundle fails the build rather than reaching the page.
+A malformed bundle fails the build rather than reaching the page.
+
+*Superseded in part by ADR 025:* an **expired** bundle is a runtime condition, warned about and
+skipped by the source, and deliberately not a build failure — failing the build for staleness would
+break unrelated work a fortnight after the last collection run, for a reason no commit caused.
+Malformed still fails the build, via the bundle lint inside the existing test suite.
 
 ### Commit
 
@@ -2145,6 +2256,78 @@ No source is reached by circumventing an authentication wall, a paywall, or a pa
 
 ```text
 feat: collect open social sources and publish measured coverage
+```
+
+---
+
+## Sprint 9 — Theatre Depth: Ukraine, Yemen, Tigray
+
+### Goal
+
+Make the system able to place conflict activity accurately in three named theatres, rather than
+broadly anywhere. This is the first sprint aimed at a *subject* instead of a capability, and the
+measure of success is spatial: a reader can see where fighting is reported, at a precision the data
+actually supports.
+
+**This sprint is independent of Sprint 8 and may be taken first.** Sprint 8 adds faster but less
+reliable sources and is blocked on the corroboration gate; this sprint adds sources that are
+permitted to state their own coordinates and needs no new trust machinery. Doing this one first puts
+real, well-placed conflict data on the globe sooner. The background assessment is
+[docs/conflict-source-assessment.md](docs/conflict-source-assessment.md) and should be read before
+starting.
+
+### Implement
+
+Ordered by value per unit of effort. Items 1 and 2 introduce no new domain concepts.
+
+1. **Migrate `AcledEventSource` to the current ACLED API.** OAuth token acquisition against
+   `https://acleddata.com/oauth/token`, base address `https://acleddata.com/api/`, refresh handling,
+   and the token cached rather than re-fetched per poll. Replace the key/email options with the token
+   flow. A recorded fixture test must pin the new response shape. See Section 20.
+2. **Add a UCDP GED Candidate adapter** as `ObservationKind.ExternalEvent`, carrying `where_prec`
+   through to `PlacePrecision` rather than discarding it. Free, monthly, token by request.
+3. **Expand the gazetteer for the three theatres, with script variants** — Ukrainian and Russian for
+   Ukraine, Arabic for Yemen, Ge'ez script and unstable Latin transliterations for Tigray. Record an
+   ADR for the sourcing decision (hand-written array versus GeoNames/OSM extract) before writing the
+   data, because it determines licensing, artefact size and build time. See Section 12.
+4. **Conflict filtering for NASA FIRMS** — persistent-flare mask, cropland mask, FRP threshold,
+   night-only — and only then enable it for these theatres.
+5. **Theatre-level coverage reporting.** For each of the three, state what is placed, at what
+   precision, and from which source. A quiet district must be distinguishable from an unobserved one.
+6. **A territorial control layer for Ukraine**, only if the DeepState licence question is settled and
+   an ADR records the polygon domain concept. This is the one item that may be deferred whole.
+
+### Do not implement
+
+**Troop movements are out of scope and must stay out of scope.** No open source gives unit positions
+and movement at useful fidelity and timeliness: commercial imagery has hours-to-days tasking latency
+and republication-hostile licences, Sentinel-1 has a 6–12 day revisit and a processing pipeline
+outside this repository's scope, geolocated social footage is individually unverifiable and an
+actively poisoned channel, and analyst unit markers are inferred and unpublished as data.
+
+Inferring unit positions would be the same failure as letting an LLM set a coordinate, arriving
+through a door marked "analysis". Map control change and event density and let the reader draw the
+inference. Record the gap in an ADR, in the Section 21 tradition of writing down what was declined.
+
+### Definition of Done
+
+An ACLED or UCDP record for Ukraine, Yemen or Tigray enters the pipeline with the provider's own
+coordinate, at the provider's own stated precision, and is drawn where it happened.
+
+A text report naming Mekelle, Marib or Pokrovsk resolves to that place rather than to a country
+centroid, in the script the source actually used.
+
+The dashboard states, per theatre, how much it has placed and how precisely — and says plainly that
+Tigray coverage is sparser than the conflict, because the ACLED Ethiopia Peace Observatory ended
+fortnightly updates on 1 July 2025 and communications blackouts are a recurring feature there. A
+quiet district means nobody reported, not that nothing happened.
+
+No part of the system asserts a unit position.
+
+### Commit
+
+```text
+feat: place conflict activity accurately in Ukraine, Yemen and Tigray
 ```
 
 ---
@@ -2317,6 +2500,30 @@ The project is complete when all of the following are true:
 ---
 
 # 43. Start Here
+
+## Current state, as of 2026-09-12
+
+Sprints 1 to 7 are complete, along with the final architecture review, the security review and the
+dependency review. `main` is green and deploys to
+<https://limtlessltd.github.io/GeoConflux/> on every push.
+
+Two sprints remain specified and unbuilt: **Sprint 8** (open social, blocked on the corroboration
+gate) and **Sprint 9** (theatre depth for Ukraine, Yemen and Tigray). **Sprint 9 is the recommended
+next increment** — it is independent of Sprint 8, needs no new trust machinery, and puts accurately
+placed conflict data on the globe sooner.
+
+Read [docs/conflict-source-assessment.md](docs/conflict-source-assessment.md) before starting it. Two
+findings there govern the work and are easy to miss by reading code alone:
+
+- **`AcledEventSource` points at a host that no longer resolves.** It ships disabled, so nothing
+  fails today and CI is unaffected; it would fail on the first live poll after a credential was
+  supplied. Section 20 has the migration detail.
+- **The gazetteer is the ceiling on every non-structured source.** 41 settlement-precision places
+  worldwide, none in Ethiopia. Adding adapters does not substitute for it. Section 12 has the figures.
+
+Do not begin Sprint 9 by adding a source. Begin by fixing ACLED, then add UCDP, then the gazetteer.
+
+## If starting from nothing
 
 If this repository is empty, begin with Sprint 1.
 
