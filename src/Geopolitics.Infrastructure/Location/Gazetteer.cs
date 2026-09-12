@@ -1,4 +1,5 @@
 using System.Collections.Frozen;
+using System.Text;
 
 namespace Geopolitics.Infrastructure.Location;
 
@@ -68,6 +69,8 @@ public static class Gazetteer
         new("Sea of Japan", 40.000, 135.000, null, PlacePrecision.Region),
         new("Kyiv", 50.450, 30.523, "UA"),
         new("Odesa", 46.482, 30.723, "UA"),
+        new("Kharkiv", 49.994, 36.230, "UA"),
+        new("Donetsk", 48.016, 37.803, "UA"),
         new("Moscow", 55.756, 37.617, "RU"),
         new("Beijing", 39.904, 116.407, "CN"),
         new("Taipei", 25.033, 121.565, "TW"),
@@ -297,6 +300,143 @@ public static class Gazetteer
         ("Occupied Palestinian Territory", "Gaza"),
         ("oPt", "Gaza"),
         ("West Bank", "Jerusalem"),
+
+        // Transliterations that differ by who is writing. Neither spelling is a mistake, and
+        // listing only one of a contested pair takes a position this table has no business taking.
+        ("Kharkov", "Kharkiv"),
+        ("Kharkiv Oblast", "Kharkiv"),
+        ("Donetsk Oblast", "Donetsk"),
+        ("Arabian Gulf", "Persian Gulf"),
+        ("East Sea", "Sea of Japan"),
+        ("Al-Quds", "Jerusalem"),
+        ("Bab al-Mandeb", "Bab-el-Mandeb"),
+    ];
+
+    /// <summary>
+    /// The same places as they are written in the languages that report them.
+    /// <para>
+    /// This table is what makes non-English collection worth doing. The enrichment prompt asks the
+    /// model to report a place <em>as it is named in the text</em>, which is the right instruction
+    /// and which produces an Arabic or Cyrillic name for an Arabic or Cyrillic source. Without these
+    /// aliases such a name normalises to a key in its own script, finds nothing, and the observation
+    /// is retained as unresolved — correct under ADR 005, and still a report that never reaches the
+    /// globe. Reading twenty languages while resolving in one sees more of the world and plots less
+    /// of it.
+    /// </para>
+    /// <para>
+    /// Where a language writes a name two ways — simplified and traditional Han, Ukrainian and
+    /// Russian Cyrillic, Arabic and Persian orthography for the same word — both are listed. Folding
+    /// them mechanically is not possible: NFKC does not convert between Han character sets, and
+    /// Cyrillic <c>ё</c> and <c>е</c> are distinct letters that reporting uses interchangeably.
+    /// </para>
+    /// </summary>
+    private static readonly (string Alias, string Canonical)[] NativeScriptAliases =
+    [
+        // Arabic
+        ("باب المندب", "Bab-el-Mandeb"),
+        ("مضيق باب المندب", "Bab-el-Mandeb"),
+        ("مضيق هرمز", "Strait of Hormuz"),
+        ("قناة السويس", "Suez Canal"),
+        ("البحر الأحمر", "Red Sea"),
+        ("خليج عدن", "Gulf of Aden"),
+        ("الخليج العربي", "Persian Gulf"),
+        ("الخليج الفارسي", "Persian Gulf"),
+        ("البحر المتوسط", "Eastern Mediterranean"),
+        ("صنعاء", "Sanaa"),
+        ("عدن", "Aden"),
+        ("القاهرة", "Cairo"),
+        ("بيروت", "Beirut"),
+        ("دمشق", "Damascus"),
+        ("بغداد", "Baghdad"),
+        ("الرياض", "Riyadh"),
+        ("غزة", "Gaza"),
+        ("القدس", "Jerusalem"),
+        ("الخرطوم", "Khartoum"),
+        ("مقديشو", "Mogadishu"),
+        ("إسطنبول", "Istanbul"),
+        ("أنقرة", "Ankara"),
+        ("جيبوتي", "Djibouti"),
+        ("سوريا", "Syria"),
+        ("اليمن", "Yemen"),
+        ("مصر", "Egypt"),
+        ("العراق", "Iraq"),
+        ("لبنان", "Lebanon"),
+        ("السودان", "Sudan"),
+
+        // Persian. Shares the Arabic script but not all of its letters: Persian writes ک and ی
+        // where Arabic writes ك and ي, so the same city needs both spellings to be found.
+        ("تهران", "Tehran"),
+        ("طهران", "Tehran"),
+        ("تنگه هرمز", "Strait of Hormuz"),
+        ("خلیج فارس", "Persian Gulf"),
+        ("ایران", "Iran"),
+        ("إيران", "Iran"),
+
+        // Cyrillic
+        ("Київ", "Kyiv"),
+        ("Киев", "Kyiv"),
+        ("Одеса", "Odesa"),
+        ("Одесса", "Odesa"),
+        ("Харків", "Kharkiv"),
+        ("Харьков", "Kharkiv"),
+        ("Донецьк", "Donetsk"),
+        ("Донецк", "Donetsk"),
+        ("Москва", "Moscow"),
+        ("Чёрное море", "Black Sea"),
+        ("Черное море", "Black Sea"),
+        ("Керченский пролив", "Kerch Strait"),
+        ("Балтийское море", "Baltic Sea"),
+        ("Україна", "Ukraine"),
+        ("Украина", "Ukraine"),
+        ("Россия", "Russia"),
+        ("Сирия", "Syria"),
+
+        // Han, simplified and traditional
+        ("北京", "Beijing"),
+        ("台北", "Taipei"),
+        ("臺北", "Taipei"),
+        ("南海", "South China Sea"),
+        ("南中国海", "South China Sea"),
+        ("南中國海", "South China Sea"),
+        ("台湾海峡", "Taiwan Strait"),
+        ("臺灣海峽", "Taiwan Strait"),
+        ("马六甲海峡", "Strait of Malacca"),
+        ("馬六甲海峽", "Strait of Malacca"),
+        ("霍尔木兹海峡", "Strait of Hormuz"),
+        ("霍爾木茲海峽", "Strait of Hormuz"),
+        ("苏伊士运河", "Suez Canal"),
+        ("蘇伊士運河", "Suez Canal"),
+        ("红海", "Red Sea"),
+        ("紅海", "Red Sea"),
+        ("日本海", "Sea of Japan"),
+        ("德黑兰", "Tehran"),
+        ("德黑蘭", "Tehran"),
+        ("莫斯科", "Moscow"),
+        ("东京", "Tokyo"),
+        ("東京", "Tokyo"),
+        ("平壤", "Pyongyang"),
+        ("中国", "China"),
+        ("中國", "China"),
+        ("美国", "United States"),
+        ("美國", "United States"),
+        ("俄罗斯", "Russia"),
+        ("俄羅斯", "Russia"),
+        ("日本", "Japan"),
+        ("台湾", "Taiwan"),
+        ("臺灣", "Taiwan"),
+        ("乌克兰", "Ukraine"),
+        ("烏克蘭", "Ukraine"),
+
+        // Hangul
+        ("서울", "Seoul"),
+        ("평양", "Pyongyang"),
+        ("한국", "South Korea"),
+        ("북한", "North Korea"),
+
+        // Devanagari
+        ("नई दिल्ली", "New Delhi"),
+        ("भारत", "India"),
+        ("पाकिस्तान", "Pakistan"),
     ];
 
     private static readonly FrozenDictionary<string, GazetteerEntry> Lookup = BuildLookup();
@@ -333,12 +473,23 @@ public static class Gazetteer
             return null;
         }
 
+        // Folded once, then compared ordinally: the terms were folded the same way when the table
+        // was built, so an Arabic presentation form in the text meets the standard form stored here.
+        var haystack = FoldForSearch(text);
+
         var bestIndex = int.MaxValue;
         string? bestName = null;
 
         foreach (var (term, entry) in SearchTerms)
         {
-            var index = text.IndexOf(term, StringComparison.OrdinalIgnoreCase);
+            var index = haystack.IndexOf(term, StringComparison.Ordinal);
+
+            // Keep looking past a hit that landed inside a longer word. The first occurrence of
+            // "us" may be in "because" while the sentence goes on to name the United States.
+            while (index >= 0 && !IsWholeMention(haystack, index, term.Length))
+            {
+                index = haystack.IndexOf(term, index + 1, StringComparison.Ordinal);
+            }
 
             if (index >= 0 && index < bestIndex)
             {
@@ -376,9 +527,22 @@ public static class Gazetteer
             map[NormaliseKey(entry.CanonicalName)] = entry;
         }
 
-        foreach (var (alias, canonical) in Aliases)
+        foreach (var (alias, canonical) in Aliases.Concat(NativeScriptAliases))
         {
-            map[NormaliseKey(alias)] = map[NormaliseKey(canonical)];
+            var key = NormaliseKey(alias);
+            var target = map[NormaliseKey(canonical)];
+
+            // Two aliases normalising to one key would silently place a city somewhere else, and
+            // the reader of the map would have no way to tell. With the lexicon now spanning six
+            // scripts the chance of an accidental collision is real, so it fails here — at first
+            // touch, in every test — rather than becoming a wrong pin on a globe.
+            if (map.TryGetValue(key, out var existing) && existing != target)
+            {
+                throw new InvalidOperationException(
+                    $"Gazetteer alias '{alias}' collides with an entry already resolving to '{existing.CanonicalName}'.");
+            }
+
+            map[key] = target;
         }
 
         return map.ToFrozenDictionary(StringComparer.Ordinal);
@@ -386,14 +550,78 @@ public static class Gazetteer
 
     private static (string Term, GazetteerEntry Entry)[] BuildSearchTerms()
     {
-        var terms = new List<(string Term, GazetteerEntry Entry)>(Entries.Length + Aliases.Length);
-        terms.AddRange(Entries.Select(entry => (entry.CanonicalName, entry)));
+        var aliases = Aliases.Concat(NativeScriptAliases).ToArray();
+        var terms = new List<(string Term, GazetteerEntry Entry)>(Entries.Length + aliases.Length);
+        terms.AddRange(Entries.Select(entry => (FoldForSearch(entry.CanonicalName), entry)));
 
-        foreach (var (alias, canonical) in Aliases)
+        foreach (var (alias, canonical) in aliases)
         {
-            terms.Add((alias, Entries.First(entry => entry.CanonicalName == canonical)));
+            terms.Add((FoldForSearch(alias), Entries.First(entry => entry.CanonicalName == canonical)));
         }
 
         return [.. terms.OrderByDescending(item => item.Term.Length)];
     }
+
+    /// <summary>
+    /// Case- and compatibility-folded form used for searching prose, keeping punctuation and spacing
+    /// so word edges remain visible.
+    /// <para>
+    /// NFKC rather than NFC, because the forms that actually break matching are compatibility ones:
+    /// Arabic presentation forms, full-width Latin in CJK copy, and CJK compatibility ideographs all
+    /// fold here onto the spellings this lexicon stores. NFC would leave every one of them alone.
+    /// </para>
+    /// </summary>
+    private static string FoldForSearch(string value)
+    {
+        try
+        {
+            return value.Normalize(NormalizationForm.FormKC).ToLowerInvariant();
+        }
+        catch (ArgumentException)
+        {
+            // Feed text is not guaranteed to be well-formed Unicode. An unpaired surrogate is not a
+            // reason to lose the whole observation, so search the text as it came.
+            return value.ToLowerInvariant();
+        }
+    }
+
+    /// <summary>
+    /// True when a match at this position is a mention rather than a fragment of a longer word.
+    /// <para>
+    /// Without this the two-letter aliases are catastrophic: <c>US</c> occurs inside "because",
+    /// "thus", and "Russia", and because the search takes the earliest match across every term, one
+    /// such hit outranks the real place name later in the sentence.
+    /// </para>
+    /// </summary>
+    private static bool IsWholeMention(string text, int index, int length) =>
+        !RunsIntoWord(text, index - 1, text[index])
+        && !RunsIntoWord(text, index + length, text[index + length - 1]);
+
+    private static bool RunsIntoWord(string text, int neighbourIndex, char termEdge)
+    {
+        if (neighbourIndex < 0 || neighbourIndex >= text.Length)
+        {
+            return false;
+        }
+
+        var neighbour = text[neighbourIndex];
+
+        if (!char.IsLetterOrDigit(neighbour))
+        {
+            return false;
+        }
+
+        // Scripts written without spaces have no word edge to find. Requiring one would mean never
+        // matching 美国 inside 在美国发生, or 서울 inside 서울에서 — which is to say, never matching
+        // them at all, since that is how those languages are written.
+        return !WritesWithoutWordBreaks(neighbour) && !WritesWithoutWordBreaks(termEdge);
+    }
+
+    private static bool WritesWithoutWordBreaks(char character) => character
+        is (>= '぀' and <= 'ヿ')      // Hiragana and Katakana
+        or (>= '㐀' and <= '䶿')      // CJK unified ideographs, extension A
+        or (>= '一' and <= '鿿')      // CJK unified ideographs
+        or (>= '가' and <= '힯')      // Hangul syllables, which take particles unspaced
+        or (>= '豈' and <= '﫿')      // CJK compatibility ideographs
+        or (>= '฀' and <= '๿');     // Thai
 }
