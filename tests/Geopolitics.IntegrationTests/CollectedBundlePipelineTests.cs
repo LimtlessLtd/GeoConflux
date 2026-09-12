@@ -95,27 +95,55 @@ public sealed class CollectedBundlePipelineTests
         }
     }
 
+    /// <summary>
+    /// Waits until the pipeline has drained every collected observation, rather than until the first
+    /// one arrives.
+    /// <para>
+    /// Returning on the first processed item raced the pipeline. A bundle's items are ingested and
+    /// processed independently, so one could cross the line while the rest were still
+    /// <c>Received</c> — and a caller looking for a particular item then searched a partial set. That
+    /// passed on an idle developer machine and failed intermittently on a loaded CI runner, which is
+    /// the worst form for a test to fail in.
+    /// </para>
+    /// <para>
+    /// Two conditions have to hold together, because neither is sufficient alone. No collected
+    /// observation may still be <c>Received</c>, which catches items the processor has not finished;
+    /// and the total has to stop growing, which catches items the source has not yet read from disk.
+    /// Both are count-free, so committing another bundle still does not break an unrelated test.
+    /// </para>
+    /// </summary>
     private static async Task<JsonElement[]> WaitForCollectedAsync(HttpClient client)
     {
-        for (var attempt = 0; attempt < 60; attempt++)
+        var previousTotal = -1;
+        var stablePolls = 0;
+
+        for (var attempt = 0; attempt < 150; attempt++)
         {
             var observations = await client.GetFromJsonAsync<JsonElement>("/api/observations?take=100");
 
-            var collected = observations.EnumerateArray()
+            var all = observations.EnumerateArray()
                 .Where(observation => observation.GetProperty("provenance").GetString() == "Collected")
+                .ToArray();
+
+            var processed = all
                 .Where(observation => observation.GetProperty("status").GetString() != "Received")
                 .ToArray();
 
-            if (collected.Length > 0)
+            var drained = all.Length > 0 && processed.Length == all.Length;
+
+            stablePolls = drained && all.Length == previousTotal ? stablePolls + 1 : 0;
+            previousTotal = all.Length;
+
+            if (stablePolls >= 3)
             {
-                return collected;
+                return processed;
             }
 
             await Task.Delay(100);
         }
 
         throw new InvalidOperationException(
-            "No collected observation reached the read model. Either no bundle is committed, or the "
-            + "collected source did not run.");
+            "No collected observation reached the read model, or the pipeline never settled. Either "
+            + "no bundle is committed, or the collected source did not run.");
     }
 }
