@@ -1,0 +1,7 @@
+{
+  "$comment": "SYNTHETIC FIXTURE: the shape https://acleddata.com/oauth/token returns for a successful password or refresh grant. The token values are invented and are not credentials. expires_in is ACLED's documented 24 hours; the response states no refresh token lifetime, which is why the provider has to assume one.",
+  "token_type": "Bearer",
+  "expires_in": 86400,
+  "access_token": "fixture-access-token-not-a-credential",
+  "refresh_token": "fixture-refresh-token-not-a-credential"
+}

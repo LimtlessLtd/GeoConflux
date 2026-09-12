@@ -74,6 +74,11 @@ internal sealed class ProviderOptionsValidator : IValidateOptions<ProviderOption
         {
             ("Providers:NasaFirms:BaseAddress", options.NasaFirms.BaseAddress),
             ("Providers:Acled:BaseAddress", options.Acled.BaseAddress),
+
+            // Held to the same standard as a base address, and for a sharper reason: this is where
+            // the account password is sent. A scheme or host that is wrong here does not fail a
+            // read, it posts a credential somewhere it was never meant to go.
+            ("Providers:Acled:TokenEndpoint", options.Acled.TokenEndpoint),
         })
         {
             if (!Uri.TryCreate(address, UriKind.Absolute, out var uri) || uri.Scheme is not (("http") or ("https")))

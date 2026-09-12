@@ -7,6 +7,7 @@ namespace Geopolitics.Infrastructure.Sources.Providers;
 /// <param name="Identifier">ACLED's own event identifier, which is stable across their revisions.</param>
 /// <param name="EventType">The category ACLED assigned, mapped onto this system's taxonomy.</param>
 /// <param name="Latitude">Coordinates from ACLED's own coded record, not inferred from prose.</param>
+/// <param name="CountryName">The country as ACLED names it. The schema carries no alpha-2 code to read.</param>
 /// <param name="Fatalities">Reported fatalities, which drive the severity mapping.</param>
 public sealed record AcledEvent(
     string Identifier,
@@ -16,7 +17,7 @@ public sealed record AcledEvent(
     Severity Severity,
     double? Latitude,
     double? Longitude,
-    string? CountryCode,
+    string? CountryName,
     string? LocationName,
     DateTimeOffset? OccurredAt,
     int Fatalities);
@@ -93,6 +94,9 @@ public static class AcledResponseParser
 
     private static AcledEvent? ReadEvent(JsonElement element)
     {
+        // event_id_cnty is the identifier the current schema publishes. The retired API also
+        // returned a numeric data_id, and it is still accepted as a fallback so a recorded payload
+        // from the old platform remains readable rather than silently producing nothing.
         var identifier = Text(element, "event_id_cnty") ?? Text(element, "data_id");
 
         if (string.IsNullOrWhiteSpace(identifier))
@@ -136,7 +140,7 @@ public static class AcledResponseParser
             MapSeverity(fatalities, eventType),
             latitude,
             longitude,
-            NormaliseCountryCode(Text(element, "iso3")),
+            country,
             string.IsNullOrWhiteSpace(location) ? country : location,
             ParseDate(Text(element, "event_date")),
             fatalities);
@@ -239,14 +243,6 @@ public static class AcledResponseParser
             _ => null,
         };
     }
-
-    /// <summary>
-    /// ACLED publishes ISO 3166-1 alpha-3; the gazetteer and the rest of this system use alpha-2.
-    /// Rather than carry a second country table, the three-letter code is dropped: it would not match
-    /// anything downstream, and a wrong country code is worse than an absent one.
-    /// </summary>
-    private static string? NormaliseCountryCode(string? iso3) =>
-        string.IsNullOrWhiteSpace(iso3) || iso3.Length != 2 ? null : iso3.ToUpperInvariant();
 
     private static DateTimeOffset? ParseDate(string? value) =>
         !string.IsNullOrWhiteSpace(value)

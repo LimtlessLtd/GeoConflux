@@ -1,3 +1,4 @@
+using System.Net;
 using Geopolitics.Application.Abstractions;
 using Geopolitics.Application.Contracts;
 using Geopolitics.Domain;
@@ -6,6 +7,7 @@ using Geopolitics.UnitTests.Fakes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
+using Microsoft.Extensions.Logging;
 
 namespace Geopolitics.UnitTests;
 
@@ -294,16 +296,10 @@ public sealed class ProviderAdapterTests
         using var stop = new CancellationTokenSource();
         var handler = new ScriptedHttpHandler(
             stop,
+            AcledToken(),
             ScriptedHttpHandler.Respond(Fixture("acled-response.json"), mediaType: "application/json"));
 
-        using var provider = Build(handler, AcledEventSource.HttpClientName, options =>
-        {
-            options.Mode = ProviderMode.Live;
-            options.Acled.Enabled = true;
-            options.Acled.ApiKey = "test-key";
-            options.Acled.Email = "tester@example.invalid";
-            options.Acled.PollInterval = TimeSpan.FromMilliseconds(1);
-        });
+        using var provider = Build(handler, AcledEventSource.HttpClientName, LiveAcled);
 
         var envelopes = await DrainAsync(Source<AcledEventSource>(provider), stop.Token);
 
@@ -314,6 +310,164 @@ public sealed class ProviderAdapterTests
         // than replacing it with something a model inferred from the notes field.
         Assert.Equal(EventType.Protest, envelopes[0].DeclaredEventType);
         Assert.Equal(Severity.High, envelopes[1].DeclaredSeverity);
+
+        // The country name ACLED publishes, turned into the alpha-2 code the rest of the system uses.
+        // The retired API had an iso3 field, the current one does not, and the previous adapter threw
+        // away everything that was not already two characters — so it never produced a code at all.
+        Assert.Equal("UA", envelopes[0].DeclaredCountryCode);
+        Assert.Equal("YE", envelopes[1].DeclaredCountryCode);
+    }
+
+    /// <summary>
+    /// The migration to OAuth, asserted at the wire: a token is fetched from the token endpoint and
+    /// then presented as a bearer credential on the read. The retired API took a key and an email as
+    /// query parameters against a host that no longer resolves, so a request in that shape reaching
+    /// the transport would mean the old adapter was still in place.
+    /// </summary>
+    [Fact]
+    public async Task AcledAuthenticatesWithATokenRatherThanAKeyInTheQueryString()
+    {
+        using var stop = new CancellationTokenSource();
+        var handler = new ScriptedHttpHandler(
+            stop,
+            AcledToken(),
+            ScriptedHttpHandler.Respond(Fixture("acled-response.json"), mediaType: "application/json"));
+
+        using var provider = Build(handler, AcledEventSource.HttpClientName, LiveAcled);
+
+        await DrainAsync(Source<AcledEventSource>(provider), stop.Token);
+
+        var exchanges = handler.Exchanges.ToArray();
+
+        var token = exchanges[0];
+        Assert.Equal("POST", token.Method);
+        Assert.Equal("https://acleddata.com/oauth/token", token.Url);
+
+        var grant = Assert.IsType<string>(token.Body);
+        Assert.Contains("grant_type=password", grant, StringComparison.Ordinal);
+        Assert.Contains("client_id=acled", grant, StringComparison.Ordinal);
+        Assert.Contains("scope=authenticated", grant, StringComparison.Ordinal);
+
+        var read = exchanges[1];
+        Assert.Equal("GET", read.Method);
+        Assert.StartsWith("https://acleddata.com/api/acled/read", read.Url, StringComparison.Ordinal);
+        Assert.Equal("Bearer fixture-access-token-not-a-credential", read.Authorization);
+
+        // The credential travels in the token request and nowhere else. The retired query shape put
+        // it on every single read.
+        Assert.DoesNotContain("key=", read.Url, StringComparison.Ordinal);
+        Assert.DoesNotContain("email=", read.Url, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// A token valid for twenty-four hours has to survive between six-hourly polls, or the account
+    /// rate limit is spent on authentication rather than on data.
+    /// </summary>
+    [Fact]
+    public async Task AcledReusesItsAccessTokenAcrossPollsRatherThanReAuthenticating()
+    {
+        using var stop = new CancellationTokenSource();
+        var handler = new ScriptedHttpHandler(
+            stop,
+            AcledToken(),
+            ScriptedHttpHandler.Respond(Fixture("acled-response.json"), mediaType: "application/json"),
+            ScriptedHttpHandler.Respond(Fixture("acled-response.json"), mediaType: "application/json"));
+
+        using var provider = Build(handler, AcledEventSource.HttpClientName, LiveAcled);
+
+        await DrainAsync(Source<AcledEventSource>(provider), stop.Token);
+
+        // Two polls, one token request. Asserted as a count rather than as an ordering, because what
+        // this guards against is a token request reappearing before every read.
+        Assert.Equal(1, handler.Exchanges.Count(exchange =>
+            exchange.Url.Contains("/oauth/token", StringComparison.Ordinal)));
+        Assert.True(
+            handler.Exchanges.Count(exchange => exchange.Url.Contains("/acled/read", StringComparison.Ordinal)) >= 2,
+            "The adapter should have polled at least twice.");
+    }
+
+    /// <summary>
+    /// A token can stop being honoured before its stated expiry — revoked, or invalidated by a change
+    /// on the account — and the cached copy looks perfectly valid from here. Without this recovery it
+    /// would be replayed on every poll until the process restarted.
+    /// </summary>
+    [Fact]
+    public async Task AcledReAuthenticatesOnceWhenACachedTokenIsRefused()
+    {
+        using var stop = new CancellationTokenSource();
+        var handler = new ScriptedHttpHandler(
+            stop,
+            AcledToken(),
+            ScriptedHttpHandler.Status(HttpStatusCode.Unauthorized),
+            AcledToken(),
+            ScriptedHttpHandler.Respond(Fixture("acled-response.json"), mediaType: "application/json"));
+
+        using var provider = Build(handler, AcledEventSource.HttpClientName, LiveAcled);
+
+        var envelopes = await DrainAsync(Source<AcledEventSource>(provider), stop.Token);
+
+        // Recovered inside the one poll rather than returning nothing and waiting six hours.
+        Assert.Equal(3, envelopes.Count);
+        Assert.Equal(2, handler.Exchanges.Count(exchange =>
+            exchange.Url.Contains("/oauth/token", StringComparison.Ordinal)));
+    }
+
+    /// <summary>
+    /// A rejected credential has to be reported as a rejected credential. Answering a wrong password
+    /// with "zero events" is the failure mode hardest to notice from the dashboard, and it is what
+    /// the retired adapter would now do against a hostname that no longer resolves.
+    /// </summary>
+    [Fact]
+    public async Task AcledReportsARejectedCredentialRatherThanReturningNothingQuietly()
+    {
+        using var stop = new CancellationTokenSource();
+        var logs = new RecordingLoggerProvider();
+        var handler = new ScriptedHttpHandler(
+            stop,
+            ScriptedHttpHandler.Respond(
+                Fixture("acled-token-rejected.json"),
+                HttpStatusCode.BadRequest,
+                "application/json"));
+
+        using var provider = Build(handler, AcledEventSource.HttpClientName, LiveAcled, logs);
+
+        var envelopes = await DrainAsync(Source<AcledEventSource>(provider), stop.Token);
+
+        Assert.Empty(envelopes);
+        Assert.Contains("invalid_grant", logs.Transcript, StringComparison.Ordinal);
+        Assert.Contains("The user credentials were incorrect.", logs.Transcript, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Country filtering is how this adapter is pointed at a theatre. The exact-match companion
+    /// parameter is the part worth pinning: ACLED defaults a text filter to LIKE, which would widen a
+    /// request for one country into every country whose name contains it.
+    /// </summary>
+    [Fact]
+    public async Task AcledAsksForTheConfiguredCountriesAsExactMatches()
+    {
+        using var stop = new CancellationTokenSource();
+        var handler = new ScriptedHttpHandler(
+            stop,
+            AcledToken(),
+            ScriptedHttpHandler.Respond(Fixture("acled-response.json"), mediaType: "application/json"));
+
+        using var provider = Build(handler, AcledEventSource.HttpClientName, options =>
+        {
+            LiveAcled(options);
+            options.Acled.Countries.Add("Ukraine");
+            options.Acled.Countries.Add("Yemen");
+            options.Acled.Countries.Add("Ethiopia");
+        });
+
+        await DrainAsync(Source<AcledEventSource>(provider), stop.Token);
+
+        var read = handler.Exchanges.First(exchange =>
+            exchange.Url.Contains("/acled/read", StringComparison.Ordinal));
+
+        // The pipe is ACLED's separator for several values of one field, escaped as %7C on the wire.
+        Assert.Contains("country=Ukraine%7CYemen%7CEthiopia", read.Url, StringComparison.Ordinal);
+        Assert.Contains("country_where=%3D", read.Url, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -325,8 +479,30 @@ public sealed class ProviderAdapterTests
         {
             options.Mode = ProviderMode.Live;
             options.Acled.Enabled = true;
-            options.Acled.ApiKey = "test-key";
-            options.Acled.Email = string.Empty;
+            options.Acled.Username = "tester@example.invalid";
+            options.Acled.Password = string.Empty;
+        });
+
+        var envelopes = await DrainAsync(Source<AcledEventSource>(provider), stop.Token);
+
+        Assert.Empty(envelopes);
+        Assert.Equal(0, handler.RequestCount);
+    }
+
+    /// <summary>
+    /// A deployment still carrying the retired key-and-email configuration has neither a username nor
+    /// a password, so it stays dormant instead of authenticating against an endpoint that would
+    /// refuse it. Silence is the right answer to a credential shape that no longer exists.
+    /// </summary>
+    [Fact]
+    public async Task AcledStaysDormantUnderTheRetiredKeyAndEmailConfiguration()
+    {
+        using var stop = new CancellationTokenSource();
+        var handler = new ScriptedHttpHandler(stop, ScriptedHttpHandler.Respond("{}", mediaType: "application/json"));
+        using var provider = Build(handler, AcledEventSource.HttpClientName, options =>
+        {
+            options.Mode = ProviderMode.Live;
+            options.Acled.Enabled = true;
         });
 
         var envelopes = await DrainAsync(Source<AcledEventSource>(provider), stop.Token);
@@ -353,6 +529,19 @@ public sealed class ProviderAdapterTests
         options.NasaFirms.ApiKey = "test-map-key";
         options.NasaFirms.PollInterval = TimeSpan.FromMilliseconds(1);
     }
+
+    private static void LiveAcled(ProviderOptions options)
+    {
+        options.Mode = ProviderMode.Live;
+        options.Acled.Enabled = true;
+        options.Acled.Username = "tester@example.invalid";
+        options.Acled.Password = "not-a-real-password";
+        options.Acled.PollInterval = TimeSpan.FromMilliseconds(1);
+    }
+
+    /// <summary>A successful token grant, which every live ACLED poll now begins with.</summary>
+    private static Func<HttpRequestMessage, HttpResponseMessage> AcledToken() =>
+        ScriptedHttpHandler.Respond(Fixture("acled-token.json"), mediaType: "application/json");
 
     private static TSource Source<TSource>(IServiceProvider provider)
         where TSource : IEventSource =>
@@ -385,11 +574,28 @@ public sealed class ProviderAdapterTests
     private static ServiceProvider Build(
         HttpMessageHandler handler,
         string clientName,
-        Action<ProviderOptions> configure)
+        Action<ProviderOptions> configure) =>
+        Build(handler, clientName, configure, logs: null);
+
+    /// <summary>
+    /// As above, capturing log output. Separate from the common overload because most of these tests
+    /// assert on envelopes and requests, and only the ones about diagnosis need the transcript.
+    /// </summary>
+    private static ServiceProvider Build(
+        HttpMessageHandler handler,
+        string clientName,
+        Action<ProviderOptions> configure,
+        RecordingLoggerProvider? logs)
     {
         var services = new ServiceCollection();
         services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
-        services.AddLogging();
+        services.AddLogging(logging =>
+        {
+            if (logs is not null)
+            {
+                logging.SetMinimumLevel(LogLevel.Trace).AddProvider(logs);
+            }
+        });
         services.AddMetrics();
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<Application.Pipeline.PipelineDiagnostics>();

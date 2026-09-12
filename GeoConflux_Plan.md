@@ -787,20 +787,31 @@ The base application and CI must still work without an ACLED credential.
 
 Never commit credentials.
 
-**The shipped adapter is broken and must be migrated.** `AcledEventSource` requests
-`acled/read?key=…&email=…` against `https://api.acleddata.com/`, and that hostname no longer
-resolves — verified 2026-09-12, while every other candidate source host answered. ACLED retired that
-API; the old platform accepted existing keys until 15 September 2025 and issued no new ones. The
-current API is `https://acleddata.com/api/`, authenticating by OAuth against
-`https://acleddata.com/oauth/token` with access tokens valid 24 hours and refresh tokens valid 14
-days. The key-and-email query-parameter shape is gone, so `AcledOptions` needs a token flow rather
-than a second string field.
+**Migrated, Sprint 9.** The shipped adapter requested `acled/read?key=…&email=…` against
+`https://api.acleddata.com/`, a hostname that no longer resolves — verified 2026-09-12, while every
+other candidate source host answered. ACLED retired that API; the old platform accepted existing keys
+until 15 September 2025 and issued no new ones.
 
-Because the adapter ships disabled, nothing fails today and CI is unaffected. The failure would
-appear on the first live poll after someone supplied a credential. Fix it before adding any new
-source: ACLED is the only source covering Ukraine, Yemen **and** Ethiopia in one schema with
-coordinates, a coded event type and a fatality count, and it is the source this system already knows
-how to treat as authoritative about position.
+`AcledEventSource` now authenticates by OAuth. `AcledTokenProvider` exchanges the account username
+and password at `https://acleddata.com/oauth/token` for an access token valid 24 hours, caches it
+across polls rather than re-fetching per poll, and renews it by refresh token with a fallback to the
+password grant — because a refresh token can be revoked or invalidated by a password change, and a
+provider that only knew how to refresh would go dark until the process restarted. Reads go to
+`https://acleddata.com/api/` with `Authorization: Bearer`, and a token refused before its stated
+expiry triggers exactly one re-authentication inside the same poll.
+
+The request shape was confirmed against the live endpoint rather than taken from documentation alone:
+the documented parameters move the response from `invalid_request` / "Check the `client_id`
+parameter" to `invalid_grant` / "The user credentials were incorrect", which is the expected answer
+for a correctly shaped request carrying a credential that does not exist.
+
+Two schema changes came with it. The current response has no `iso3` field — it publishes `iso`, the
+numeric code, and `country`, a name — so the adapter maps the name to alpha-2 through the gazetteer
+rather than reading a field that is gone. And it publishes `geo_precision`, ACLED's own statement of
+how precisely each coordinate is known, which is the same thing UCDP calls `where_prec`; both are
+carried through the precision seam described below rather than being flattened to "exact".
+
+The adapter still ships disabled, so nothing polls without a credential and CI is unaffected.
 
 ## UCDP Georeferenced Event Dataset
 
@@ -2507,21 +2518,27 @@ Sprints 1 to 7 are complete, along with the final architecture review, the secur
 dependency review. `main` is green and deploys to
 <https://limtlessltd.github.io/GeoConflux/> on every push.
 
-Two sprints remain specified and unbuilt: **Sprint 8** (open social, blocked on the corroboration
-gate) and **Sprint 9** (theatre depth for Ukraine, Yemen and Tigray). **Sprint 9 is the recommended
-next increment** — it is independent of Sprint 8, needs no new trust machinery, and puts accurately
-placed conflict data on the globe sooner.
+**Sprint 8** (open social) remains specified and unbuilt, blocked on the corroboration gate.
+**Sprint 9** (theatre depth for Ukraine, Yemen and Tigray) is in progress.
 
-Read [docs/conflict-source-assessment.md](docs/conflict-source-assessment.md) before starting it. Two
-findings there govern the work and are easy to miss by reading code alone:
+Read [docs/conflict-source-assessment.md](docs/conflict-source-assessment.md) before continuing it.
 
-- **`AcledEventSource` points at a host that no longer resolves.** It ships disabled, so nothing
-  fails today and CI is unaffected; it would fail on the first live poll after a credential was
-  supplied. Section 20 has the migration detail.
-- **The gazetteer is the ceiling on every non-structured source.** 41 settlement-precision places
-  worldwide, none in Ethiopia. Adding adapters does not substitute for it. Section 12 has the figures.
+Sprint 9 progress:
 
-Do not begin Sprint 9 by adding a source. Begin by fixing ACLED, then add UCDP, then the gazetteer.
+1. **ACLED migrated to the current OAuth API.** Done. Section 20 records what changed and why, and
+   the schema differences that came with it.
+2. **UCDP GED Candidate adapter.** Not started.
+3. **Gazetteer depth for the three theatres.** Not started, and it is the binding constraint on every
+   text source: 41 settlement-precision places worldwide, none in Ethiopia. Adding adapters does not
+   substitute for it. Section 12 has the figures. Record the sourcing ADR before writing the data.
+4. **FIRMS conflict filtering.** Not started.
+5. **Theatre-level coverage reporting.** Not started.
+6. **Territorial control layer.** Deferred whole, per the sprint definition: the DeepState licence
+   question is unsettled.
+
+Items 1, 2 and 4 need credentials that cannot be obtained from inside this repository, so each ships
+pinned by recorded fixtures and disabled, in the pattern NASA FIRMS already follows. Item 3 is the
+only one that changes the published page without a credential.
 
 ## If starting from nothing
 

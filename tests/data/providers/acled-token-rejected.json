@@ -1,0 +1,5 @@
+{
+  "$comment": "SYNTHETIC FIXTURE: the RFC 6749 error body https://acleddata.com/oauth/token returns, verbatim in shape, when the account credentials are wrong. Recorded because the distinction between this and a missing endpoint is the one an operator needs, and the adapter surfaces the reason rather than reporting zero events.",
+  "error": "invalid_grant",
+  "error_description": "The user credentials were incorrect."
+}

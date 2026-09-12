@@ -173,7 +173,7 @@ public sealed class ProviderParserTests
         // Four rows, one without any identifier. A record that cannot be identified cannot be
         // deduplicated, so it is dropped rather than guessed at.
         Assert.Equal(3, events.Count);
-        Assert.Equal("XYZ1234", events[0].Identifier);
+        Assert.Equal("UKR99001", events[0].Identifier);
     }
 
     [Fact]
@@ -181,8 +181,8 @@ public sealed class ProviderParserTests
     {
         var events = AcledResponseParser.Parse(Fixture("acled-response.json"));
 
-        Assert.Equal(50.851, events[0].Latitude!.Value, 3);
-        Assert.Equal(2.047, events[1].Latitude!.Value, 3);
+        Assert.Equal(50.450, events[0].Latitude!.Value, 3);
+        Assert.Equal(15.4625, events[1].Latitude!.Value, 4);
         Assert.Equal(7, events[1].Fatalities);
     }
 
@@ -216,18 +216,28 @@ public sealed class ProviderParserTests
         Assert.Null(unusable.Longitude);
 
         // The record still arrives. It simply has to earn its position through the resolver, from
-        // the place name, like any other report without coordinates.
-        Assert.Equal("Bamako", unusable.LocationName);
+        // the place name, like any other report without coordinates — which for Mekelle means it
+        // stays unplaced until the gazetteer covers Tigray.
+        Assert.Equal("Mekelle", unusable.LocationName);
     }
 
+    /// <summary>
+    /// The parser reports the country as ACLED names it and leaves the mapping to a code alone.
+    /// <para>
+    /// The retired API carried an <c>iso3</c> field; the current schema carries <c>iso</c>, which is
+    /// the numeric code, and a name in <c>country</c>. Neither is the alpha-2 the rest of the system
+    /// uses, so the parser stays a schema reader and the adapter does the lookup — which keeps the
+    /// name-to-code table in one place instead of two.
+    /// </para>
+    /// </summary>
     [Fact]
-    public void AcledThreeLetterCountryCodesAreDroppedRatherThanMisapplied()
+    public void AcledReportsTheCountryAsNamedRatherThanAsACode()
     {
         var events = AcledResponseParser.Parse(Fixture("acled-response.json"));
 
-        // The rest of the system uses alpha-2. Passing an alpha-3 code through would match the wrong
-        // country or nothing at all, and a wrong country is worse than an absent one.
-        Assert.Null(events[0].CountryCode);
+        Assert.Equal("Ukraine", events[0].CountryName);
+        Assert.Equal("Yemen", events[1].CountryName);
+        Assert.Equal("Ethiopia", events[2].CountryName);
     }
 
     [Fact]

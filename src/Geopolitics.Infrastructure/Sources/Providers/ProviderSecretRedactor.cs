@@ -8,9 +8,11 @@ namespace Geopolitics.Infrastructure.Sources.Providers;
 /// This exists because one of the upstream APIs takes its credential as a URL path segment. The
 /// runtime's own HTTP logging redacts query strings and header values by default but not path
 /// segments, so a FIRMS poll writes its map key into every log sink at <c>Information</c> level.
-/// That default also means ACLED's key survives only because it happens to sit in the query string,
-/// which is protection by coincidence rather than by design — a deployment can turn query redaction
-/// off with an environment switch and would then start leaking that key too.
+/// ACLED no longer puts a credential in the URL at all: it posts an account password to an OAuth
+/// endpoint and carries a bearer token in a header, neither of which the default logging writes down.
+/// The password is still listed below, because the place it reliably resurfaces is an exception
+/// message — a socket failure or a provider echoing the request back — and that text reaches the logs
+/// through a different door from the request line.
 /// </para>
 /// <para>
 /// The redactor is told what the secrets are rather than guessing at them. A heuristic that looked
@@ -24,9 +26,9 @@ internal sealed class ProviderSecretRedactor(IOptionsMonitor<ProviderOptions> op
 
     /// <summary>
     /// Returns <paramref name="value"/> with every configured credential replaced by a mask, in both
-    /// its literal and its URL-escaped form. The escaped form matters: the ACLED email is placed in a
-    /// query string through <see cref="Uri.EscapeDataString(string)"/>, so the characters on the wire
-    /// are not the characters in configuration.
+    /// its literal and its URL-escaped form. The escaped form matters: the ACLED username and
+    /// password are form-encoded into a request body, so the characters on the wire are not the
+    /// characters in configuration.
     /// </summary>
     public string Redact(string value)
     {
@@ -55,13 +57,14 @@ internal sealed class ProviderSecretRedactor(IOptionsMonitor<ProviderOptions> op
     }
 
     /// <summary>
-    /// Everything in provider configuration that must never be written down. The ACLED email is
-    /// included because it is half of that credential as well as a personal identifier.
+    /// Everything in provider configuration that must never be written down. The ACLED username is
+    /// included because it is half of that credential as well as a personal identifier — it is the
+    /// email address of a named account holder.
     /// </summary>
     private static IEnumerable<string> Secrets(ProviderOptions options)
     {
         yield return options.NasaFirms.ApiKey;
-        yield return options.Acled.ApiKey;
-        yield return options.Acled.Email;
+        yield return options.Acled.Username;
+        yield return options.Acled.Password;
     }
 }

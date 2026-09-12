@@ -2,7 +2,11 @@
 
 Date: 2026-09-12. Scope: what open sources can actually place conflict activity on a map for these
 three theatres, at what latency and what spatial precision, and what this repository would have to
-change to use them. This is an assessment, not an implementation. Nothing here has been wired up.
+change to use them.
+
+This was written as an assessment rather than an implementation, and it is kept as written — it is
+the record of what was surveyed and how each claim was checked. Sprint 9 is now acting on it, so
+individual findings carry a note where the code has moved on. Plan section 43 tracks what is built.
 
 The brief asked for "accurate timely localised info … an accurate map of warzones and battles/troop
 movements". Those are three different questions with three different answers, and conflating them is
@@ -20,6 +24,10 @@ Answering (1) and (2) well is a real product. Claiming (3) is how a project stop
 ## Two findings that block everything else
 
 ### The ACLED adapter points at a host that no longer exists
+
+> **Resolved in Sprint 9.** The adapter was migrated to the OAuth API described below. The finding is
+> kept as written, because it is the record of what was wrong and of how it was verified; what
+> follows is the diagnosis, not a description of the code today. Plan section 20 has the migration.
 
 `src/Geopolitics.Infrastructure/Sources/Providers/AcledEventSource.cs` builds requests against
 `acled/read?key=…&email=…`, and `appsettings.json` sets `BaseAddress` to `https://api.acleddata.com/`.
@@ -207,8 +215,8 @@ means nobody reported, not that nothing happened.
 
 ## Recommended order of work
 
-1. **Migrate the ACLED adapter to the current API.** OAuth token flow, `https://acleddata.com/api/`,
-   token refresh. Highest value per unit of effort, and it is broken today.
+1. ~~**Migrate the ACLED adapter to the current API.**~~ Done in Sprint 9. OAuth token flow,
+   `https://acleddata.com/api/`, token cached across polls, refresh with a password-grant fallback.
 2. **Add a UCDP GED Candidate adapter** as `ObservationKind.ExternalEvent`. Free, monthly, and
    `where_prec` maps onto `PlacePrecision` so precision is carried rather than assumed.
 3. **Expand the gazetteer for the three theatres, with script variants.** The binding constraint on

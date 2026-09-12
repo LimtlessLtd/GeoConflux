@@ -11,6 +11,12 @@ namespace Geopolitics.UnitTests.Fakes;
 /// would pass while the rendered line leaked a credential through a parameter, which is precisely the
 /// failure this exists to catch, so the recorded text is what a sink would actually persist.
 /// </para>
+/// <para>
+/// That includes the exception. A logger is handed the exception separately from the message, and
+/// every real sink writes both — so a recorder that kept only the formatted message was blind to the
+/// most likely way a credential reaches a log file, which is a transport failure whose message quotes
+/// the request that failed. The assertions that a secret never appears here depend on this.
+/// </para>
 /// </summary>
 internal sealed class RecordingLoggerProvider : ILoggerProvider
 {
@@ -47,7 +53,9 @@ internal sealed class RecordingLoggerProvider : ILoggerProvider
             Func<TState, Exception?, string> formatter)
         {
             ArgumentNullException.ThrowIfNull(formatter);
-            lines.Enqueue($"{category} [{logLevel}] {formatter(state, exception)}");
+
+            var line = $"{category} [{logLevel}] {formatter(state, exception)}";
+            lines.Enqueue(exception is null ? line : string.Join('\n', line, exception));
         }
 
         private sealed class NullScope : IDisposable

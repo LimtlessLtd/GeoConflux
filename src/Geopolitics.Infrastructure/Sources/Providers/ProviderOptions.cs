@@ -115,14 +115,42 @@ public sealed class AcledProviderOptions : ProviderOptionsBase
 {
     public AcledProviderOptions() => PollInterval = TimeSpan.FromHours(6);
 
-    public string BaseAddress { get; set; } = "https://api.acleddata.com/";
+    /// <summary>
+    /// Root of the current ACLED API. The previous platform lived at <c>api.acleddata.com</c>, which
+    /// was retired along with the key-and-email query shape and no longer resolves at all.
+    /// </summary>
+    public string BaseAddress { get; set; } = "https://acleddata.com/api/";
 
-    /// <summary>ACLED access key. Never committed; supplied per deployment.</summary>
-    public string ApiKey { get; set; } = string.Empty;
+    /// <summary>
+    /// OAuth token endpoint, as an absolute URL rather than a path under
+    /// <see cref="BaseAddress"/>: it sits outside the API root, so deriving one from the other would
+    /// be a guess that happens to be right today.
+    /// </summary>
+    public string TokenEndpoint { get; set; } = "https://acleddata.com/oauth/token";
 
-    /// <summary>Email registered with ACLED, which their API requires alongside the key.</summary>
-    public string Email { get; set; } = string.Empty;
+    /// <summary>
+    /// Email address of the registered ACLED account. Half of the credential and a personal
+    /// identifier in its own right, so it is redacted from logs on both counts.
+    /// </summary>
+    public string Username { get; set; } = string.Empty;
+
+    /// <summary>Password for that account. Never committed; supplied per deployment.</summary>
+    public string Password { get; set; } = string.Empty;
+
+    /// <summary>
+    /// OAuth client identifier. ACLED publishes a single shared value for all API consumers, so this
+    /// is a protocol constant rather than a secret — it is configurable only so that a change on
+    /// their side does not require a new build.
+    /// </summary>
+    public string ClientId { get; set; } = "acled";
 
     /// <summary>How far back to request events on each poll.</summary>
     public int DaysBack { get; set; } = 2;
+
+    /// <summary>
+    /// Country names to request, as ACLED spells them, for example <c>Ukraine</c>. Empty means no
+    /// country filter, which is the whole dataset — a deliberate default of "ask for nothing in
+    /// particular" rather than a hidden geographic scope baked into the application.
+    /// </summary>
+    public IList<string> Countries { get; } = [];
 }

@@ -118,7 +118,7 @@ no outbound HTTP request at all.
 | --- | --- | --- | --- |
 | RSS / Atom | `rss:<feed>` | feed URLs | nothing |
 | NASA FIRMS | `firms:<dataset>` | `Providers:NasaFirms:ApiKey` | coordinates, `NaturalHazard`, low severity |
-| ACLED | `acled` | `Providers:Acled:ApiKey` + `:Email` | coordinates, category, fatality-derived severity |
+| ACLED | `acled` | `Providers:Acled:Username` + `:Password` | coordinates, category, fatality-derived severity |
 
 A provider polls only when `Providers:Mode` is `Live` **and** its own `Enabled` is `true`. One switch
 would be too easy to flip by copying an example config into a demo deployment.
@@ -524,7 +524,10 @@ credential is ever read from a committed file.
 | `Providers:NasaFirms:Area` | world | `west,south,east,north`, or `world` |
 | `Providers:NasaFirms:MinimumConfidence` | 50 | Detections below this are noise and are dropped |
 | `Providers:Acled:Enabled` | false | Whether coded conflict events are polled |
-| `Providers:Acled:ApiKey` / `:Email` | none | **Never put these in a file.** Dormant without both. |
+| `Providers:Acled:Username` / `:Password` | none | **Never put these in a file.** Dormant without both. |
+| `Providers:Acled:BaseAddress` | `https://acleddata.com/api/` | Current API root. The retired `api.acleddata.com` no longer resolves. |
+| `Providers:Acled:TokenEndpoint` | `https://acleddata.com/oauth/token` | Where the account credential is exchanged for a token |
+| `Providers:Acled:Countries` | empty | Country names to request, as ACLED spells them. Empty means no filter. |
 | `Providers:*:PollInterval` | 15 min / 1 h / 6 h | Per-provider polling cadence |
 | `Providers:*:MaxItemsPerPoll` | 25 / 50 / 50 | Ceiling on envelopes emitted from one poll |
 | `Replay:Enabled` | true | Whether the recorded demo stream runs |

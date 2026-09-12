@@ -36,8 +36,10 @@ cancellable poll loop, failure containment, per-provider latency and failure met
 of items already emitted — so a fourth adapter gets them without remembering to.
 
 **Two switches, both required.** A provider polls only when `Providers:Mode` is `Live` *and* that
-provider's own `Enabled` is true. FIRMS additionally requires a key and ACLED a key and an email,
-because both answer an unauthenticated request in a way that looks like data rather than an error.
+provider's own `Enabled` is true. FIRMS additionally requires a map key and ACLED an account
+username and password, because both answer an unauthenticated request in a way that looks like data
+rather than an error. ACLED originally took a key and a registered email as query parameters; it now
+takes an OAuth credential, which changes what has to be configured but not this decision.
 The configuration committed to this repository sets `Demo` with every provider disabled, and a test
 asserts that under that configuration no HTTP request is made at all.
 

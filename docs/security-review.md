@@ -39,9 +39,15 @@ logged; the log messages below name the dataset and area only." That was true of
 messages and false of the pipeline they run in — the more dangerous kind of wrong, because it tells a
 reviewer to stop looking.
 
-ACLED, which puts its key and registered email in the query string, was not leaking. But only because
+ACLED, which put its key and registered email in the query string, was not leaking. But only because
 of a runtime default that a deployment can switch off with an environment variable. Protection by
 coincidence, not by design.
+
+> Since reviewed: ACLED moved to OAuth, so the credential is now an account password posted to a
+> token endpoint rather than a key in a URL. That removes the query-string exposure and adds two
+> others — the request body, and the bearer token the process is issued — both of which the test
+> named below now covers. The redactor is told about the username and password; the issued token is
+> asserted never to be written down at all.
 
 **Why it matters.** Logs travel. They reach aggregators, get attached to tickets, and get pasted into
 chat. A credential in an application log has to be assumed compromised.
@@ -54,9 +60,15 @@ guessing at key-shaped strings, which would both miss real credentials and mangl
 segments such as a dataset name.
 
 **Verified by.** `ProviderSecurityTests.TheFirmsMapKeyNeverReachesTheLogs` and
-`.TheAcledKeyAndRegisteredEmailNeverReachTheLogs`. Both capture every line the container emits at
+`.TheAcledAccountCredentialNeverReachesTheLogs`. Both capture every line the container emits at
 `Trace`, and both assert the credential *was* sent — so they prove it was redacted on the way to the
 log rather than that the request never happened. The first failed before the fix.
+
+One gap in that verification was closed later. `RecordingLoggerProvider` rendered only the formatted
+message, while a logger receives the exception separately and every real sink writes both — so these
+assertions could not have caught a credential reaching a log through exception text, which is the
+most likely route for one to get there. The recorder now captures the exception as well. Both tests
+still pass, so nothing was leaking by that route; the guard simply now exists.
 
 ### 2. Medium-High — a feed could redirect this process into a private network
 

@@ -18,8 +18,8 @@ namespace Geopolitics.UnitTests;
 public sealed class ProviderSecurityTests
 {
     private const string FirmsKey = "firms-map-key-ab12cd34";
-    private const string AcledKey = "acled-access-key-zz99";
-    private const string AcledEmail = "analyst@example.org";
+    private const string AcledPassword = "acled-account-password-zz99";
+    private const string AcledUsername = "analyst@example.org";
 
     private static string Fixture(string name) =>
         File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "providers", name));
@@ -47,30 +47,53 @@ public sealed class ProviderSecurityTests
         Assert.DoesNotContain(FirmsKey, logs.Transcript, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// The ACLED credential moved from the query string into a form-posted OAuth body, which changes
+    /// where it has to be kept out of rather than whether it does.
+    /// <para>
+    /// The runtime's default logging never wrote request bodies, so it might look as though the move
+    /// solved this by itself. It did not: the password still resurfaces in exception text when a
+    /// transport fails mid-request, and that reaches the logs by a different route from the request
+    /// line. Both halves are asserted here, and the bearer token is too — it is a credential the
+    /// process minted rather than one an operator configured, and a log line carrying it is a log
+    /// line that can be replayed against ACLED for twenty-four hours.
+    /// </para>
+    /// </summary>
     [Fact]
-    public async Task TheAcledKeyAndRegisteredEmailNeverReachTheLogs()
+    public async Task TheAcledAccountCredentialNeverReachesTheLogs()
     {
         using var stop = new CancellationTokenSource();
-        var handler = new ScriptedHttpHandler(stop, ScriptedHttpHandler.Respond(Fixture("acled-response.json"), mediaType: "application/json"));
+        var handler = new ScriptedHttpHandler(
+            stop,
+            ScriptedHttpHandler.Respond(Fixture("acled-token.json"), mediaType: "application/json"),
+            ScriptedHttpHandler.Respond(Fixture("acled-response.json"), mediaType: "application/json"));
         var logs = new RecordingLoggerProvider();
 
         using var provider = Build(handler, AcledEventSource.HttpClientName, logs, options =>
         {
             options.Mode = ProviderMode.Live;
             options.Acled.Enabled = true;
-            options.Acled.ApiKey = AcledKey;
-            options.Acled.Email = AcledEmail;
+            options.Acled.Username = AcledUsername;
+            options.Acled.Password = AcledPassword;
             options.Acled.PollInterval = TimeSpan.FromMilliseconds(1);
         });
 
         await DrainAsync(Source<AcledEventSource>(provider), stop.Token);
 
-        Assert.Contains(handler.Requests, request => request.Contains(AcledKey, StringComparison.Ordinal));
-        Assert.DoesNotContain(AcledKey, logs.Transcript, StringComparison.Ordinal);
+        // The credential really was sent: this asserts that it was kept out of the log, not that the
+        // request never happened.
+        Assert.Contains(
+            handler.Exchanges,
+            exchange => exchange.Body?.Contains(Uri.EscapeDataString(AcledPassword), StringComparison.Ordinal) == true);
 
-        // The registered email is a personal identifier as well as half a credential, so it is held
-        // to the same standard.
-        Assert.DoesNotContain(AcledEmail, logs.Transcript, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(AcledPassword, logs.Transcript, StringComparison.Ordinal);
+
+        // The username is a personal identifier as well as half a credential — it is the email
+        // address of a named account holder — so it is held to the same standard.
+        Assert.DoesNotContain(AcledUsername, logs.Transcript, StringComparison.OrdinalIgnoreCase);
+
+        // The issued bearer token, which the adapter obtained rather than the operator configured.
+        Assert.DoesNotContain("fixture-access-token-not-a-credential", logs.Transcript, StringComparison.Ordinal);
     }
 
     [Fact]

@@ -27,6 +27,17 @@ internal sealed class ScriptedHttpHandler(
     /// </summary>
     public ConcurrentQueue<string> Requests { get; } = new();
 
+    /// <summary>
+    /// The same requests with their method, authorization header, and body.
+    /// <para>
+    /// The URL alone stopped being enough to describe an outbound call once a provider moved to
+    /// OAuth: the credential is now in a POST body and the token in a header, so a test asserting
+    /// that a secret was sent — or that a token was reused rather than re-fetched — has nothing to
+    /// look at in the query string.
+    /// </para>
+    /// </summary>
+    public ConcurrentQueue<RecordedRequest> Exchanges { get; } = new();
+
     public int RequestCount => Requests.Count;
 
     /// <summary>
@@ -62,14 +73,27 @@ internal sealed class ScriptedHttpHandler(
     public static Func<HttpRequestMessage, HttpResponseMessage> Status(HttpStatusCode status) =>
         _ => new HttpResponseMessage(status) { Content = new StringContent(status.ToString()) };
 
-    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
         Requests.Enqueue(request.RequestUri!.AbsoluteUri);
+
+        // Read before the response is produced, because the body is a stream the adapter may have
+        // disposed by the time a test looks at it. Form and JSON bodies are small and re-readable.
+        var body = request.Content is null ? null : await request.Content.ReadAsStringAsync(cancellationToken);
+
+        Exchanges.Enqueue(new RecordedRequest(
+            request.Method.Method,
+            request.RequestUri!.AbsoluteUri,
+            request.Headers.Authorization?.ToString(),
+            body));
+
         var index = Interlocked.Increment(ref served);
 
         if (index < script.Length)
         {
-            return Task.FromResult(script[index](request));
+            return script[index](request);
         }
 
         // Cancelled outside any lock, and only once the script is spent, so the responses the test
@@ -77,4 +101,8 @@ internal sealed class ScriptedHttpHandler(
         stopSignal.Cancel();
         throw new OperationCanceledException(stopSignal.Token);
     }
+
+    /// <param name="Authorization">The header value in full, for example <c>Bearer abc123</c>.</param>
+    /// <param name="Body">The request body as text, or null for a request that carried none.</param>
+    internal sealed record RecordedRequest(string Method, string Url, string? Authorization, string? Body);
 }

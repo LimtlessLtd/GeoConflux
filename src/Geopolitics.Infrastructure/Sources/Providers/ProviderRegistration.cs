@@ -67,6 +67,11 @@ public static class ProviderRegistration
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         });
 
+        // A singleton, because the point of it is to hold one token across polls. Registered as its
+        // own service rather than constructed by the adapter so that its lifetime is the container's
+        // and its HTTP client comes from the factory, like every other outbound call here.
+        services.AddSingleton<AcledTokenProvider>();
+
         services.AddSingleton<IEventSource, RssEventSource>();
         services.AddSingleton<IEventSource, NasaFirmsEventSource>();
         services.AddSingleton<IEventSource, AcledEventSource>();
