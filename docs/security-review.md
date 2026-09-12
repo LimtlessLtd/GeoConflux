@@ -148,11 +148,17 @@ the API's middleware would have protected the locally hosted page and left the p
 `X-Frame-Options`, plus `nosniff`, `Referrer-Policy: no-referrer`, and a `Permissions-Policy`
 refusing capabilities this dashboard never asks for.
 
-**Verified by.** A headless Chrome run against the real page: the policy is enforced (an injected
-inline script is refused and never executes), it produces zero violations during a normal load,
-Cesium initialises, and ArcGIS imagery still returns `200` rather than silently falling back to the
-offline texture. That last check matters — a policy that quietly downgraded the globe would have been
-worse than none, and it is exactly what a "no console errors" check would have missed.
+**Verified by.** A headless Chrome run against the real page, loaded twice — once with the policy and
+once without — and compared on failed requests. That comparison is the check that matters, and it is
+stronger than it started out: the first draft of this policy left Cesium's CDN out of `worker-src`,
+which stopped two worker scripts loading and logged no violation at all, because a worker blocked at
+construction does not report one the owning page can see. A violations-only check passed it. The
+comparison did not.
+
+With that corrected, the two runs are identical, and the rest holds: the policy is enforced (an
+injected inline script is refused and never executes), it produces zero violations during a normal
+load, Cesium initialises, and ArcGIS imagery returns `200` rather than silently falling back to the
+offline texture. A policy that quietly downgraded the globe would have been worse than none.
 
 ### 5. Low — CI actions were pinned to mutable tags
 

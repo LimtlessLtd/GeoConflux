@@ -333,9 +333,10 @@ Full per-class tables, every case where the two disagreed, the labelling rubric,
   and that is what prevents injection; a content security policy is what limits the damage if one of
   those paths is ever written wrongly. It is declared in the page rather than as a header, because the
   published dashboard is served by GitHub Pages, which sets no headers — a policy in the API alone
-  would protect the local page and leave the public one bare. It was verified in a real browser:
-  enforced, no violations, and the globe still loads its detailed imagery rather than silently falling
-  back ([ADR 022](docs/adr/022-open-write-path-and-content-policy.md)).
+  would protect the local page and leave the public one bare. It is verified by loading the page twice
+  in a real browser, with the policy and without, and comparing the failed requests — because a worker
+  blocked by a policy logs no violation at all, which is how the first draft of it quietly broke two
+  of Cesium's ([ADR 022](docs/adr/022-open-write-path-and-content-policy.md)).
 - **Model output is untrusted input.** It is schema-validated, bounded, and given exactly one repair
   attempt before the deterministic classifier takes over
   ([ADR 012](docs/adr/012-ai-output-is-untrusted-input.md)).

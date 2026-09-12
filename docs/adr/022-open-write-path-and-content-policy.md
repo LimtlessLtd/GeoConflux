@@ -63,9 +63,9 @@ where it actually applies.
 ### The content policy lives in the page, not in the middleware
 
 A content security policy that denies by default and permits only what drawing a globe requires:
-scripts and styles from this origin and Cesium's CDN, workers from `blob:`, WebAssembly for terrain
-decoding, imagery from ArcGIS. Everything else is denied, including `base-uri` and `form-action`,
-which have no legitimate use here at all.
+scripts and styles from this origin and Cesium's CDN, workers from that CDN and from `blob:`,
+WebAssembly for terrain decoding, imagery from ArcGIS. Everything else is denied, including
+`base-uri` and `form-action`, which have no legitimate use here at all.
 
 It is declared in a `meta` element rather than as a response header. That looks like the weaker
 choice and is the stronger one: the published dashboard is served by GitHub Pages, which serves files
@@ -93,12 +93,17 @@ camera, microphone, and payment join it there.
 - The body-size limit sits on Kestrel, which `TestServer` bypasses, so it is not covered by the
   integration tests. The test that would have covered it instead asserts what is verifiable: an
   oversized submission is refused, with the limit named in the response.
-- The content policy was verified in a real browser rather than reasoned about. It is enforced — an
-  injected inline script is refused and never executes — it produces no violations during a normal
-  load, Cesium initialises, and ArcGIS imagery still returns `200` rather than silently falling back
-  to the bundled offline texture. That last check is the one that mattered: a policy that quietly
-  downgraded the globe would have been worse than no policy, and it is precisely what a "no console
-  errors" check would have missed.
+- The content policy was verified in a real browser rather than reasoned about, and the verification
+  method had to be stronger than it first was. Checking for console violations is not sufficient: the
+  first draft of this policy omitted the CDN from `worker-src`, which stopped two Cesium worker
+  scripts from loading and reported *nothing* — a worker blocked at construction does not log a
+  violation the owning page can see. What catches that is loading the page twice, once with the
+  policy and once without, and comparing the failed requests. The policy ships only when those two
+  runs are identical.
+- On top of that comparison: the policy is enforced (an injected inline script is refused and never
+  executes), it produces no violations during a normal load, Cesium initialises, and ArcGIS imagery
+  returns `200` rather than silently falling back to the bundled offline texture. A policy that
+  quietly downgraded the globe would have been worse than no policy at all.
 - The policy constrains where scripts may come from, not which bytes arrive. Subresource integrity
   would add that, at the cost of breaking the page whenever the CDN re-serves the file differently.
   For a dashboard that already degrades gracefully, that trade was declined and recorded rather than

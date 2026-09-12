@@ -11,13 +11,19 @@
        The dashboard renders text from public news feeds and from an open submission endpoint. Every
        render path escapes it; this is the layer that limits the blast radius if one of them is ever
        written wrongly. The allowances are all Cesium's: it is delivered from its own CDN, runs its
-       workers from blob URLs, decodes terrain through WebAssembly, and fetches globe imagery from
-       ArcGIS. Everything not needed to draw a globe is denied. -->
+       workers from its own CDN and from blob URLs, decodes terrain through WebAssembly, and fetches
+       globe imagery from ArcGIS. Everything not needed to draw a globe is denied.
+
+       worker-src has to name the CDN explicitly. Cesium constructs workers from URLs on that host,
+       and blocking them produces no console violation at all — the worker simply never starts and
+       its script requests fail silently. That is why this policy is checked by loading the page twice,
+       once with it and once without, and comparing the failed requests, rather than by looking for
+       violations that a blocked worker does not report. -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'none';
     script-src 'self' https://cesium.com blob: 'wasm-unsafe-eval';
-    worker-src 'self' blob:;
-    child-src 'self' blob:;
+    worker-src 'self' blob: https://cesium.com;
+    child-src 'self' blob: https://cesium.com;
     style-src 'self' 'unsafe-inline' https://cesium.com;
     img-src 'self' data: blob: https://cesium.com https://services.arcgisonline.com;
     font-src 'self' data: https://cesium.com;
