@@ -640,7 +640,7 @@ public sealed partial class ObservationProcessor(
 
         // Copied for the same reason as above: one owned value object, one owner.
         observation.Location?.Copy(),
-        observation.IsDemo,
+        observation.Provenance,
         observation.ReceivedAt);
 
     /// <summary>An incident is as severe as the worst corroborated report about it.</summary>

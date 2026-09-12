@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using Geopolitics.Application.Abstractions;
+using Geopolitics.Infrastructure.Sources.Briefs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Logging;
 using Microsoft.Extensions.Options;
@@ -69,6 +70,16 @@ public static class ProviderRegistration
         services.AddSingleton<IEventSource, RssEventSource>();
         services.AddSingleton<IEventSource, NasaFirmsEventSource>();
         services.AddSingleton<IEventSource, AcledEventSource>();
+
+        // Registered here for proximity rather than because it belongs to this family: it opens no
+        // connection, holds no credential, and shares none of the HTTP behaviour configured above.
+        // What it does share is being an IEventSource, which is the only thing downstream knows.
+        services.AddOptions<AgentBriefOptions>()
+            .BindConfiguration(AgentBriefOptions.SectionName)
+            .ValidateOnStart();
+
+        services.AddSingleton<AgentBriefEventSource>();
+        services.AddSingleton<IEventSource>(provider => provider.GetRequiredService<AgentBriefEventSource>());
 
         return services;
     }

@@ -311,7 +311,7 @@ public sealed class CorrelationSignalTests
             Severity.Medium,
             Now.AddHours(-2),
             incidentLocation,
-            false,
+            ObservationProvenance.Polled,
             Now.AddHours(-2));
 
         incident.MergeEntities(
@@ -327,7 +327,7 @@ public sealed class CorrelationSignalTests
             observationSummary,
             Guid.NewGuid().ToString(),
             Now,
-            false);
+            ObservationProvenance.Polled);
 
         observation.ApplyNormalisation(
             "Report",
@@ -417,7 +417,7 @@ public sealed class IncidentEntityAggregationTests
         Severity.Medium,
         Now,
         null,
-        false,
+        ObservationProvenance.Polled,
         Now);
 }
 

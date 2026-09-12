@@ -100,7 +100,7 @@ public sealed partial class ReplayEventSource(
         DeclaredSeverity = record.DeclaredSeverity,
 
         // Non-negotiable: replay output is demo data and is labelled as such everywhere it travels.
-        IsDemo = true,
+        Provenance = ObservationProvenance.Recorded,
     };
 
     private static async Task<ReplayScript> LoadScriptAsync(CancellationToken cancellationToken)

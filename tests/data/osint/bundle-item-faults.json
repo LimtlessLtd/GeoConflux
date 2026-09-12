@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "every-item-fault",
+  "collectedAt": "2026-09-12T09:15:00Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 3
+  },
+  "items": [
+    {
+      "kind": "document",
+      "url": "https://example-news.org/good",
+      "publisher": "Example News Agency",
+      "title": "A report that is fine",
+      "publishedAt": "2026-09-11T18:40:00Z",
+      "retrievedAt": "2026-09-12T09:12:31Z",
+      "contentHash": "sha256:7ef0ed5b27fe319794eb9b3382d0dd9540fd610a82f4d4d4ca0e23ff309252bc",
+      "language": "en",
+      "excerpt": "A cargo vessel transiting the strait reported small-arms fire from two skiffs early on Thursday, according to the operator. No injuries were reported and the vessel continued north.",
+      "placeNames": [
+        "Aden"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "document",
+      "url": "https://example-news.org/tomorrow",
+      "publisher": "Example News Agency",
+      "publishedAt": "2027-01-01T00:00:00Z",
+      "retrievedAt": "2026-09-12T09:12:31Z",
+      "contentHash": "sha256:7ef0ed5b27fe319794eb9b3382d0dd9540fd610a82f4d4d4ca0e23ff309252bc",
+      "excerpt": "A cargo vessel transiting the strait reported small-arms fire from two skiffs early on Thursday, according to the operator. No injuries were reported and the vessel continued north.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "document",
+      "url": "http://127.0.0.1/admin",
+      "publisher": "Example News Agency",
+      "publishedAt": "2026-09-11T18:40:00Z",
+      "retrievedAt": "2026-09-12T09:12:31Z",
+      "contentHash": "sha256:7ef0ed5b27fe319794eb9b3382d0dd9540fd610a82f4d4d4ca0e23ff309252bc",
+      "excerpt": "A cargo vessel transiting the strait reported small-arms fire from two skiffs early on Thursday, according to the operator. No injuries were reported and the vessel continued north.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "document",
+      "url": "http://169.254.169.254/latest/meta-data/",
+      "publisher": "Example News Agency",
+      "publishedAt": "2026-09-11T18:40:00Z",
+      "retrievedAt": "2026-09-12T09:12:31Z",
+      "contentHash": "sha256:7ef0ed5b27fe319794eb9b3382d0dd9540fd610a82f4d4d4ca0e23ff309252bc",
+      "excerpt": "A cargo vessel transiting the strait reported small-arms fire from two skiffs early on Thursday, according to the operator. No injuries were reported and the vessel continued north.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "document",
+      "url": "https://example-news.org/verbose",
+      "publisher": "Example News Agency",
+      "publishedAt": "2026-09-11T18:40:00Z",
+      "retrievedAt": "2026-09-12T09:12:31Z",
+      "contentHash": "sha256:0f20c73da0906380cfc3bbaa61f4dc5e5fb5e0174ad88b4ddf2c04778b8b2c53",
+      "excerpt": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "document",
+      "url": "https://example-news.org/anonymous",
+      "publishedAt": "2026-09-11T18:40:00Z",
+      "retrievedAt": "2026-09-12T09:12:31Z",
+      "contentHash": "sha256:7ef0ed5b27fe319794eb9b3382d0dd9540fd610a82f4d4d4ca0e23ff309252bc",
+      "excerpt": "A cargo vessel transiting the strait reported small-arms fire from two skiffs early on Thursday, according to the operator. No injuries were reported and the vessel continued north.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://x.com/example/status/1",
+      "platform": "x",
+      "channel": "example",
+      "postedAt": "2026-09-11T18:40:00Z",
+      "retrievedAt": "2026-09-12T09:12:31Z",
+      "contentHash": "sha256:7ef0ed5b27fe319794eb9b3382d0dd9540fd610a82f4d4d4ca0e23ff309252bc",
+      "excerpt": "A cargo vessel transiting the strait reported small-arms fire from two skiffs early on Thursday, according to the operator. No injuries were reported and the vessel continued north.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/s/example_channel/9",
+      "platform": "telegram",
+      "channel": "example_channel",
+      "postedAt": "2026-09-11T18:40:00Z",
+      "retrievedAt": "2026-09-12T09:12:31Z",
+      "contentHash": "sha256:9295acca5ae792624d4038a4a478c7e6bfac48635aef8d08a556ceed6327b9e3",
+      "excerpt": "Сообщается о взрыве в порту Одесса. Подробности уточняются.",
+      "excerptTranslation": "An explosion is reported at the port.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "document",
+      "url": "https://example-news.org/unhashed",
+      "publisher": "Example News Agency",
+      "publishedAt": "2026-09-11T18:40:00Z",
+      "retrievedAt": "2026-09-12T09:12:31Z",
+      "contentHash": "md5:abc",
+      "excerpt": "A cargo vessel transiting the strait reported small-arms fire from two skiffs early on Thursday, according to the operator. No injuries were reported and the vessel continued north.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "document",
+      "url": "https://example-news.org/timetravel",
+      "publisher": "Example News Agency",
+      "publishedAt": "2026-09-11T18:40:00Z",
+      "retrievedAt": "2026-09-10T00:00:00Z",
+      "contentHash": "sha256:7ef0ed5b27fe319794eb9b3382d0dd9540fd610a82f4d4d4ca0e23ff309252bc",
+      "excerpt": "A cargo vessel transiting the strait reported small-arms fire from two skiffs early on Thursday, according to the operator. No injuries were reported and the vessel continued north.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "document",
+      "url": "https://example-news.org/good",
+      "publisher": "Example News Agency",
+      "publishedAt": "2026-09-11T18:40:00Z",
+      "retrievedAt": "2026-09-12T09:12:31Z",
+      "contentHash": "sha256:7ef0ed5b27fe319794eb9b3382d0dd9540fd610a82f4d4d4ca0e23ff309252bc",
+      "excerpt": "A cargo vessel transiting the strait reported small-arms fire from two skiffs early on Thursday, according to the operator. No injuries were reported and the vessel continued north.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "rumour",
+      "url": "https://example-news.org/hearsay",
+      "publisher": "Example News Agency",
+      "publishedAt": "2026-09-11T18:40:00Z",
+      "retrievedAt": "2026-09-12T09:12:31Z",
+      "contentHash": "sha256:7ef0ed5b27fe319794eb9b3382d0dd9540fd610a82f4d4d4ca0e23ff309252bc",
+      "excerpt": "A cargo vessel transiting the strait reported small-arms fire from two skiffs early on Thursday, according to the operator. No injuries were reported and the vessel continued north.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ]
+}

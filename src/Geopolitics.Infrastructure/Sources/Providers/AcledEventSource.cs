@@ -94,7 +94,7 @@ public sealed partial class AcledEventSource(
             // category over an enriched one, which is what makes this adapter worth having.
             DeclaredEventType = record.EventType,
             DeclaredSeverity = record.Severity,
-            IsDemo = false,
+            Provenance = ObservationProvenance.Polled,
         };
     }
 

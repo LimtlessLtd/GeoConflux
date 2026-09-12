@@ -42,7 +42,7 @@ public sealed class DemoDataSeeder(GeopoliticsDbContext dbContext, IOptions<Seed
                 Severity.High,
                 seededAt.AddHours(-2),
                 new GeoLocation("Bab-el-Mandeb", "DJ", 12.585, 43.334),
-                true,
+                ObservationProvenance.Recorded,
                 seededAt),
             new GeopoliticalIncident(
                 Guid.Parse("0a66cd6c-078e-463e-9a2c-21f4b6d6f27f"),
@@ -52,7 +52,7 @@ public sealed class DemoDataSeeder(GeopoliticsDbContext dbContext, IOptions<Seed
                 Severity.Medium,
                 seededAt.AddHours(-7),
                 new GeoLocation("Black Sea", null, 43.0, 34.0),
-                true,
+                ObservationProvenance.Recorded,
                 seededAt),
             new GeopoliticalIncident(
                 Guid.Parse("b8fa1513-b1a6-4dcd-ac42-9bbb46bf84d3"),
@@ -62,7 +62,7 @@ public sealed class DemoDataSeeder(GeopoliticsDbContext dbContext, IOptions<Seed
                 Severity.Low,
                 seededAt.AddHours(-18),
                 new GeoLocation("Eastern Mediterranean", null, 34.7, 35.9),
-                true,
+                ObservationProvenance.Recorded,
                 seededAt),
         };
 

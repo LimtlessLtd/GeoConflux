@@ -26,7 +26,7 @@ public sealed class GeopoliticalIncident
         Severity severity,
         DateTimeOffset occurredAt,
         GeoLocation? location,
-        bool isDemo,
+        ObservationProvenance provenance,
         DateTimeOffset createdAt)
     {
         if (id == Guid.Empty)
@@ -51,7 +51,7 @@ public sealed class GeopoliticalIncident
         Severity = severity;
         OccurredAt = occurredAt;
         Location = location;
-        IsDemo = isDemo;
+        Provenance = provenance;
         CreatedAt = createdAt;
         UpdatedAt = createdAt;
     }
@@ -70,7 +70,11 @@ public sealed class GeopoliticalIncident
 
     public GeoLocation? Location { get; private set; }
 
-    public bool IsDemo { get; private set; }
+    /// <summary>Which intake path the evidence behind this incident came by.</summary>
+    public ObservationProvenance Provenance { get; private set; }
+
+    /// <summary>True only when this was assembled from the recorded replay stream.</summary>
+    public bool IsDemo => Provenance == ObservationProvenance.Recorded;
 
     public DateTimeOffset CreatedAt { get; private set; }
 

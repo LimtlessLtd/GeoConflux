@@ -81,7 +81,7 @@ public sealed class ProviderAdapterTests
 
             // Live output is never labelled as demo data, and demo output always is. The two must
             // not be confusable anywhere downstream.
-            Assert.False(envelope.IsDemo);
+            Assert.Equal(ObservationProvenance.Polled, envelope.Provenance);
 
             // A news item states no coordinates, no category, and no severity. The adapter declares
             // none of them, so the pipeline resolves a location the deterministic way or not at all.

@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "extra-field",
+  "collectedAt": "2026-09-12T09:15:00Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 3
+  },
+  "declaredLatitude": 12.585,
+  "items": []
+}

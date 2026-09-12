@@ -102,6 +102,8 @@ public sealed class GeopoliticsDbContext(DbContextOptions<GeopoliticsDbContext> 
         incident.Property(value => value.Summary).HasMaxLength(4000).IsRequired();
         incident.Property(value => value.EventType).HasConversion<string>().HasMaxLength(40).IsRequired();
         incident.Property(value => value.Severity).HasConversion<string>().HasMaxLength(20).IsRequired();
+        incident.Property(value => value.Provenance).HasConversion<string>().HasMaxLength(20).IsRequired();
+        incident.Ignore(value => value.IsDemo);
         incident.Property(value => value.OccurredAt).HasConversion(utcTicks).IsRequired();
         incident.Property(value => value.CreatedAt).HasConversion(utcTicks).IsRequired();
         incident.Property(value => value.UpdatedAt).HasConversion(utcTicks).IsRequired();
@@ -156,6 +158,10 @@ public sealed class GeopoliticsDbContext(DbContextOptions<GeopoliticsDbContext> 
         observation.Property(value => value.SourceIdentifier).HasMaxLength(400);
         observation.Property(value => value.Fingerprint).HasMaxLength(64).IsRequired();
         observation.Property(value => value.Status).HasConversion<string>().HasMaxLength(30).IsRequired();
+        observation.Property(value => value.Provenance).HasConversion<string>().HasMaxLength(20).IsRequired();
+
+        // Derived from Provenance rather than stored. Two columns would eventually disagree.
+        observation.Ignore(value => value.IsDemo);
         observation.Property(value => value.FailureReason).HasMaxLength(1000);
         observation.Property(value => value.LocationResolutionNote).HasMaxLength(500);
         observation.Property(value => value.Title).HasMaxLength(300);

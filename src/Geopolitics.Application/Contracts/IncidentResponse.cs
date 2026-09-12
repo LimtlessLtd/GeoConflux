@@ -20,6 +20,7 @@ public sealed record IncidentResponse(
     LocationResponse? Location,
     int ObservationCount,
     bool IsDemo,
+    ObservationProvenance Provenance,
     double ClassificationConfidence,
     string ClassificationMethod)
 {
@@ -43,6 +44,7 @@ public sealed record IncidentResponse(
                     incident.Location.Longitude),
             incident.ObservationCount,
             incident.IsDemo,
+            incident.Provenance,
             incident.ClassificationConfidence,
             incident.ClassificationMethod);
     }

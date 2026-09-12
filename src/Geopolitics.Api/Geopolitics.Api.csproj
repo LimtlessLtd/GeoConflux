@@ -21,4 +21,14 @@
     <ProjectReference Include="..\Geopolitics.Infrastructure\Geopolitics.Infrastructure.csproj" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <!-- Collection bundles travel with the build the way the recorded replay stream does, so a
+         deployed container carries the cited material it publishes rather than depending on a
+         working directory that differs between "dotnet run" and a published image. -->
+    <Content Include="..\..\data\osint\*.json">
+      <Link>data\osint\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

@@ -1,5 +1,6 @@
 using Geopolitics.Application.Abstractions;
 using Geopolitics.Application.Contracts;
+using Geopolitics.Domain;
 using Microsoft.Extensions.Logging;
 
 namespace Geopolitics.Application.Pipeline;
@@ -68,6 +69,16 @@ public sealed partial class ObservationIngestionService(
         if (envelope.DeclaredLatitude is null != (envelope.DeclaredLongitude is null))
         {
             return "Declared coordinates must supply both latitude and longitude.";
+        }
+
+        // Refused rather than quietly dropped. Anything reaching here with a coordinate it is not
+        // entitled to is either a bug in an adapter or a caller trying to place a pin, and both are
+        // worth a stated rejection: silently ignoring the field would let the sender keep believing
+        // it had worked.
+        if (envelope.DeclaredLatitude is not null && !envelope.Kind.MayDeclareCoordinates())
+        {
+            return $"A {envelope.Kind} observation may not declare coordinates; "
+                + "name a place instead and the resolver will place it.";
         }
 
         return null;

@@ -30,7 +30,7 @@ public sealed class RawObservation
         string content,
         string? sourceIdentifier,
         DateTimeOffset receivedAt,
-        bool isDemo)
+        ObservationProvenance provenance)
     {
         if (id == Guid.Empty)
         {
@@ -53,7 +53,7 @@ public sealed class RawObservation
         Content = content.Trim();
         SourceIdentifier = string.IsNullOrWhiteSpace(sourceIdentifier) ? null : sourceIdentifier.Trim();
         ReceivedAt = receivedAt;
-        IsDemo = isDemo;
+        Provenance = provenance;
         Status = ObservationStatus.Received;
         Fingerprint = ObservationFingerprint.Compute(SourceName, SourceIdentifier, Content);
     }
@@ -73,7 +73,14 @@ public sealed class RawObservation
 
     public DateTimeOffset ReceivedAt { get; private set; }
 
-    public bool IsDemo { get; private set; }
+    /// <summary>Which of the three intake paths this arrived by.</summary>
+    public ObservationProvenance Provenance { get; private set; }
+
+    /// <summary>
+    /// True only for the recorded replay stream. Derived rather than stored, so it cannot drift out
+    /// of agreement with <see cref="Provenance"/> — which is exactly what two columns would do.
+    /// </summary>
+    public bool IsDemo => Provenance == ObservationProvenance.Recorded;
 
     public ObservationStatus Status { get; private set; }
 

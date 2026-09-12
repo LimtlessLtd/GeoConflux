@@ -127,7 +127,7 @@ public sealed partial class NasaFirmsEventSource(
             // Declared so that no enrichment step can reclassify a heat signature as a conflict.
             DeclaredEventType = EventType.NaturalHazard,
             DeclaredSeverity = Severity.Low,
-            IsDemo = false,
+            Provenance = ObservationProvenance.Polled,
         };
     }
 

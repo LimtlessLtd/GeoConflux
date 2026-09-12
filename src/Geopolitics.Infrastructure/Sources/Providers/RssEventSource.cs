@@ -97,7 +97,7 @@ public sealed partial class RssEventSource(
 
                 // Nothing is declared. A feed item states no category, severity, or position, and
                 // inventing any of them here would put a guess where the pipeline expects a fact.
-                IsDemo = false,
+                Provenance = ObservationProvenance.Polled,
             })];
     }
 

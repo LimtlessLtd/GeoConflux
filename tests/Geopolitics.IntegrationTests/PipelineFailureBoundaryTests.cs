@@ -97,7 +97,7 @@ public sealed class PipelineFailureBoundaryTests
         DeclaredLongitude = 34.453,
         DeclaredEventType = EventType.Protest,
         DeclaredSeverity = Severity.Medium,
-        IsDemo = false,
+        Provenance = ObservationProvenance.Polled,
     };
 
     /// <summary>

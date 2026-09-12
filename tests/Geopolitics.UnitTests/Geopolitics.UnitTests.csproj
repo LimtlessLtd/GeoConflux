@@ -27,6 +27,14 @@
       <Link>providers\%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+
+    <!-- Recorded collection bundles. Same purpose as the provider payloads above: the parser is the
+         only part that has to understand the contract, so it is pinned to files rather than to
+         objects built in a test, and the malformed ones are the point. -->
+    <Content Include="..\data\osint\*">
+      <Link>osint\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

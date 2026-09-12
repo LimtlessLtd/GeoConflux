@@ -264,7 +264,7 @@ public sealed class SpatialQueryServiceTests
             severity,
             occurredAt ?? Now.AddHours(-1),
             location,
-            false,
+            ObservationProvenance.Polled,
             occurredAt ?? Now.AddHours(-1));
 
     /// <summary>

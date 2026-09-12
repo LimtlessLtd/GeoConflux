@@ -179,7 +179,7 @@ public sealed class ReplayEventSourceTests
         Assert.NotEmpty(envelopes);
 
         // Nothing from the replay source may ever be mistaken for live reporting.
-        Assert.All(envelopes, envelope => Assert.True(envelope.IsDemo));
+        Assert.All(envelopes, envelope => Assert.Equal(ObservationProvenance.Recorded, envelope.Provenance));
         Assert.All(envelopes, envelope => Assert.StartsWith("replay:", envelope.SourceName, StringComparison.Ordinal));
     }
 

@@ -44,8 +44,15 @@ public sealed record ObservationEnvelope
 
     public Severity? DeclaredSeverity { get; init; }
 
-    /// <summary>True when the envelope originates from recorded demo data rather than live reporting.</summary>
-    public bool IsDemo { get; init; }
+    /// <summary>
+    /// Which intake path produced this envelope. Recorded by default, because that is the safer of
+    /// the two wrong answers if an adapter ever forgets to say: understating a real report costs
+    /// visibility, while presenting synthetic data as real costs the reader's trust.
+    /// </summary>
+    public ObservationProvenance Provenance { get; init; } = ObservationProvenance.Recorded;
+
+    /// <summary>When the collection run that produced this happened. Set only for collected items.</summary>
+    public DateTimeOffset? CollectedAt { get; init; }
 
     /// <summary>Correlation identifier carried through the pipeline for tracing.</summary>
     public string? TraceId { get; init; }

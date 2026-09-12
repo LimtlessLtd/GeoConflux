@@ -88,8 +88,15 @@ public static class ObservationEndpoints
 
 /// <summary>
 /// Public submission contract. Deliberately narrower than <see cref="ObservationEnvelope"/>: a caller
-/// may not mark its own submission as demo data, nor set a trace identifier, because both would let
-/// external input misrepresent the provenance of what it sends.
+/// may not mark its own provenance, nor set a trace identifier, because both would let external
+/// input misrepresent where what it sends came from.
+/// <para>
+/// It carries no latitude or longitude either, and that omission is the point. The endpoint used to
+/// accept a coordinate pair from any caller on the network, and the resolver honoured it as
+/// <c>SourceProvided</c> — an exact position at 0.95 confidence, from an anonymous stranger. That is
+/// the failure ADR 005 exists to prevent, and it was reachable in the default configuration. A
+/// submission now names a place and the gazetteer places it, or it stays unplaced.
+/// </para>
 /// </summary>
 public sealed record ObservationSubmission
 {
@@ -100,10 +107,6 @@ public sealed record ObservationSubmission
     public string? Content { get; init; }
 
     public string? LocationName { get; init; }
-
-    public double? Latitude { get; init; }
-
-    public double? Longitude { get; init; }
 
     public string? CountryCode { get; init; }
 
@@ -122,11 +125,9 @@ public sealed record ObservationSubmission
         Title = Title,
         OccurredAt = OccurredAt,
         DeclaredLocationName = LocationName,
-        DeclaredLatitude = Latitude,
-        DeclaredLongitude = Longitude,
         DeclaredCountryCode = CountryCode,
         DeclaredEventType = EventType,
         DeclaredSeverity = Severity,
-        IsDemo = false,
+        Provenance = ObservationProvenance.Collected,
     };
 }

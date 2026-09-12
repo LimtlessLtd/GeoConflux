@@ -194,7 +194,7 @@ public sealed class DeterministicIncidentCorrelatorTests
         DateTimeOffset occurredAt,
         GeoLocation? location,
         string summary = "Summary.") =>
-        new(Guid.NewGuid(), "Existing incident", summary, eventType, Severity.Medium, occurredAt, location, false, occurredAt);
+        new(Guid.NewGuid(), "Existing incident", summary, eventType, Severity.Medium, occurredAt, location, ObservationProvenance.Polled, occurredAt);
 
     private static RawObservation Observation(
         EventType eventType,
@@ -210,7 +210,7 @@ public sealed class DeterministicIncidentCorrelatorTests
             "Observation content.",
             Guid.NewGuid().ToString(),
             occurredAt,
-            false);
+            ObservationProvenance.Polled);
 
         observation.ApplyNormalisation("Title", summary, eventType, Severity.Medium, occurredAt, locationName);
 

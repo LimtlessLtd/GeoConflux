@@ -190,7 +190,7 @@ public sealed class SeverityModelPipelineTests
             "Some report text.",
             sourceIdentifier: null,
             receivedAt: DateTimeOffset.UtcNow,
-            isDemo: false);
+            provenance: ObservationProvenance.Polled);
 
         // A stored prediction with no model behind it could never be reproduced or compared, so it
         // is rejected rather than recorded with a blank.

@@ -15,7 +15,7 @@ public sealed class GeopoliticalIncidentTests
             Severity.High,
             DateTimeOffset.UtcNow,
             null,
-            false,
+            ObservationProvenance.Polled,
             DateTimeOffset.UtcNow);
 
         Assert.Throws<DomainException>(act);
@@ -33,7 +33,7 @@ public sealed class GeopoliticalIncidentTests
             Severity.Medium,
             createdAt,
             null,
-            false,
+            ObservationProvenance.Polled,
             createdAt);
         var observationId = Guid.NewGuid();
 

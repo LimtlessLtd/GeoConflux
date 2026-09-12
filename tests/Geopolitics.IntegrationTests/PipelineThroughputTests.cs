@@ -201,7 +201,7 @@ public sealed class PipelineThroughputTests(ITestOutputHelper output)
                 // Spread across two days so correlation windows and analytics buckets both see a
                 // realistic distribution rather than one instant.
                 OccurredAt = DateTimeOffset.UtcNow.AddMinutes(-(index % 2880)),
-                IsDemo = true,
+                Provenance = ObservationProvenance.Recorded,
             };
         }
     }

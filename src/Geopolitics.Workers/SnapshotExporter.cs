@@ -175,8 +175,14 @@ public static partial class SnapshotExporter
         // source it could read was the recorded stream. Now that live adapters can feed it, a fixed
         // label would be a claim about provenance the data does not support — in either direction:
         // stamping real reporting as synthetic is as wrong as the reverse.
-        var demoObservations = observations.Count(value => value.IsDemo);
-        var liveObservations = observations.Count - demoObservations;
+        var demoObservations = observations.Count(value => value.Provenance == Domain.ObservationProvenance.Recorded);
+        var polledObservations = observations.Count(value => value.Provenance == Domain.ObservationProvenance.Polled);
+        var collectedObservations = observations.Count(value => value.Provenance == Domain.ObservationProvenance.Collected);
+
+        // Live means real, which is polled and collected together. The two are then reported
+        // separately, because "a feed carried it just now" and "an agent went and found it on
+        // Tuesday" are both real and are not the same claim about freshness.
+        var liveObservations = polledObservations + collectedObservations;
 
         var meta = new SnapshotMeta(
             GeneratedAt: DateTimeOffset.UtcNow,
@@ -192,9 +198,11 @@ public static partial class SnapshotExporter
             // than implying a precision the backend does not have.
             SpatialMethod: spatialQueries.Method,
             LiveObservationCount: liveObservations,
+            PolledObservationCount: polledObservations,
+            CollectedObservationCount: collectedObservations,
             DemoObservationCount: demoObservations,
             IsDemoData: liveObservations == 0,
-            Notice: Describe(liveObservations, demoObservations));
+            Notice: Describe(polledObservations, collectedObservations, demoObservations));
 
         await WriteJsonAsync(Path.Combine(outputDirectory, "meta.json"), meta, cancellationToken);
     }
@@ -206,7 +214,9 @@ public static partial class SnapshotExporter
     }
 
     /// <param name="GeneratedAt">When this snapshot was produced, shown in the UI so its age is visible.</param>
-    /// <param name="LiveObservationCount">Observations that came from a real external source.</param>
+    /// <param name="LiveObservationCount">Observations that are real reporting: polled and collected together.</param>
+    /// <param name="PolledObservationCount">Observations a live adapter fetched during this run.</param>
+    /// <param name="CollectedObservationCount">Observations an OSINT agent gathered into a recorded bundle.</param>
     /// <param name="DemoObservationCount">Observations that came from the recorded stream.</param>
     /// <param name="IsDemoData">True only when nothing in this snapshot came from a live source.</param>
     /// <param name="Notice">Plain-language provenance statement carried with the data itself.</param>
@@ -221,26 +231,52 @@ public static partial class SnapshotExporter
         int ChokepointsWithActivity,
         string SpatialMethod,
         int LiveObservationCount,
+        int PolledObservationCount,
+        int CollectedObservationCount,
         int DemoObservationCount,
         bool IsDemoData,
         string Notice);
 
     /// <summary>
-    /// States the snapshot's provenance in plain language, including the mixed case. A page carrying
-    /// both real reporting and recorded demo records has to say so: a single blanket label would be
-    /// wrong about half of what it describes whichever label it chose.
+    /// States the snapshot's provenance in plain language, naming each of the three intake paths
+    /// that actually contributed.
+    /// <para>
+    /// A page carrying more than one kind has to say so. A single blanket label would be wrong about
+    /// part of what it describes whichever label it chose, and the part it would be wrong about is
+    /// the part a reader most needs to judge: whether what they are looking at is synthetic, fetched
+    /// minutes ago, or gathered at some stated earlier moment.
+    /// </para>
     /// </summary>
-    private static string Describe(int live, int demo) => (live, demo) switch
+    private static string Describe(int polled, int collected, int demo)
     {
-        (0, _) => "Synthetic replay data produced by a real run of the GeoConflux pipeline. "
-            + "It is not live reporting and describes no real-world events.",
-        (_, 0) => "Live reporting ingested from public news and humanitarian feeds by a real run of "
-            + "the GeoConflux pipeline. Headlines are real; the categories, severities, and "
-            + "correlations shown beside them are this system's assessments, not the publishers'.",
-        _ => $"A mixed snapshot: {live} observation(s) ingested live from public feeds and {demo} "
-            + "replayed from the recorded demo stream. Every record is individually labelled with "
-            + "which it is.",
-    };
+        if (polled + collected == 0)
+        {
+            return "Synthetic replay data produced by a real run of the GeoConflux pipeline. "
+                + "It is not live reporting and describes no real-world events.";
+        }
+
+        var parts = new List<string>(3);
+
+        if (polled > 0)
+        {
+            parts.Add($"{polled} ingested live from public feeds");
+        }
+
+        if (collected > 0)
+        {
+            parts.Add($"{collected} gathered into a recorded collection bundle by an OSINT agent, as of the collection time shown on each record");
+        }
+
+        if (demo > 0)
+        {
+            parts.Add($"{demo} replayed from the recorded demo stream");
+        }
+
+        return $"Observations in this snapshot: {string.Join("; ", parts)}. "
+            + "Headlines and quotations are as published; the categories, severities, and "
+            + "correlations shown beside them are this system's assessments, not the sources'. "
+            + "Every record is individually labelled with which of the three it is.";
+    }
 
     [LoggerMessage(Level = LogLevel.Error, Message = "No ingestion sources are registered, so there is nothing to export.")]
     private static partial void LogNoSources(ILogger logger);

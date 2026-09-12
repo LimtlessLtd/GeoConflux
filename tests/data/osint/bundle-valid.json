@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-09-12T0915Z-maritime-chokepoints",
+  "collectedAt": "2026-09-12T09:15:00Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 3,
+    "windowFrom": "2026-09-11T00:00:00Z",
+    "windowTo": "2026-09-12T09:00:00Z"
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "d41f9c20"
+  },
+  "items": [
+    {
+      "kind": "document",
+      "url": "https://example-news.org/2026/09/11/vessel-incident-bab-el-mandeb",
+      "publisher": "Example News Agency",
+      "title": "Vessel reports coming under fire in Bab-el-Mandeb",
+      "publishedAt": "2026-09-11T18:40:00Z",
+      "retrievedAt": "2026-09-12T09:12:31Z",
+      "contentHash": "sha256:7ef0ed5b27fe319794eb9b3382d0dd9540fd610a82f4d4d4ca0e23ff309252bc",
+      "language": "en",
+      "excerpt": "A cargo vessel transiting the strait reported small-arms fire from two skiffs early on Thursday, according to the operator. No injuries were reported and the vessel continued north.",
+      "placeNames": [
+        "Bab-el-Mandeb",
+        "Aden"
+      ],
+      "relatedTo": [
+        "https://other-outlet.example/world/strait-incident"
+      ]
+    },
+    {
+      "kind": "document",
+      "url": "https://example-arabic.example/news/2026/09/11/bab-al-mandab",
+      "publisher": "وكالة أنباء المثال",
+      "title": "إطلاق نار على سفينة تجارية قرب باب المندب",
+      "publishedAt": "2026-09-11T19:20:00Z",
+      "retrievedAt": "2026-09-12T09:12:48Z",
+      "contentHash": "sha256:3971db016c2f58d8b8d00efe16d0fde13cfb8a54b3ea3a480d7c764ef4e75702",
+      "language": "ar",
+      "excerpt": "أفادت مصادر بحرية بإطلاق نار على سفينة تجارية قرب باب المندب صباح اليوم.",
+      "placeNames": [
+        "باب المندب"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/s/example_channel/48217",
+      "platform": "telegram",
+      "channel": "example_channel",
+      "postedAt": "2026-09-11T19:05:00Z",
+      "retrievedAt": "2026-09-12T09:13:04Z",
+      "contentHash": "sha256:9295acca5ae792624d4038a4a478c7e6bfac48635aef8d08a556ceed6327b9e3",
+      "language": "ru",
+      "excerpt": "Сообщается о взрыве в порту Одесса. Подробности уточняются.",
+      "excerptTranslation": null,
+      "placeNames": [
+        "Одесса"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/example.bsky.social/post/3kabc",
+      "platform": "bluesky",
+      "channel": "example.bsky.social",
+      "postedAt": "2026-09-12T02:10:00Z",
+      "retrievedAt": "2026-09-12T09:13:20Z",
+      "contentHash": "sha256:8d360b7958d1349c20a04a4a5186f73dc76f1b3925948b67f37889c1a98b23ae",
+      "language": "zh",
+      "excerpt": "台湾海峡今日发生一起船只事故，暂无人员伤亡报告。",
+      "placeNames": [
+        "台湾海峡"
+      ],
+      "relatedTo": []
+    }
+  ]
+}

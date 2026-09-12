@@ -152,6 +152,6 @@ public sealed class ConcurrentCorrelationTests
         DeclaredLongitude = 43.334,
         DeclaredEventType = EventType.MaritimeIncident,
         DeclaredSeverity = Severity.Medium,
-        IsDemo = false,
+        Provenance = ObservationProvenance.Polled,
     };
 }
