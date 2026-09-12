@@ -154,6 +154,38 @@ html, body {
   font-size: .78rem;
 }
 
+.compass {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .25rem .45rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel-2);
+  color: var(--text);
+  font: inherit;
+  font-size: .78rem;
+  cursor: pointer;
+}
+
+.compass:hover { border-color: var(--accent); }
+.compass:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* The whole rose rotates rather than the needle alone: the ring is rotationally symmetric, so this
+   is indistinguishable on screen and avoids transform-origin behaving differently on an SVG child.
+   No transition, deliberately — the heading is written on every rendered frame, so the needle is
+   already as smooth as the globe, and an eased transition would make it trail the drag instead. */
+.compass-rose { width: 1.05rem; height: 1.05rem; flex: none; transform-origin: 50% 50%; }
+
+.compass-ring { fill: none; stroke: currentColor; stroke-opacity: .35; stroke-width: 1.4; }
+.compass-north { fill: var(--accent); }
+.compass-south { fill: currentColor; fill-opacity: .3; }
+
+/* Aligned is the resting state and should not compete for attention. Off-north is the state a
+   visitor might want to correct, so that is the one that gets the accent. */
+.compass.is-aligned { color: var(--muted); }
+.compass:not(.is-aligned) { border-color: rgba(100, 223, 223, .55); }
+
 /* ---------------------------------------------------------------- panel */
 
 .side-panel {
@@ -326,6 +358,17 @@ html, body {
 }
 
 .evidence-source { font-family: ui-monospace, monospace; color: var(--accent); margin-right: .4rem; }
+
+/* Two timestamps that mean different things, so they are laid out as separate items rather than run
+   together into one line a reader would take for a single fact. They wrap on a narrow panel instead
+   of truncating, because a half-shown time is worse than a second line. */
+.evidence-times {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .15rem .6rem;
+  margin-top: .15rem;
+  font-size: .7rem;
+}
 .muted { color: var(--muted); }
 .empty-state { padding: 1rem 0; color: var(--muted); font-size: .82rem; }
 

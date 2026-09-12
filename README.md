@@ -22,6 +22,13 @@ recorded demo stream is still ingested alongside, so the page cannot go blank if
 unreachable, and every record is labelled individually as live or demo — the banner counts them
 rather than asserting a blanket label.
 
+That labelling reaches the timestamps too. A live report is aged against the reader's own clock,
+because a real publisher really did put it out four hours ago and that stays true however long after
+the run the page is opened. A demo record is aged against the recorded run instead, because its
+timestamp is invented and measuring it against now would stamp a fabricated event on a real strait as
+though it had happened this afternoon. So the list shows "4hr ago" beside "35m before the run", and
+the difference is the point rather than an inconsistency.
+
 What real data makes obvious, and the page does not hide: the default enrichment provider is a
 deterministic keyword stand-in rather than a language model, and it cannot categorise most real
 reporting. Roughly three quarters of live incidents land in `Other`. That is the honest state of the

@@ -89,6 +89,21 @@
             <option value="offline">Offline</option>
           </select>
         </label>
+
+        <!-- Sits with the map controls rather than floating on the globe. Both top corners of the
+             globe region already hold overlays whose height depends on their text, and a control
+             that can be overlapped is a control that cannot be clicked. -->
+        <div class="filter" id="orientationControl">
+          <span>Orientation</span>
+          <button type="button" id="northUp" class="compass" title="Put north at the top">
+            <svg class="compass-rose" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <circle class="compass-ring" cx="12" cy="12" r="9" />
+              <path class="compass-north" d="M12 3 L15.2 12 L8.8 12 Z" />
+              <path class="compass-south" d="M12 21 L15.2 12 L8.8 12 Z" />
+            </svg>
+            <span>North up</span>
+          </button>
+        </div>
       </section>
 
       <p id="basemapNote" class="basemap-note" role="status" hidden></p>

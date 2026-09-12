@@ -116,6 +116,9 @@
     chokepointMethod: document.querySelector('#chokepointMethod'),
     basemapFilter: document.querySelector('#basemapFilter'),
     basemapNote: document.querySelector('#basemapNote'),
+    orientationControl: document.querySelector('#orientationControl'),
+    northUp: document.querySelector('#northUp'),
+    compassRose: document.querySelector('.compass-rose'),
     analyticsWindow: document.querySelector('#analyticsWindow'),
     analyticsPeriod: document.querySelector('#analyticsPeriod'),
     analyticsBody: document.querySelector('#analyticsBody'),
@@ -178,17 +181,62 @@
     ? new Intl.DateTimeFormat(undefined, { dateStyle: 'long' }).format(new Date(value))
     : 'an unknown date');
 
-  const formatRelative = (value) => {
+  /**
+   * Which clock a given record's age should be measured against.
+   *
+   * A live report carries a real publication time from a real publisher, so the honest basis is the
+   * visitor's own clock: it went out six hours ago, and saying "6hr ago" is a fact that stays true
+   * however long after the run the page is read. A demo record carries an invented timestamp that
+   * only means anything relative to the recorded run, and measuring that against now would stamp a
+   * fabricated event on a real strait as though it had happened this afternoon.
+   *
+   * So the basis is chosen per record rather than per page. That is what lets the published snapshot
+   * carry both kinds at once — which it does, and labels individually — without either one
+   * misrepresenting the other.
+   */
+  const relativeBasis = (measureAgainstRun) => (measureAgainstRun && timeBasis !== null
+    ? { at: timeBasis, suffix: timeSuffix }
+    : { at: Date.now(), suffix: 'ago' });
+
+  const formatRelative = (value, measureAgainstRun = false) => {
     if (!value) return '';
-    const basis = timeBasis ?? Date.now();
-    const minutes = Math.round((basis - new Date(value).getTime()) / 60000);
-    if (minutes < 1) return timeBasis === null ? 'just now' : `at the start of the run`;
-    if (minutes < 60) return `${minutes}m ${timeSuffix}`;
+
+    const { at, suffix } = relativeBasis(measureAgainstRun);
+    const minutes = Math.round((at - new Date(value).getTime()) / 60000);
+
+    // A source clock running slightly fast puts a publication time marginally in the future. The
+    // pipeline already clamps that on the way in; this is the display-side equivalent, so a report
+    // can never read as being from the future.
+    if (minutes < 1) return suffix === 'ago' ? 'just now' : 'at the start of the run';
+    if (minutes < 60) return `${minutes}m ${suffix}`;
+
     const hours = Math.round(minutes / 60);
-    if (hours < 24) return `${hours}h ${timeSuffix}`;
+    if (hours < 24) return `${hours}hr ${suffix}`;
+
     const days = Math.round(hours / 24);
-    return `${days}d ${timeSuffix}`;
+    return `${plural(days, 'day')} ${suffix}`;
   };
+
+  /**
+   * The exact timestamp, phrased for a tooltip on a relative one.
+   *
+   * The relative form is what a reader wants at a glance; the exact form is what they want when the
+   * glance raises a question, and a hover is cheaper than a click for that.
+   */
+  const exactTimeHint = (value) => (value
+    ? `Source timestamp: ${formatTime(value)}`
+    : 'This source stated no time of its own.');
+
+  /**
+   * Whether a source actually gave a time for what it reported.
+   *
+   * When a source states none, normalisation falls back to the moment the report arrived, leaving
+   * the two timestamps equal. Printing both would then present this system's own arrival time as
+   * though the source had reported it, which is precisely the kind of borrowed authority the rest of
+   * this dashboard is careful to avoid.
+   */
+  const statesOwnTime = (observation) => Boolean(observation.occurredAt)
+    && Math.abs(new Date(observation.occurredAt).getTime() - new Date(observation.receivedAt).getTime()) > 60_000;
 
   /** Coerces a snapshot-supplied count to a number, so it can never carry markup into innerHTML. */
   const asCount = (value) => (Number.isFinite(Number(value)) ? Number(value) : 0);
@@ -384,6 +432,7 @@
   async function initialiseGlobe() {
     if (!window.Cesium) {
       dom.fallback.hidden = false;
+      hideOrientationControl();
       return;
     }
 
@@ -415,13 +464,73 @@
         if (id) selectIncident(id);
       });
 
+      // Every frame, because the heading changes continuously while the globe is being dragged and
+      // there is no event that reports it reliably. The handler exits immediately unless the whole
+      // degree moved, so the per-frame cost is a comparison.
+      viewer.scene.postRender.addEventListener(updateCompass);
+      dom.northUp.addEventListener('click', orientNorthUp);
+      updateCompass();
+
       await applyBasemap(preferredBasemap());
     } catch (error) {
       // A globe failure must not take the rest of the dashboard with it.
       console.error('Globe initialisation failed', error);
       dom.fallback.hidden = false;
+      hideOrientationControl();
       viewer = null;
     }
+  }
+
+  /** There is nothing to orient without a globe, and an inert control is worse than no control. */
+  function hideOrientationControl() {
+    if (dom.orientationControl) dom.orientationControl.hidden = true;
+  }
+
+  /**
+   * Puts north back at the top without otherwise moving the camera.
+   *
+   * Heading and roll are reset; position and pitch are left alone. The request was to orient the
+   * view, not to return home, so a visitor who has flown to a strait and tilted the camera keeps
+   * both and only gets their bearings back. Cesium measures heading and pitch in the local
+   * east-north-up frame at the camera, so holding pitch and zeroing heading means exactly "same
+   * place, same tilt, north upward".
+   */
+  function orientNorthUp() {
+    if (!viewer) return;
+
+    const camera = viewer.camera;
+
+    camera.flyTo({
+      destination: Cesium.Cartesian3.clone(camera.positionWC),
+      orientation: { heading: 0, pitch: camera.pitch, roll: 0 },
+      duration: 0.6,
+    });
+  }
+
+  /** The bearing the needle is currently drawn at, so an unchanged heading costs no DOM writes. */
+  let renderedHeading = null;
+
+  /**
+   * Points the needle at north and says, in the button's own tooltip, which way the camera faces.
+   * <p>
+   * Called from every rendered frame, so it does nothing at all unless the whole-degree bearing has
+   * actually moved. Rotating by the negative of the heading is what keeps the needle pointing at
+   * north rather than at the camera: face east and north is to the left.
+   */
+  function updateCompass() {
+    if (!viewer || !dom.compassRose) return;
+
+    const heading = Math.round(Cesium.Math.toDegrees(viewer.camera.heading));
+    const bearing = ((heading % 360) + 360) % 360;
+
+    if (bearing === renderedHeading) return;
+    renderedHeading = bearing;
+
+    dom.compassRose.style.transform = `rotate(${-bearing}deg)`;
+    dom.northUp.classList.toggle('is-aligned', bearing === 0);
+    dom.northUp.title = bearing === 0
+      ? 'North is already at the top'
+      : `The view faces ${bearing}° — click to put north at the top`;
   }
 
   /** The visitor's last choice, when there was one and it still exists. */
@@ -638,7 +747,7 @@
         <div class="incident-meta">
           <span class="sev sev-${escapeHtml(incident.severity)}">${escapeHtml(incident.severity)}</span>
           <span>${escapeHtml(incident.eventType)}</span>
-          <span>${escapeHtml(formatRelative(incident.occurredAt))}</span>
+          <span title="${escapeHtml(exactTimeHint(incident.occurredAt))}">${escapeHtml(formatRelative(incident.occurredAt, incident.isDemo))}</span>
         </div>
         <div class="incident-conf">${confidenceChip(incident.classificationConfidence, incident.classificationMethod)}</div>
         <div class="incident-sub">
@@ -696,7 +805,7 @@
       item.innerHTML = `
         <div class="feed-head">
           <span class="feed-source">${escapeHtml(observation.sourceName)}</span>
-          <span class="feed-time">${escapeHtml(formatRelative(observation.receivedAt))}</span>
+          <span class="feed-time">${escapeHtml(formatRelative(observation.receivedAt, observation.isDemo))}</span>
         </div>
         <div class="feed-title">${escapeHtml(observation.title ?? observation.summary ?? 'Untitled observation')}</div>
         <div class="feed-meta">
@@ -751,7 +860,16 @@
       <p>${escapeHtml(incident.summary)}</p>
       <dl class="detail-grid">
         <dt>Location</dt><dd>${location}</dd>
-        <dt>Occurred</dt><dd>${escapeHtml(formatTime(incident.occurredAt))}</dd>
+        <dt>Reported</dt>
+        <dd>
+          ${escapeHtml(formatTime(incident.occurredAt))}
+          <span class="muted">· ${escapeHtml(formatRelative(incident.occurredAt, incident.isDemo))}</span>
+          <div class="muted assessment-note">
+            The time the source itself gave. For a news report that is when it was published; for a
+            structured feed it is the event date the provider recorded. It is not when this system
+            received it — the evidence below carries both.
+          </div>
+        </dd>
         <dt>Evidence</dt><dd>${sources} correlated observation${sources === 1 ? '' : 's'}</dd>
         <dt>Assessment</dt>
         <dd>
@@ -801,7 +919,13 @@
               <span class="evidence-source">${escapeHtml(observation.sourceName)}</span>
               <span class="pill pill-${escapeHtml(observation.status)}">${escapeHtml(observation.status)}</span>
               <div>${escapeHtml(observation.title ?? '')}</div>
-              <div class="muted">${escapeHtml(formatTime(observation.receivedAt))}</div>
+              <div class="muted evidence-times">
+                ${statesOwnTime(observation)
+                  ? `<span title="The time this source gave for the event.">Reported ${escapeHtml(formatTime(observation.occurredAt))}
+                       · ${escapeHtml(formatRelative(observation.occurredAt, observation.isDemo))}</span>`
+                  : '<span class="muted">This source stated no time of its own.</span>'}
+                <span title="When this system received the report.">Received ${escapeHtml(formatTime(observation.receivedAt))}</span>
+              </div>
               ${observation.status === 'Duplicate'
                 ? ''
                 : `<div class="evidence-conf">
@@ -1126,7 +1250,7 @@
    * Elevated incidents are stacked inside each bar rather than drawn as a second series: the
    * question is what share of a period was serious, and two adjacent bars answer a different one.
    */
-  function timeseriesChart(buckets, suffix) {
+  function timeseriesChart(buckets) {
     const NS = 'http://www.w3.org/2000/svg';
     const width = 300;
     const height = 68;
@@ -1169,7 +1293,7 @@
       base.setAttribute('width', barWidth.toFixed(2));
       base.setAttribute('height', drawn.toFixed(2));
       base.setAttribute('class', bucket.count === 0 ? 'ts-empty' : 'ts-bar');
-      base.append(titleFor(bucket, suffix));
+      base.append(titleFor(bucket));
       svg.append(base);
 
       if (elevatedHeight > 0) {
@@ -1185,11 +1309,16 @@
 
     return svg;
 
-    function titleFor(bucket, relativeSuffix) {
+    function titleFor(bucket) {
       const node = document.createElementNS(NS, 'title');
-      const when = formatRelative(bucket.start) ?? formatTime(bucket.start);
+
+      // Against the run, not against now: a bucket boundary is part of a window the backend computed
+      // when the report was generated, so it means nothing measured from the visitor's clock.
+      // formatRelative supplies the suffix itself — appending another one here is what used to make
+      // these tooltips read "2d ago ago".
+      const when = formatRelative(bucket.start, true) || formatTime(bucket.start);
       node.textContent = `${bucket.count} incident${bucket.count === 1 ? '' : 's'}`
-        + `${bucket.elevated > 0 ? `, ${bucket.elevated} high or critical` : ''} — ${when}${relativeSuffix}`;
+        + `${bucket.elevated > 0 ? `, ${bucket.elevated} high or critical` : ''} — ${when}`;
       return node;
     }
   }
@@ -1284,7 +1413,7 @@
         'Incidents over time',
         'Oldest at the left. The brighter portion of each bar is the High and Critical share.',
       );
-      chart.append(timeseriesChart(report.timeseries, timeSuffix === 'ago' ? ' ago' : ` ${timeSuffix}`));
+      chart.append(timeseriesChart(report.timeseries));
       chart.append(element(
         'p',
         'analytics-hint',
