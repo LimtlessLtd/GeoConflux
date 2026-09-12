@@ -159,6 +159,7 @@ public sealed class GeopoliticsDbContext(DbContextOptions<GeopoliticsDbContext> 
         observation.Property(value => value.Fingerprint).HasMaxLength(64).IsRequired();
         observation.Property(value => value.Status).HasConversion<string>().HasMaxLength(30).IsRequired();
         observation.Property(value => value.Provenance).HasConversion<string>().HasMaxLength(20).IsRequired();
+        observation.Property(value => value.CollectedAt).HasConversion(nullableUtcTicks);
 
         // Derived from Provenance rather than stored. Two columns would eventually disagree.
         observation.Ignore(value => value.IsDemo);

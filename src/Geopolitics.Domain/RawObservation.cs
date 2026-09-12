@@ -30,7 +30,8 @@ public sealed class RawObservation
         string content,
         string? sourceIdentifier,
         DateTimeOffset receivedAt,
-        ObservationProvenance provenance)
+        ObservationProvenance provenance,
+        DateTimeOffset? collectedAt = null)
     {
         if (id == Guid.Empty)
         {
@@ -54,6 +55,7 @@ public sealed class RawObservation
         SourceIdentifier = string.IsNullOrWhiteSpace(sourceIdentifier) ? null : sourceIdentifier.Trim();
         ReceivedAt = receivedAt;
         Provenance = provenance;
+        CollectedAt = collectedAt;
         Status = ObservationStatus.Received;
         Fingerprint = ObservationFingerprint.Compute(SourceName, SourceIdentifier, Content);
     }
@@ -75,6 +77,17 @@ public sealed class RawObservation
 
     /// <summary>Which of the three intake paths this arrived by.</summary>
     public ObservationProvenance Provenance { get; private set; }
+
+    /// <summary>
+    /// When the collection run that found this happened. Null for anything not collected.
+    /// <para>
+    /// A third distinct time, and none of the other two will do. <see cref="ReceivedAt"/> is when
+    /// this process read the bundle, which may be weeks later and says nothing about the reporting;
+    /// <see cref="OccurredAt"/> is when the event happened. Only this answers "how current is what I
+    /// am looking at", which is the question a reader of a collected record actually has.
+    /// </para>
+    /// </summary>
+    public DateTimeOffset? CollectedAt { get; private set; }
 
     /// <summary>
     /// True only for the recorded replay stream. Derived rather than stored, so it cannot drift out

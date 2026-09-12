@@ -49,7 +49,11 @@ import { resolveDataSource as resolveSourceOrder } from './lib/datasource.js';
    */
   const chipFor = (record) => {
     const chip = provenanceChip(record);
-    return chip ? `<span class="${chip.className}">${escapeHtml(chip.text)}</span>` : '';
+    if (!chip) {
+      return '';
+    }
+
+    return `<span class="${chip.className}" title="${escapeHtml(chip.title)}">${escapeHtml(chip.text)}</span>`;
   };
 
   const POLL_INTERVAL_MS = 15000;

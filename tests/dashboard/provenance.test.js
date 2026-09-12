@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  canHideDemoNotice, countByProvenance, provenanceChip, provenanceOf, provenanceSummary,
+  canHideDemoNotice, collectedLabel, countByProvenance, provenanceChip, provenanceOf, provenanceSummary,
 } from '../../src/Geopolitics.Api/wwwroot/lib/provenance.js';
 
 /**
@@ -13,7 +13,8 @@ import {
 
 const live = (id) => ({ id, isDemo: false, provenance: 'Polled' });
 const demo = (id) => ({ id, isDemo: true, provenance: 'Recorded' });
-const collected = (id) => ({ id, isDemo: false, provenance: 'Collected' });
+const collected = (id, collectedAt = '2026-09-12T16:10:00+00:00') => (
+  { id, isDemo: false, provenance: 'Collected', collectedAt });
 
 test('an empty database is not mistaken for a live deployment', () => {
   // The fail-safe case. A plain "is any record flagged?" test would answer "none are" here and
@@ -109,8 +110,22 @@ test('only synthetic and collected records carry a chip', () => {
   // Polled is the unremarkable case. Chipping everything would cost the DEMO label the attention it
   // exists to command.
   assert.equal(provenanceChip(live('a')), null);
-  assert.deepEqual(provenanceChip(demo('b')), { className: 'demo-chip', text: 'DEMO' });
-  assert.deepEqual(provenanceChip(collected('c')), { className: 'collected-chip', text: 'COLLECTED' });
+  assert.equal(provenanceChip(demo('b')).className, 'demo-chip');
+  assert.equal(provenanceChip(demo('b')).text, 'DEMO');
+  assert.equal(provenanceChip(collected('c')).className, 'collected-chip');
+});
+
+test('a collected chip states the date it was gathered', () => {
+  // Freshness for a collected record is its collection time and nothing else on the row says so. A
+  // fortnight-old bundle must not read like a feed item from this morning.
+  assert.equal(provenanceChip(collected('a')).text, 'COLLECTED 2026-09-12');
+  assert.match(provenanceChip(collected('a')).title, /2026-09-12/);
+});
+
+test('a collected record with no date still labels itself', () => {
+  assert.equal(collectedLabel(undefined), 'COLLECTED');
+  assert.equal(collectedLabel(''), 'COLLECTED');
+  assert.equal(collectedLabel('2026-09-12T16:10:00+00:00'), 'COLLECTED 2026-09-12');
 });
 
 test('the demo notice keys on provenance, not only the legacy flag', () => {

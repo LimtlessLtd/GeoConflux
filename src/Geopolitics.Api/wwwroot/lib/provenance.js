@@ -100,8 +100,29 @@ export function provenanceOf(observation) {
  */
 export function provenanceChip(observation) {
   switch (provenanceOf(observation)) {
-    case 'recorded': return { className: 'demo-chip', text: 'DEMO' };
-    case 'collected': return { className: 'collected-chip', text: 'COLLECTED' };
-    default: return null;
+    case 'recorded':
+      return { className: 'demo-chip', text: 'DEMO', title: 'Synthetic replay data, not live reporting' };
+    case 'collected':
+      return {
+        className: 'collected-chip',
+        // The date is the label, not decoration. A collected record's freshness is when it was
+        // gathered, and without that on the row a fortnight-old bundle reads exactly like a feed
+        // item from this morning.
+        text: collectedLabel(observation.collectedAt),
+        title: observation.collectedAt
+          ? `Gathered by an OSINT collection run on ${observation.collectedAt.slice(0, 10)}`
+          : 'Gathered by an OSINT collection run',
+      };
+    default:
+      return null;
   }
+}
+
+/** `COLLECTED 2026-09-12`, or bare `COLLECTED` when the run date is missing. */
+export function collectedLabel(collectedAt) {
+  if (typeof collectedAt !== 'string' || collectedAt.length < 10) {
+    return 'COLLECTED';
+  }
+
+  return `COLLECTED ${collectedAt.slice(0, 10)}`;
 }

@@ -24,7 +24,8 @@ public sealed class ObservationNormaliser(IEventClassifier classifier) : IObserv
             envelope.Content,
             envelope.SourceIdentifier,
             receivedAt,
-            envelope.Provenance);
+            envelope.Provenance,
+            envelope.CollectedAt);
 
         // Classify once over title plus body so a headline-only signal is not lost.
         var classification = classifier.Classify($"{envelope.Title} {envelope.Content}");
