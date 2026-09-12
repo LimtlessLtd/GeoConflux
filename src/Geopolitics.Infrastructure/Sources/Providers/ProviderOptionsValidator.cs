@@ -46,6 +46,7 @@ internal sealed class ProviderOptionsValidator : IValidateOptions<ProviderOption
             ("Providers:Rss", options.Rss),
             ("Providers:NasaFirms", options.NasaFirms),
             ("Providers:Acled", options.Acled),
+            ("Providers:Ucdp", options.Ucdp),
         })
         {
             // A non-positive interval does not mean "poll often". Zero completes the wait
@@ -79,6 +80,7 @@ internal sealed class ProviderOptionsValidator : IValidateOptions<ProviderOption
             // the account password is sent. A scheme or host that is wrong here does not fail a
             // read, it posts a credential somewhere it was never meant to go.
             ("Providers:Acled:TokenEndpoint", options.Acled.TokenEndpoint),
+            ("Providers:Ucdp:BaseAddress", options.Ucdp.BaseAddress),
         })
         {
             if (!Uri.TryCreate(address, UriKind.Absolute, out var uri) || uri.Scheme is not (("http") or ("https")))

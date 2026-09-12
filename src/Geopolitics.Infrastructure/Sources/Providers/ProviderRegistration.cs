@@ -28,9 +28,9 @@ public static class ProviderRegistration
     private const int MaxResponseBytes = 8 * 1024 * 1024;
 
     /// <summary>
-    /// Adds the RSS, FIRMS, and ACLED adapters as ingestion sources.
+    /// Adds the RSS, FIRMS, ACLED, and UCDP adapters as ingestion sources.
     /// <para>
-    /// All three are registered unconditionally and each decides for itself whether to poll, so
+    /// All of them are registered unconditionally and each decides for itself whether to poll, so
     /// enabling a provider is a configuration change rather than a different set of services having
     /// been composed at startup. Every one of them is dormant under the configuration shipped in this
     /// repository.
@@ -67,6 +67,12 @@ public static class ProviderRegistration
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         });
 
+        services.AddResilientProviderClient(UcdpEventSource.HttpClientName, (options, client) =>
+        {
+            client.BaseAddress = new Uri(options.Ucdp.BaseAddress);
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        });
+
         // A singleton, because the point of it is to hold one token across polls. Registered as its
         // own service rather than constructed by the adapter so that its lifetime is the container's
         // and its HTTP client comes from the factory, like every other outbound call here.
@@ -75,6 +81,7 @@ public static class ProviderRegistration
         services.AddSingleton<IEventSource, RssEventSource>();
         services.AddSingleton<IEventSource, NasaFirmsEventSource>();
         services.AddSingleton<IEventSource, AcledEventSource>();
+        services.AddSingleton<IEventSource, UcdpEventSource>();
 
         // Registered here for proximity rather than because it belongs to this family: it opens no
         // connection, holds no credential, and shares none of the HTTP behaviour configured above.

@@ -120,14 +120,14 @@ contested, reported anecdotally, and moves faster than anyone is publishing.
 
 ### Coded events with coordinates
 
-**ACLED** is the primary answer for all three, once the adapter is fixed. Human-coded, carries
+**ACLED** is the primary answer for all three. Human-coded, carries
 latitude and longitude, event type and fatality count, which is why the existing adapter correctly
 declares all of them on the envelope rather than re-deriving weaker versions. Free registration gives
 tiered access; anything commercial needs a licence conversation. Release cadence is weekly, so expect
 several days of lag — fine for a map of what has happened, not a live feed.
 
-**UCDP Georeferenced Event Dataset** is the strongest free complement and is not currently used here
-at all. The API at `https://ucdpapi.pcr.uu.se/api/<resource>/<version>` is free of charge, needs a
+**UCDP Georeferenced Event Dataset** is the strongest free complement. It was unused when this was
+written; the adapter was built in Sprint 9. The API at `https://ucdpapi.pcr.uu.se/api/<resource>/<version>` is free of charge, needs a
 token requested from the maintainer and sent as `x-ucdp-access-token`, and allows 5,000 requests a
 day. The yearly datasets are at v26.1; **GED Candidate** publishes monthly with under a month's lag
 and is at v26.0.7. Events are geocoded to individual villages where the sourcing supports it, and —
@@ -217,8 +217,9 @@ means nobody reported, not that nothing happened.
 
 1. ~~**Migrate the ACLED adapter to the current API.**~~ Done in Sprint 9. OAuth token flow,
    `https://acleddata.com/api/`, token cached across polls, refresh with a password-grant fallback.
-2. **Add a UCDP GED Candidate adapter** as `ObservationKind.ExternalEvent`. Free, monthly, and
-   `where_prec` maps onto `PlacePrecision` so precision is carried rather than assumed.
+2. ~~**Add a UCDP GED Candidate adapter** as `ObservationKind.ExternalEvent`.~~ Done in Sprint 9.
+   `where_prec` is carried through `ObservationEnvelope.DeclaredPrecision`, and the same seam carries
+   ACLED's `geo_precision`.
 3. **Expand the gazetteer for the three theatres, with script variants.** The binding constraint on
    every text path. At a few hundred entries this stops being something to hand-write in a C# array —
    sourcing from GeoNames or OSM raises licensing, size and build-time questions that deserve their

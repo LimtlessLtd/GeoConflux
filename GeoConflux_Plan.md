@@ -815,18 +815,34 @@ The adapter still ships disabled, so nothing polls without a credential and CI i
 
 ## UCDP Georeferenced Event Dataset
 
-Add the Uppsala Conflict Data Program GED as a second structured provider, as
+**Built, Sprint 9.** The Uppsala Conflict Data Program GED is a second structured provider, as
 `ObservationKind.ExternalEvent`.
 
-It is the strongest free complement to ACLED and is currently unused. The API at
-`https://ucdpapi.pcr.uu.se/api/<resource>/<version>` is free of charge, requires a token obtained
-from the maintainer and sent as the `x-ucdp-access-token` header, and permits 5,000 requests a day.
-Yearly datasets are at v26.1; **GED Candidate** publishes monthly at under a month's lag.
+The API at `https://ucdpapi.pcr.uu.se/api/<resource>/<version>` is free of charge, requires a token
+obtained from the maintainer and sent as the `x-ucdp-access-token` header, and permits 5,000 requests
+a day. The header name was confirmed against the live endpoint, which answers an unauthenticated
+request with exactly that instruction. Yearly datasets are at v26.1; **GED Candidate** publishes
+monthly at under a month's lag and is the series configured by default.
 
-Its distinguishing property for this project is `where_prec`: an explicit statement of how precisely
-each coordinate is known. Map it onto `PlacePrecision` rather than discarding it. A borrowed
-coordinate whose precision travels with it is exactly the honest form this system requires, and it is
-the reason UCDP is worth having alongside ACLED rather than instead of it.
+Its distinguishing property for this project is `where_prec`, and it is carried rather than
+discarded. `ObservationEnvelope.DeclaredPrecision` is the seam: a provider states how precisely its
+own coordinates locate the event, and the resolver records that instead of assuming exactness. The
+mapping is taken from the GED codebook — 1 exact, 2 within ~25 km of a coded known point, 3 and 4 the
+second- and first-order administrative centroids, 5 a linear or fuzzy feature, 6 the country alone,
+and 7 international waters or airspace. Codes 3, 4, 5 and 7 collapse onto `Region`, which loses a
+gradation; carrying it would mean adding domain concepts to express one provider's scale, and
+understating precision is the safe direction for the error to run.
+
+The same seam carries ACLED's `geo_precision`, which is the same idea under a different name, so no
+coded-event record claims to be an exact fix unless its provider says it is. Both adapters derive
+severity from one shared fatality band table, so a five-death event reads the same whichever dataset
+coded it.
+
+Country filtering takes Gleditsch and Ward numbers rather than ISO codes or names, so none are
+configured by default: a wrong number is a silently wrong country, and a guessed one committed here
+would be exactly that.
+
+The adapter ships disabled, pinned by a recorded fixture, so a clone runs offline with no token.
 
 ## Sources that carry no coordinates
 
@@ -2527,7 +2543,8 @@ Sprint 9 progress:
 
 1. **ACLED migrated to the current OAuth API.** Done. Section 20 records what changed and why, and
    the schema differences that came with it.
-2. **UCDP GED Candidate adapter.** Not started.
+2. **UCDP GED Candidate adapter.** Done, along with the `DeclaredPrecision` seam it needed —
+   which also carries ACLED's `geo_precision`, so neither source overstates a borrowed coordinate.
 3. **Gazetteer depth for the three theatres.** Not started, and it is the binding constraint on every
    text source: 41 settlement-precision places worldwide, none in Ethiopia. Adding adapters does not
    substitute for it. Section 12 has the figures. Record the sourcing ADR before writing the data.

@@ -201,20 +201,18 @@ public static class AcledResponseParser
     };
 
     /// <summary>
-    /// Derives severity from the fatality count ACLED coded.
+    /// Derives severity from the fatality count ACLED coded, on the bands shared with UCDP so the two
+    /// datasets mean the same thing on one map.
     /// <para>
-    /// This is a stated, auditable rule rather than a judgement: the provider supplies a number, and
-    /// the number maps to a band. It is deliberately not a model output, because the provider already
-    /// knows the fact that matters and inferring it from prose would be strictly worse.
+    /// The one ACLED-specific departure is the zero-fatality case. A battle with no reported deaths is
+    /// still a battle, and reading it as the quietest thing on the map would understate an armed
+    /// engagement because nobody was confirmed killed in it.
     /// </para>
     /// </summary>
-    private static Severity MapSeverity(int fatalities, string eventType) => fatalities switch
-    {
-        >= 25 => Severity.Critical,
-        >= 5 => Severity.High,
-        >= 1 => Severity.Medium,
-        _ => eventType.Contains("Battle", StringComparison.OrdinalIgnoreCase) ? Severity.Medium : Severity.Low,
-    };
+    private static Severity MapSeverity(int fatalities, string eventType) =>
+        fatalities == 0 && eventType.Contains("Battle", StringComparison.OrdinalIgnoreCase)
+            ? Severity.Medium
+            : ConflictSeverity.FromDeaths(fatalities);
 
     private static string ErrorMessage(JsonElement root)
     {

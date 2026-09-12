@@ -118,7 +118,8 @@ no outbound HTTP request at all.
 | --- | --- | --- | --- |
 | RSS / Atom | `rss:<feed>` | feed URLs | nothing |
 | NASA FIRMS | `firms:<dataset>` | `Providers:NasaFirms:ApiKey` | coordinates, `NaturalHazard`, low severity |
-| ACLED | `acled` | `Providers:Acled:Username` + `:Password` | coordinates, category, fatality-derived severity |
+| ACLED | `acled` | `Providers:Acled:Username` + `:Password` | coordinates and their stated precision, category, fatality-derived severity |
+| UCDP GED | `ucdp` | `Providers:Ucdp:AccessToken` | coordinates and their stated precision, category, death-derived severity |
 
 A provider polls only when `Providers:Mode` is `Live` **and** its own `Enabled` is `true`. One switch
 would be too easy to flip by copying an example config into a demo deployment.
@@ -528,6 +529,10 @@ credential is ever read from a committed file.
 | `Providers:Acled:BaseAddress` | `https://acleddata.com/api/` | Current API root. The retired `api.acleddata.com` no longer resolves. |
 | `Providers:Acled:TokenEndpoint` | `https://acleddata.com/oauth/token` | Where the account credential is exchanged for a token |
 | `Providers:Acled:Countries` | empty | Country names to request, as ACLED spells them. Empty means no filter. |
+| `Providers:Ucdp:Enabled` | false | Whether UCDP georeferenced events are polled |
+| `Providers:Ucdp:AccessToken` | none | **Never put this in a file.** Requested from UCDP by email. Dormant without it. |
+| `Providers:Ucdp:Resource` / `:Version` | `gedevents` / `26.0.7` | GED Candidate, the monthly series |
+| `Providers:Ucdp:Countries` | empty | Gleditsch and Ward numbers, not ISO codes. Empty means no filter. |
 | `Providers:*:PollInterval` | 15 min / 1 h / 6 h | Per-provider polling cadence |
 | `Providers:*:MaxItemsPerPoll` | 25 / 50 / 50 | Ceiling on envelopes emitted from one poll |
 | `Replay:Enabled` | true | Whether the recorded demo stream runs |

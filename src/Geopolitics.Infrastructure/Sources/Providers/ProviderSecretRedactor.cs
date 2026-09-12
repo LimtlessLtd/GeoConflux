@@ -66,5 +66,6 @@ internal sealed class ProviderSecretRedactor(IOptionsMonitor<ProviderOptions> op
         yield return options.NasaFirms.ApiKey;
         yield return options.Acled.Username;
         yield return options.Acled.Password;
+        yield return options.Ucdp.AccessToken;
     }
 }

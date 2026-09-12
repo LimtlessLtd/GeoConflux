@@ -36,6 +36,8 @@ public sealed class ProviderOptions
 
     public AcledProviderOptions Acled { get; set; } = new();
 
+    public UcdpProviderOptions Ucdp { get; set; } = new();
+
     /// <summary>True when this provider may actually poll: live mode and the provider both enabled.</summary>
     public bool IsLive(ProviderOptionsBase provider)
     {
@@ -153,4 +155,45 @@ public sealed class AcledProviderOptions : ProviderOptionsBase
     /// particular" rather than a hidden geographic scope baked into the application.
     /// </summary>
     public IList<string> Countries { get; } = [];
+}
+
+public sealed class UcdpProviderOptions : ProviderOptionsBase
+{
+    public UcdpProviderOptions()
+    {
+        // GED Candidate publishes monthly. Polling faster than daily returns the rows already seen,
+        // and the API's allowance of 5,000 requests a day is not a reason to spend them.
+        PollInterval = TimeSpan.FromHours(24);
+    }
+
+    public string BaseAddress { get; set; } = "https://ucdpapi.pcr.uu.se/api/";
+
+    /// <summary>
+    /// UCDP access token, requested from the maintainer by email. Supplied through environment
+    /// variables or user secrets only; an empty value keeps the adapter dormant rather than producing
+    /// failing requests.
+    /// </summary>
+    public string AccessToken { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Which UCDP resource to read. <c>gedevents</c> is the Georeferenced Event Dataset.
+    /// </summary>
+    public string Resource { get; set; } = "gedevents";
+
+    /// <summary>
+    /// Dataset version. Configuration rather than a constant because UCDP publishes the yearly and
+    /// candidate series at different versions at the same time, and a monthly release should not
+    /// require a build. <c>26.0.7</c> is GED Candidate, which is the one with under a month's lag.
+    /// </summary>
+    public string Version { get; set; } = "26.0.7";
+
+    /// <summary>How far back to request events on each poll, against the event end date.</summary>
+    public int DaysBack { get; set; } = 45;
+
+    /// <summary>
+    /// Countries to request, as Gleditsch and Ward numbers — not ISO codes and not names. Empty by
+    /// default and deliberately so: a wrong number here is a silently wrong country, and a guessed
+    /// one committed to this repository would be exactly that.
+    /// </summary>
+    public IList<int> Countries { get; } = [];
 }
