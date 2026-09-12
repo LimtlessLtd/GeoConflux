@@ -487,7 +487,8 @@ public sealed partial class ObservationProcessor(
                     observation.LocationName,
                     envelope.DeclaredLatitude,
                     envelope.DeclaredLongitude,
-                    envelope.DeclaredCountryCode),
+                    envelope.DeclaredCountryCode,
+                    envelope.DeclaredPrecision),
                 cancellationToken);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)

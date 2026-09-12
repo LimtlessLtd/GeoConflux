@@ -172,6 +172,11 @@ internal sealed partial class AcledEventSource : PollingEventSource
             DeclaredLocationName = record.LocationName,
             DeclaredLatitude = record.Latitude,
             DeclaredLongitude = record.Longitude,
+
+            // Stated, not assumed. ACLED codes how precisely its coordinates locate the event, and
+            // its best case is the coordinates of a town rather than of the event — so declaring
+            // every record exact, as this adapter used to, overstated every one of them.
+            DeclaredPrecision = record.Latitude is null ? null : record.Precision,
             DeclaredCountryCode = CountryCode(record.CountryName),
 
             // Coded by the provider, so stated rather than inferred. The pipeline keeps a declared

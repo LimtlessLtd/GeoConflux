@@ -316,6 +316,15 @@ public sealed class ProviderAdapterTests
         // away everything that was not already two characters — so it never produced a code at all.
         Assert.Equal("UA", envelopes[0].DeclaredCountryCode);
         Assert.Equal("YE", envelopes[1].DeclaredCountryCode);
+
+        // And the provider's own statement about how well it located the event, which this adapter
+        // used to overstate as exact on every record.
+        Assert.Equal(LocationPrecision.Settlement, envelopes[0].DeclaredPrecision);
+
+        // The record whose latitude was unusable arrives with no coordinates, so it has no precision
+        // to declare either: a qualifier on a position that does not exist describes nothing.
+        Assert.Null(envelopes[2].DeclaredLatitude);
+        Assert.Null(envelopes[2].DeclaredPrecision);
     }
 
     /// <summary>

@@ -20,19 +20,26 @@ public sealed partial class GazetteerLocationResolver(ILogger<GazetteerLocationR
         ArgumentNullException.ThrowIfNull(request);
         cancellationToken.ThrowIfCancellationRequested();
 
-        // A structured provider's own coordinates outrank any name lookup: they describe the exact
-        // observation, whereas a gazetteer entry is only the centroid of a named area.
+        // A structured provider's own coordinates outrank any name lookup: they describe the
+        // observation itself, whereas a gazetteer entry is only the centroid of a named area.
         if (request.DeclaredLatitude is { } latitude && request.DeclaredLongitude is { } longitude)
         {
             var name = string.IsNullOrWhiteSpace(request.LocationName)
                 ? FormatCoordinates(latitude, longitude)
                 : request.LocationName.Trim();
 
+            // The provider's own statement about its own coordinate, or exact when it made none.
+            // Curated event datasets are frank about this — ACLED and UCDP both publish a precision
+            // code, and it is frequently not "exact" — so taking every borrowed coordinate as a fix
+            // would present a provincial centroid with the confidence of a grid reference.
+            var precision = request.DeclaredPrecision ?? LocationPrecision.Exact;
+
             return Task.FromResult(new LocationResolution(
-                new GeoLocation(name, request.DeclaredCountryCode, latitude, longitude, LocationPrecision.Exact),
+                new GeoLocation(name, request.DeclaredCountryCode, latitude, longitude, precision),
                 LocationResolutionMethod.SourceProvided,
-                0.95,
-                null));
+                DeclaredConfidenceFor(precision),
+                null,
+                DeclaredNoteFor(precision)));
         }
 
         if (string.IsNullOrWhiteSpace(request.LocationName))
@@ -58,6 +65,41 @@ public sealed partial class GazetteerLocationResolver(ILogger<GazetteerLocationR
         LogUnknownPlace(logger, request.LocationName);
         return Task.FromResult(LocationResolution.Failed($"'{request.LocationName.Trim()}' is not in the local gazetteer."));
     }
+
+    /// <summary>
+    /// Confidence for a coordinate the provider supplied, by the precision the provider claimed for
+    /// it.
+    /// <para>
+    /// A flat number here would say that a UCDP record coded to a country centroid is as well placed
+    /// as one coded to the event itself, when the record states the opposite. Every value stays above
+    /// its gazetteer counterpart below, because a provider that coded a province still knows more
+    /// than a name lookup that guessed at one.
+    /// </para>
+    /// </summary>
+    private static double DeclaredConfidenceFor(LocationPrecision precision) => precision switch
+    {
+        LocationPrecision.Exact => 0.95,
+        LocationPrecision.Settlement => 0.85,
+        LocationPrecision.Region => 0.6,
+        LocationPrecision.Country => 0.35,
+        _ => 0.5,
+    };
+
+    /// <summary>
+    /// The caveat that travels with a coarse provider placement. Silent for exact and settlement
+    /// placements, on the same reasoning as the gazetteer notes below: a caveat on every observation
+    /// is a caveat nobody reads.
+    /// </summary>
+    private static string? DeclaredNoteFor(LocationPrecision precision) => precision switch
+    {
+        LocationPrecision.Country =>
+            "The source knew only which country this happened in. The marker shows the country, not "
+                + "the location of the event.",
+        LocationPrecision.Region =>
+            "The source placed this at a representative point for an area rather than at a position. "
+                + "The marker shows roughly where, not exactly where.",
+        _ => null,
+    };
 
     /// <summary>
     /// Confidence by how much ground the entry stands for. A gazetteer hit is never as good as a

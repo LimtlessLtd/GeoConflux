@@ -81,6 +81,14 @@ public sealed partial class ObservationIngestionService(
                 + "name a place instead and the resolver will place it.";
         }
 
+        // A precision describes a coordinate, so without one it describes nothing. Accepting it
+        // would let a caller attach a confident-sounding qualifier to a position the resolver is
+        // about to derive from a place name, which is a claim about someone else's work.
+        if (envelope.DeclaredPrecision is not null && envelope.DeclaredLatitude is null)
+        {
+            return "A declared precision describes declared coordinates, so it may not be supplied without them.";
+        }
+
         return null;
     }
 

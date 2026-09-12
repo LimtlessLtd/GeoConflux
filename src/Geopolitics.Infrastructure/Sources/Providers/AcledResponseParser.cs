@@ -8,6 +8,7 @@ namespace Geopolitics.Infrastructure.Sources.Providers;
 /// <param name="EventType">The category ACLED assigned, mapped onto this system's taxonomy.</param>
 /// <param name="Latitude">Coordinates from ACLED's own coded record, not inferred from prose.</param>
 /// <param name="CountryName">The country as ACLED names it. The schema carries no alpha-2 code to read.</param>
+/// <param name="Precision">What ACLED says its own coordinates describe, from <c>geo_precision</c>.</param>
 /// <param name="Fatalities">Reported fatalities, which drive the severity mapping.</param>
 public sealed record AcledEvent(
     string Identifier,
@@ -19,6 +20,7 @@ public sealed record AcledEvent(
     double? Longitude,
     string? CountryName,
     string? LocationName,
+    LocationPrecision Precision,
     DateTimeOffset? OccurredAt,
     int Fatalities);
 
@@ -142,6 +144,7 @@ public static class AcledResponseParser
             longitude,
             country,
             string.IsNullOrWhiteSpace(location) ? country : location,
+            MapPrecision(Number(element, "geo_precision")),
             ParseDate(Text(element, "event_date")),
             fatalities);
     }
@@ -167,6 +170,35 @@ public static class AcledResponseParser
             _ => EventType.Other,
         };
     }
+
+    /// <summary>
+    /// Maps ACLED's <c>geo_precision</c> onto this system's precision scale.
+    /// <para>
+    /// Worth stating plainly, because the previous adapter declared every ACLED coordinate exact and
+    /// that was never true. ACLED's own codebook describes its best case, code 1, as "the source
+    /// reporting indicates a particular town, and coordinates are available for that town" — the
+    /// town's coordinates, not the event's. That is a settlement fix, which is what this system calls
+    /// <see cref="LocationPrecision.Settlement"/>. Code 2 covers activity "near a town or a city" or
+    /// in "a small part of a region", and code 3 a larger region represented by a provincial capital
+    /// or a natural feature; both are a representative point standing in for an area, which is
+    /// <see cref="LocationPrecision.Region"/>.
+    /// </para>
+    /// <para>
+    /// Codes 2 and 3 therefore collapse together even though 3 is considerably coarser. That loses a
+    /// gradation, and the alternative — inventing a fourth level to keep it — would be adding a
+    /// domain concept to carry one provider's scale. Understating precision is the safe direction for
+    /// the error to run, so the gradation goes rather than the honesty.
+    /// </para>
+    /// </summary>
+    private static LocationPrecision MapPrecision(double? geoPrecision) => geoPrecision switch
+    {
+        1 => LocationPrecision.Settlement,
+        2 or 3 => LocationPrecision.Region,
+
+        // ACLED codes this field on every record, so this is the defensive branch rather than a real
+        // case. Settlement matches what the adapter gets when the field is present and best.
+        _ => LocationPrecision.Settlement,
+    };
 
     /// <summary>
     /// Derives severity from the fatality count ACLED coded.

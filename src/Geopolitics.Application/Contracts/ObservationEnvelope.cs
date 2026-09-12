@@ -38,6 +38,24 @@ public sealed record ObservationEnvelope
 
     public double? DeclaredLongitude { get; init; }
 
+    /// <summary>
+    /// How precisely the provider says its own coordinates describe the event, when it says.
+    /// <para>
+    /// Curated event datasets publish this: ACLED codes <c>geo_precision</c>, UCDP codes
+    /// <c>where_prec</c>, and both mean the same thing — whether the coordinate is the event, the
+    /// town it happened in, or the centroid of a province standing in for it. Discarding that and
+    /// treating every borrowed coordinate as exact is the honesty problem this field exists to avoid:
+    /// a provincial centroid drawn as confidently as a grid reference is a claim the record does not
+    /// make.
+    /// </para>
+    /// <para>
+    /// Null means the provider stated nothing, which is read as exact — correct for a satellite
+    /// instrument geolocating a pixel, which is the one source here that genuinely measures a
+    /// position rather than assigning one.
+    /// </para>
+    /// </summary>
+    public LocationPrecision? DeclaredPrecision { get; init; }
+
     public string? DeclaredCountryCode { get; init; }
 
     public EventType? DeclaredEventType { get; init; }

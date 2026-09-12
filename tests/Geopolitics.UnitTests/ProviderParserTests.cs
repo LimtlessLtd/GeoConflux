@@ -240,6 +240,28 @@ public sealed class ProviderParserTests
         Assert.Equal("Ethiopia", events[2].CountryName);
     }
 
+    /// <summary>
+    /// ACLED states how precisely its coordinates locate each event, and the parser carries that
+    /// rather than discarding it.
+    /// <para>
+    /// The adapter used to declare every ACLED coordinate exact. It never was: the codebook describes
+    /// even the best case, code 1, as the coordinates of the town the source named — a settlement
+    /// fix. Codes 2 and 3 are a representative point standing in for an area.
+    /// </para>
+    /// </summary>
+    [Fact]
+    public void AcledGeoPrecisionIsCarriedRatherThanFlattenedToExact()
+    {
+        var events = AcledResponseParser.Parse(Fixture("acled-response.json"));
+
+        Assert.Equal(LocationPrecision.Settlement, events[0].Precision);
+        Assert.Equal(LocationPrecision.Settlement, events[1].Precision);
+        Assert.Equal(LocationPrecision.Region, events[2].Precision);
+
+        // Nothing ACLED codes is an exact fix on the event, so nothing should claim to be one.
+        Assert.DoesNotContain(events, record => record.Precision == LocationPrecision.Exact);
+    }
+
     [Fact]
     public void AcledErrorResponseSurfacesTheProvidersOwnMessage()
     {

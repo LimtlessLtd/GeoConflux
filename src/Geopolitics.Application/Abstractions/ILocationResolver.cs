@@ -50,8 +50,13 @@ public interface ILocationResolver
 /// <param name="DeclaredLatitude">Latitude supplied by a structured provider, when present.</param>
 /// <param name="DeclaredLongitude">Longitude supplied by a structured provider, when present.</param>
 /// <param name="DeclaredCountryCode">ISO country code supplied by the provider, when present.</param>
+/// <param name="DeclaredPrecision">
+/// How precisely the provider says its coordinates describe the event. Null when it did not say, in
+/// which case the coordinates are taken as exact.
+/// </param>
 public sealed record LocationResolutionRequest(
     string? LocationName,
     double? DeclaredLatitude,
     double? DeclaredLongitude,
-    string? DeclaredCountryCode);
+    string? DeclaredCountryCode,
+    LocationPrecision? DeclaredPrecision = null);

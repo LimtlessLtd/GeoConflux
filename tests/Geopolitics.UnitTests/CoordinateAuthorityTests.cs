@@ -89,6 +89,43 @@ public sealed class CoordinateAuthorityTests
         Assert.Null(resolution.Location);
     }
 
+    /// <summary>
+    /// A precision describes a coordinate, so without one it describes nothing.
+    /// <para>
+    /// This closes the same door from the other side. A caller that cannot supply a coordinate could
+    /// otherwise supply a precision for the one the resolver is about to derive from a place name —
+    /// asserting how good somebody else's work is about to be, which is a claim it has no standing to
+    /// make and which would travel to the reader as though the source had made it.
+    /// </para>
+    /// </summary>
+    [Fact]
+    public async Task ADeclaredPrecisionWithoutDeclaredCoordinatesIsRefused()
+    {
+        var queue = new CapturingQueue();
+        using var diagnostics = new PipelineDiagnostics(new TestMeterFactory());
+        var service = new ObservationIngestionService(
+            queue,
+            diagnostics,
+            NullLogger<ObservationIngestionService>.Instance);
+
+        var result = await service.IngestAsync(
+            new ObservationEnvelope
+            {
+                SourceName = "acled",
+
+                // A kind that is allowed coordinates, so the refusal is about the missing pair rather
+                // than about who is asking.
+                Kind = ObservationKind.ExternalEvent,
+                Content = "An event with a precision but no position.",
+                DeclaredPrecision = LocationPrecision.Settlement,
+            },
+            CancellationToken.None);
+
+        Assert.False(result.Accepted);
+        Assert.Contains("declared coordinates", result.RejectionReason!, StringComparison.Ordinal);
+        Assert.Empty(queue.Enqueued);
+    }
+
     private sealed class CapturingQueue : IObservationQueueWriter
     {
         public List<ObservationEnvelope> Enqueued { get; } = [];
