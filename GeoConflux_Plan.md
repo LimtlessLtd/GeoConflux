@@ -813,7 +813,7 @@ glamorous, and it carries most of the global coverage:
 | Region | Examples |
 | --- | --- |
 | Russia / CIS | TASS, RIA Novosti, Interfax, Meduza |
-| China | Xinhua, Global Times, CCTV, South China Morning Post |
+| China | Xinhua (Chinese and English editions), People's Daily, CCTV, Global Times, China Daily, South China Morning Post, and Taiwan's CNA for the view from outside |
 | Middle East | SANA, Al Jazeera Arabic, Al-Arabiya, Anadolu, IRNA, Tasnim, Mehr |
 | Africa | AllAfrica, Premium Times, Daily Nation, The EastAfrican, Nation Media |
 | South Asia | The Hindu, Dawn, Prothom Alo, regional-language outlets |
@@ -824,6 +824,21 @@ glamorous, and it carries most of the global coverage:
 *Verified 2026-09-12: the AllAfrica RDF feed returns well-formed items over plain HTTP with no
 credential.* State media belongs in this tier and is read as what it is — a government's account of
 events, valuable precisely because it states a position, and never mistaken for an independent one.
+
+### Reading an outlet against itself
+
+Where a publisher runs editions in more than one language, collect both and keep them as separate
+items citing their own URLs.
+
+The point is the difference. Xinhua in Chinese and Xinhua in English are written for different
+readers, and where they diverge on the same event — what is emphasised, what is omitted, which actor
+is named — the divergence is itself the observation. The same holds for RT's language editions, for
+Al Jazeera Arabic against Al Jazeera English, and for Iranian outlets publishing in Farsi and English.
+
+This costs nothing beyond listing both URLs in the brief, and it extracts a signal that no amount of
+additional single-language sources would produce. The correlator will see the pair as reports of one
+event, which is correct; what matters is that both texts are retained, so the comparison remains
+available to a reader rather than being averaged away.
 
 ### Tier B — open social
 
@@ -842,8 +857,11 @@ User-generated platforms that serve public content without authentication:
 ### Tier C — closed or paid, and recorded as such
 
 - **X / Twitter.** *Verified 2026-09-12: an unauthenticated profile request returns HTTP 402 Payment
-  Required.* Public reading is gated and the API is a paid subscription. Out of scope until someone
-  pays for it, and circumventing the gate is not an option (see access and terms, below).
+  Required.* Public reading is gated and the API is a paid subscription. Circumventing the gate is not
+  an option (see access and terms, below), and neither is holding an account that misrepresents an
+  automated collector as a person: the gate exists to prevent exactly that, and defeating it would
+  make every other guarantee in this document worth less. The supported route is a paid credential
+  held by the deployment — see below.
 - **Weibo.** *Verified 2026-09-12: redirects to `passport.weibo.com` visitor authentication.*
 - **VK, Facebook, Instagram** — token or gated Graph API.
 - **WeChat, WhatsApp** — closed by design. WhatsApp has no public surface at all and is
@@ -857,6 +875,31 @@ reason.
 
 Tier C is written down rather than silently absent. A gap that is recorded is a known limitation; a
 gap that is not is a false claim of global coverage.
+
+### A paid credential moves a source, it does not change the rules
+
+A Tier C platform with an official paid API is reachable by paying for it, under a real account held
+by whoever deploys this. That is an ordinary authenticated integration and the repository already has
+the pattern for one: ACLED.
+
+Such a provider is therefore built exactly as ACLED is built, and inherits every constraint that came
+with it (ADR 015):
+
+- an adapter behind `IEventSource`, with its parser a pure function pinned to recorded fixtures
+- two switches — live mode *and* the provider's own `Enabled` — plus a credential, absent by default
+- the credential supplied through environment variables or user secrets, never committed, and
+  redacted from outbound logs by the mechanism ADR 021 already provides
+- dormant in the configuration this repository ships, and a test proving a default clone makes no
+  request
+- CI and the demo path working with no credential at all
+
+X is the concrete case: with a paid API key it is a Tier B-equivalent social source and its items are
+`userGenerated`, subject to the corroboration gate like any other post. Without one it stays in
+Tier C and is reported as a gap. Nothing else in the pipeline changes either way, which is the point
+of having built the adapters this way.
+
+The rule that does not move is the one about how the credential is obtained. A paid subscription is a
+legitimate route; an account created to look like a person is not, whatever it would unlock.
 
 ## Language, script, and dialect
 
