@@ -765,6 +765,11 @@ Its authority is strictly limited to *what was published, by whom, and where to 
 no coordinates, no classification, and no severity. Section 21 defines the role boundary, the bundle
 contract, and the validation applied to it.
 
+Collection is not English-language and not Western-wire. Section 21 groups the source surface into
+open documents in any language, open social platforms that serve public content without
+authentication, and platforms that are closed or paid — the last recorded explicitly, because an
+unrecorded gap reads as coverage the system does not have.
+
 ---
 
 # 21. Agent-Collected OSINT
@@ -789,6 +794,104 @@ retrievable citation for every item it produces.
 
 This section therefore adds a second intake shape alongside polling. It does not replace the RSS
 adapter, it introduces no credential, and it changes nothing downstream of the processing queue.
+
+## The source surface
+
+A dashboard that reads four English-language wire feeds is not showing a global picture, it is showing
+the part of the world those four newsrooms staffed. Reaching wider means reading non-Western wires in
+their own languages and reading the social platforms where conflict reporting now breaks first.
+
+What is reachable is not a matter of preference. Sources are grouped by the access they actually
+permit, because that is what determines whether an adapter can exist at all. **Access was tested, not
+assumed, and each finding is dated — platform access policy changes faster than this document does.**
+
+### Tier A — open documents
+
+Publishers serving fetchable pages or feeds, in any language. This is the widest tier and the least
+glamorous, and it carries most of the global coverage:
+
+| Region | Examples |
+| --- | --- |
+| Russia / CIS | TASS, RIA Novosti, Interfax, Meduza |
+| China | Xinhua, Global Times, CCTV, South China Morning Post |
+| Middle East | SANA, Al Jazeera Arabic, Al-Arabiya, Anadolu, IRNA, Tasnim, Mehr |
+| Africa | AllAfrica, Premium Times, Daily Nation, The EastAfrican, Nation Media |
+| South Asia | The Hindu, Dawn, Prothom Alo, regional-language outlets |
+| East Asia | NHK, Kyodo, Yonhap, KCNA |
+| Latin America | regional wires in Spanish and Portuguese |
+| Multilateral | UN News, ReliefWeb, OCHA, IOM, WHO outbreak reporting |
+
+*Verified 2026-09-12: the AllAfrica RDF feed returns well-formed items over plain HTTP with no
+credential.* State media belongs in this tier and is read as what it is — a government's account of
+events, valuable precisely because it states a position, and never mistaken for an independent one.
+
+### Tier B — open social
+
+User-generated platforms that serve public content without authentication:
+
+- **Telegram public channels**, via the server-rendered `t.me/s/<channel>` preview page. *Verified
+  2026-09-12: returns full post text, timestamps, and view counts with no credential and no
+  JavaScript.* This is the single highest-value social surface for conflict OSINT and is dominant in
+  Russian, Ukrainian, Persian, and Arabic reporting.
+- **Bluesky**, via the public AT Protocol AppView. *Verified 2026-09-12:
+  `app.bsky.feed.getAuthorFeed` returns JSON for a named account without authentication;
+  `app.bsky.feed.searchPosts` returns 403.* Collection is therefore by curated account list, not by
+  search.
+- **Mastodon**, whose instances serve public timelines over an open API.
+
+### Tier C — closed or paid, and recorded as such
+
+- **X / Twitter.** *Verified 2026-09-12: an unauthenticated profile request returns HTTP 402 Payment
+  Required.* Public reading is gated and the API is a paid subscription. Out of scope until someone
+  pays for it, and circumventing the gate is not an option (see access and terms, below).
+- **Weibo.** *Verified 2026-09-12: redirects to `passport.weibo.com` visitor authentication.*
+- **VK, Facebook, Instagram** — token or gated Graph API.
+- **WeChat, WhatsApp** — closed by design. WhatsApp has no public surface at all and is
+  end-to-end encrypted.
+
+That last point answers a question worth answering explicitly, because the assumption behind it is
+common: there is no "X equivalent" to read across much of Africa and South Asia. The dominant platform
+is WhatsApp, and it is unreadable by construction. Coverage of those regions comes from Tier A
+regional wires, from Telegram, and from ACLED — which is a curated dataset built for exactly this
+reason.
+
+Tier C is written down rather than silently absent. A gap that is recorded is a known limitation; a
+gap that is not is a false claim of global coverage.
+
+## Language, script, and dialect
+
+Reading widely in one language is not global reach. Two distinct problems follow, and the second is
+the one that actually blocks the map.
+
+### Tasking must be in-language
+
+A brief written in English finds English. Searching for `airstrike` never surfaces `غارة جوية`,
+`авиаудар`, or `空袭`. A brief therefore carries its query terms **per language and per script**,
+including the regional variants that matter: Modern Standard Arabic alongside Levantine and Gulf
+usage, Farsi and Dari, Simplified and Traditional Chinese, Ukrainian alongside Russian, Hausa and
+Swahili and Amharic alongside French and Portuguese for Africa.
+
+Transliteration is part of the tasking, not an afterthought. The same place is `Kharkiv`, `Харків`,
+`Харьков`, and `Kharkov` depending on who is writing and which side they are on, and a brief that
+lists only one of those is taking a position it did not mean to take.
+
+### Resolution is the actual bottleneck
+
+The pipeline already handles non-English text: the enrichment prompt asks for the language as a
+BCP-47 tag, requires the summary in English, and instructs the model to *report the place as it is
+named in the text*. That last instruction is correct and it is also where multilingual collection
+currently dies.
+
+The gazetteer holds around two hundred entries, all Latin script, with Latin-script aliases. Its key
+normaliser lowercases and strips non-alphanumerics, so a name in Arabic or Cyrillic normalises to a
+key in that same script and simply is not in the table. The observation is retained as unresolved,
+which is the correct behaviour under ADR 005 and is still a report that never reaches the globe.
+
+So collecting in twenty languages while resolving in one produces a dashboard that sees more of the
+world and plots less of it. **The gazetteer must gain native-script aliases — Arabic, Cyrillic, Han,
+Persian, and Devanagari forms mapped onto the existing canonical entries — before the source surface
+is widened.** That is a larger unlock than any additional source, and it is cheap: the entries already
+exist, they need their other names.
 
 ## The role boundary
 
@@ -824,6 +927,33 @@ that supplies coordinates is precisely the failure mode ADR 005 exists to preven
 new door. The value of this source is *reach and citation*, and it is worth nothing if it is bought
 by weakening the guarantees the rest of the pipeline provides.
 
+## A post is not a report
+
+Tier B changes what a citation means, and the contract has to change with it.
+
+A wire item comes from a named organisation with an editorial process, a correction policy, and a
+reputation it is unwilling to spend. A Telegram post comes from a handle. It may be a first-hand
+account minutes old and better than anything a wire will publish that day; it may equally be an
+anonymous claim, footage recycled from a different war, or deliberate deception produced by a party
+to the conflict. Contested information space is the normal operating condition for these channels,
+not an edge case.
+
+The design response is not to exclude them, because excluding them means excluding the fastest and
+often the only reporting from inside an event. It is to keep the distinction all the way through:
+
+- Every item declares a `kind`: `document` or `userGenerated`. This is a factual statement about the
+  source, not a judgement about the claim, so the collector may set it.
+- A user-generated item cites a `platform` and a `channel` or handle in place of a publisher.
+- **A single-source user-generated claim must not create an incident on its own.** It is persisted,
+  displayed, and labelled as an uncorroborated claim. Promotion requires corroboration from an
+  independent source, and the correlator decides that, not the collector.
+- The dashboard distinguishes *reported by* from *claimed on*. A reader must never have to guess
+  which they are looking at.
+- `contentHash` does not help with recycled media, because the text is genuinely new even when the
+  event is years old. What partly helps is the existing semantic deduplication and correlation
+  (Sections 16 and 17), and the honest position is that it helps partly. Recycled-content detection
+  is a known limitation, recorded rather than papered over.
+
 ## The standing collection brief
 
 Tasking is configuration, not conversation. A brief is a committed document under
@@ -833,9 +963,13 @@ comparable and so a reader can see what the dashboard was and was not looking at
 A brief specifies:
 
 - **Scope** — topics and regions in scope, and what is explicitly out of scope
+- **Query terms per language and script** — the same concept expressed in each language the brief
+  covers, with transliteration variants, as described above
+- **Source tiers in scope** — documents only, or documents and open social
 - **Recency window** — how far back a report may have been published to qualify
-- **Source diversity** — a cap on how many items may come from any one publisher in a single run, so
-  a prolific outlet cannot dominate the picture
+- **Source diversity** — a cap on how many items may come from any one publisher, channel, or
+  platform in a single run, so neither a prolific outlet nor one busy Telegram channel can dominate
+  the picture
 - **Exclusions** — opinion, analysis, editorial, aggregator reposts, and anything behind a paywall
   where only the teaser is retrievable
 - **Volume** — a maximum number of items per run
@@ -876,6 +1010,20 @@ reviewed in a diff, replayed, and re-verified long after the run that produced i
       "excerpt": "A cargo vessel transiting the strait reported small-arms fire from two skiffs early on Thursday, according to the operator. No injuries were reported and the vessel continued north.",
       "placeNames": ["Bab-el-Mandeb", "Aden"],
       "relatedTo": ["https://other-outlet.example/world/strait-incident"]
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/s/example_channel/48217",
+      "platform": "telegram",
+      "channel": "example_channel",
+      "postedAt": "2026-09-11T19:05:00Z",
+      "retrievedAt": "2026-09-12T09:13:04Z",
+      "contentHash": "sha256:4b81e0f3...",
+      "language": "ar",
+      "excerpt": "إطلاق نار على سفينة تجارية قبالة السواحل",
+      "excerptTranslation": null,
+      "placeNames": ["باب المندب"],
+      "relatedTo": ["https://example-news.org/2026/09/11/vessel-incident-bab-el-mandeb"]
     }
   ]
 }
@@ -893,6 +1041,15 @@ Field rules:
   model: the gazetteer resolves them, or the observation stays unresolved.
 - `relatedTo` is advisory. It is recorded, and may be offered to the correlator as one more signal; it
   never creates, merges, or suppresses an incident on its own.
+- `kind` is `document` or `userGenerated` and is required. It selects which of `publisher` or
+  `platform`/`channel` must be present, and it determines whether a single-source item may reach an
+  incident on its own.
+- `excerpt` is always the original text in its original script. `excerptTranslation` stays null: the
+  collector quotes, and the enrichment stage translates, so a reviewer can always see what was
+  actually written. A collector-supplied translation would be an unvalidated paraphrase in the one
+  field the whole citation rests on.
+- `placeNames` may be in any script, and are expected to be for non-English sources. They resolve
+  against the gazetteer's native-script aliases, or the observation stays unresolved.
 - There is no coordinate field, no event-type field, and no severity field. As with the enrichment
   schema in Section 11, the contract's shape is the enforcement — a value that cannot be expressed
   cannot be smuggled in.
@@ -909,8 +1066,17 @@ Validation must:
 - bound bundle size, item count, excerpt length, place-name count, and every string field
 - require an absolute `http`/`https` URL whose host lies outside private, loopback, link-local, and
   reserved address space, matching the outbound policy in ADR 021
-- reject an item whose `publishedAt` is in the future, or whose `retrievedAt` precedes it
+- reject an item whose `publishedAt` or `postedAt` is in the future, or whose `retrievedAt`
+  precedes it
 - reject a bundle whose `collectedAt` is in the future or older than the configured maximum age
+- require `kind`, and require the fields that `kind` implies: `publisher` for a document,
+  `platform` and `channel` for a user-generated item
+- reject a `platform` outside the configured Tier B allow-list, so a closed platform cannot be
+  claimed as a source
+- reject a non-null `excerptTranslation`
+- accept any script in `excerpt`, `title`, and `placeNames`, normalising Unicode to NFC and
+  measuring length in text elements rather than UTF-16 units, so a cap written for English does not
+  silently truncate Arabic or Han text mid-character
 - strip control characters and normalise whitespace before anything is persisted or displayed
 - reject the whole bundle on a structural fault, and skip the individual item on an item-level one,
   logging which and why in both cases
@@ -949,6 +1115,20 @@ A bundle older than the configured maximum age is skipped with a warning — not
 not quietly served. A page that has slowly become a museum while still describing itself as current
 is the failure this rule prevents, and it is the failure hardest to notice from the outside.
 
+## Coverage is measured, not asserted
+
+Claiming a global picture obliges the system to show whether it has one.
+
+Every collection run records its own coverage: items per region, per language, per source tier, and
+per platform. The dashboard surfaces it, and the exported snapshot carries it.
+
+This exists because the failure it detects is invisible otherwise. A dashboard that is eighty percent
+Ukraine and Gaza looks exactly like a working global dashboard — the map has pins on it, the pipeline
+is healthy, nothing errored. The only way to see the bias is to count, and the only honest way to
+present breadth is to publish the count alongside the claim. A region with no coverage this run is
+reported as *not looked at* or *nothing found*, which are different statements and neither one is an
+empty space on a map.
+
 ## Excerpts, not articles
 
 An item carries a bounded verbatim excerpt and a link, never the article body. The reason is partly
@@ -958,6 +1138,19 @@ repository's copy of someone else's text.
 
 The excerpt must be contiguous and verbatim. A stitched-together excerpt is a paraphrase wearing
 quotation marks, and it destroys the property that makes `contentHash` worth recording.
+
+## Access, robots, and terms
+
+Collection reads what a service chooses to serve publicly, and stops there.
+
+- `robots.txt` is honoured, and requests are rate-limited and identified.
+- An authentication wall, a paywall, or a payment gate is a refusal, and a refusal is respected. No
+  credential sharing, no logged-out scraping workaround, no rendering a page a service declined to
+  serve. A source behind a gate is a Tier C entry, not a challenge.
+- Terms of service are part of whether a source is in scope at all. This matters beyond compliance:
+  a portfolio project that reaches its data by violating a platform's terms has demonstrated the
+  wrong thing, and no amount of engineering quality elsewhere recovers it.
+- Excerpts stay short and always carry their link, per the excerpt policy above.
 
 ## Verifiability
 
@@ -1823,10 +2016,15 @@ the collector any authority the pipeline does not already validate.
 ### Implement
 
 - bundle schema and a versioned contract under `data/osint/`
-- at least one committed standing brief under `data/osint/briefs/`
+- at least one committed standing brief under `data/osint/briefs/`, with per-language query terms
 - `AgentBriefEventSource` implementing `IEventSource` and `IBatchEventSource`
 - bundle validation: schema version, size and count caps, URL address policy, timestamp sanity,
-  control-character stripping, whole-bundle versus per-item rejection
+  Unicode normalisation and grapheme-aware length caps, control-character stripping, whole-bundle
+  versus per-item rejection
+- **native-script gazetteer aliases** — Arabic, Cyrillic, Han, Persian, and Devanagari forms mapped
+  onto the existing canonical entries, plus the transliteration variants that differ by which side is
+  writing
+- Tier A collection across non-Western wires, read in their own languages
 - provenance as a first-class property: recorded, polled, collected
 - collection date surfaced on the dashboard, and a third count in the exported snapshot metadata
 - maximum bundle age, with a skipped bundle warned about rather than silently ignored
@@ -1834,7 +2032,7 @@ the collector any authority the pipeline does not already validate.
 - a re-fetch verification tool, invoked explicitly and not part of the build
 - remove coordinate acceptance from `POST /api/observations`, reserving source-provided resolution
   for structured measurement providers
-- bundle fixtures covering the well-formed and malformed cases
+- bundle fixtures covering the well-formed and malformed cases, including non-Latin scripts
 - an ADR recording the decision once it ships
 
 ### Definition of Done
@@ -1852,6 +2050,50 @@ A malformed or expired bundle fails the build rather than reaching the page.
 
 ```text
 feat: ingest agent-collected OSINT bundles as a cited source
+```
+
+---
+
+## Sprint 8 — Open Social and Measured Coverage
+
+### Goal
+
+Extend collection to the open social platforms where conflict reporting breaks first, with the trust
+model that kind of source requires — and make the breadth of coverage a measured figure rather than a
+claim.
+
+### Implement
+
+- Tier B collection: Telegram public channel previews, Bluesky author feeds, Mastodon public
+  timelines
+- `kind` on every bundle item, with `platform` and `channel` for user-generated material and the
+  validation that enforces the pairing
+- a Tier B platform allow-list, so a closed platform cannot be named as a source
+- the corroboration gate: a single-source user-generated claim is persisted, displayed, and labelled
+  as uncorroborated, and cannot form an incident alone
+- dashboard treatment that distinguishes *reported by* a publisher from *claimed on* a channel
+- per-platform and per-channel diversity caps in the brief
+- coverage metrics: items per region, per language, per tier, per platform, surfaced on the dashboard
+  and carried in the exported snapshot
+- a distinction in the coverage report between a region not looked at and a region where nothing was
+  found
+- `robots.txt` handling, request identification, and rate limiting in the collection tooling
+- recorded fixtures for each Tier B platform, including a post in a non-Latin script
+
+### Definition of Done
+
+A Telegram or Bluesky item enters the pipeline with its channel cited, is visibly distinguished from
+wire reporting, and cannot produce an incident without corroboration.
+
+The published dashboard states its own coverage by region and language, and a reader can see where it
+is thin.
+
+No source is reached by circumventing an authentication wall, a paywall, or a payment gate.
+
+### Commit
+
+```text
+feat: collect open social sources and publish measured coverage
 ```
 
 ---
@@ -2005,6 +2247,9 @@ The project is complete when all of the following are true:
 - Demo/replay mode works without credentials.
 - Agent-collected observations carry a retrievable citation and cannot set coordinates, category, or severity.
 - Recorded, polled, and collected data are distinguishable in the published output, and collected data shows when it was gathered.
+- Non-English sources are collected in their own languages, and non-Latin place names resolve rather than silently failing.
+- User-generated claims are distinguished from published reporting and cannot form an incident uncorroborated.
+- Coverage by region and language is measured and published, and unreachable sources are recorded as known gaps.
 - Semantic similarity is used meaningfully where appropriate.
 - At least one classical ML component exists.
 - AI/ML evaluation is reproducible and contains real measurements.
