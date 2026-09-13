@@ -1,0 +1,55 @@
+GeoConflux
+==========
+
+This product includes data from third parties. Their terms are recorded here, and the credit each
+requires is carried on the dashboard where a reader will see it as well as in this file.
+
+
+GeoNames
+--------
+
+src/Geopolitics.Infrastructure/Location/Data/global-places.tsv is derived from the GeoNames
+geographical database, and holds every first- and second-order administrative unit on earth, the
+settlement that is the seat of each, and the names those places carry in the languages that report
+them.
+
+    Source:  https://www.geonames.org
+    Licence: Creative Commons Attribution 4.0 International (CC BY 4.0)
+             https://creativecommons.org/licenses/by/4.0/
+    Changes: Filtered to administrative units and administrative seats; alternate names restricted
+             to the languages of each place's own country plus the languages this project's sources
+             publish in; historic names, postcodes and identifier codes removed; coordinates rounded
+             to four decimal places. Extracted by tools/gazetteer/global.py.
+
+GeoNames provides the data "as is" without warranty or any representation of accuracy, timeliness or
+completeness.
+
+See docs/adr/032-global-gazetteer-sourcing.md for why this source was chosen.
+
+
+Wikidata
+--------
+
+src/Geopolitics.Infrastructure/Location/Data/theatre-places.json is derived from Wikidata, and holds
+settlement-level place names for the theatres under active tasking.
+
+    Source:  https://www.wikidata.org
+    Licence: CC0 1.0 Universal — no attribution obligation
+             https://creativecommons.org/publicdomain/zero/1.0/
+    Changes: Filtered per theatre by bounding box and population; labels and aliases collected in the
+             languages that theatre is reported in. Extracted by tools/gazetteer/extract.py.
+
+Credited here because provenance is useful and because it is courteous, not because the licence
+compels it. See docs/adr/026-gazetteer-sourcing.md.
+
+
+Esri
+----
+
+The dashboard's basemap imagery and boundaries come from Esri's public map services, requested by the
+browser at view time. Nothing from them is redistributed in this repository.
+
+    Source: https://www.esri.com
+    Terms:  https://www.esri.com/en-us/legal/terms/full-master-agreement
+
+See docs/adr/014-basemap-imagery.md.
