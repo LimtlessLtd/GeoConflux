@@ -152,6 +152,12 @@ the evaluation harness pointed at it so the cost is measured rather than argued 
 Each of these is a sprint in the sense the existing plan uses: it reaches `main` green, and the
 published page changes.
 
+Sprints 10 to 15 answer the question this document was written for — what going global would take.
+Sprints 16 to 19 were added afterwards and answer a different one: what it takes for this to run
+continuously as a live system rather than rebuild as a snapshot, and what of an ISW-shaped product is
+honestly within reach. They are kept here because they are the same series, and because the ordering
+in section 5 has to cover all of them at once.
+
 ### Sprint 10 — Global placement
 
 The prerequisite for everything else.
@@ -170,9 +176,14 @@ The prerequisite for everything else.
 **Done when** a report naming a district town in a country this project has never touched is drawn
 in the right place, and the evaluation harness shows what that cost in precision.
 
-### Sprint 11 — The comprehensive layer
+### Sprint 11 — The comprehensive layer *(complete, 2026-09-13)*
 
-Turn on what already exists.
+Turn on what already exists. Delivered as described, plus one defect the sprint uncovered: the
+snapshot exporter filled the bounded queue to completion before draining it, which deadlocks
+permanently for any run larger than the queue. See
+[ADR 031](adr/031-dataset-history.md). The credentials themselves remain a deployment action.
+
+
 
 - ACLED and UCDP live, with credentials supplied through deployment secrets, never committed. The
   Pages workflow is the deployment, so this is GitHub repository secrets plus the existing
@@ -247,6 +258,161 @@ coarse. At global scope the dashboard should state, per country: whether any sou
 which ones, and what they returned. That turns the coverage panel from a count into a map of this
 system's own reach — which is the only thing that makes the phrase "global dashboard" defensible.
 
+### Sprint 16 — Conflicts as first-class objects
+
+Today a "theatre" is a hard-coded country code and an optional bounding box, and there are three of
+them. That cannot express "every regional and local conflict", and hand-authoring sixty of them is
+not a plan.
+
+The register should be **discovered, not invented**, and the source already arrives in the payloads
+and is currently thrown away. UCDP GED carries `conflict_name`, `side_a` and `side_b` on every
+record; the parser reads all three and drops them into a headline fallback. ACLED carries actors and
+`disorder_type`. Cataloguing the world's armed conflicts is Uppsala's entire job, and this repository
+is already parsing the field that names them.
+
+- **Identity from coded data.** Conflicts come from UCDP and ACLED coding: global, stable, free,
+  human-curated. Turning on a credential should make the dashboard learn every conflict UCDP codes,
+  with no editorial work.
+- **Membership is a predicate, not a box.** Country codes, bounds, **actor keys**, event types.
+  Ukraine, Yemen and Tigray fit inside a box; Israel/Iran does not — it is fought in Syria, Lebanon,
+  Iraq, Yemen, the Gulf, at sea, and in cyberspace. Actor-based membership is what makes it
+  expressible, and it means an observation can belong to more than one conflict. A Houthi strike on
+  shipping is Yemen *and* Israel/Iran. Counts will therefore not sum to the total, and the panel has
+  to say so rather than let a reader add them up.
+- **AI assigns; it does not define.** The register is small and slow-moving. The assignment problem
+  is large and constant: news items, Telegram posts and Bluesky posts arrive with no conflict code at
+  all, and in a live deployment that is most of the volume. So the model does most of the
+  categorising — it simply does not get to decide what the categories are. A model-chosen register
+  would be a function of the model's exposure rather than of the world, and exposure tracks volume of
+  reporting, so the conflicts most likely to be dropped are the under-reported ones. An absent
+  category looks like peace. Every assignment is recorded in `AiInference` with its prompt version
+  and confidence, exactly as enrichment already is.
+- **A model may propose a conflict nothing codes yet**, and it enters as a claim: stored, displayed,
+  labelled as model-proposed, and unable to restructure anything until corroborated. Structurally
+  identical to a single-source Tier B claim, which [ADR 029](adr/029-corroboration-gate.md) already
+  handles.
+- **Tempo, with a denominator.** Rate of reporting is not rate of operations, and they diverge
+  exactly when it matters. This repository already records the proof: the Tigray caveat in
+  `Theatre.cs` notes that ACLED's Ethiopia Peace Observatory ended fortnightly updates on 1 July
+  2025, roughly six months before fighting resumed in January 2026. A naive tempo line across that
+  boundary draws a de-escalation at the moment of escalation. So every tempo figure carries
+  contributing-source count beside it, and a change is decomposed into "more events reported" against
+  "more sources reporting". When both fall together the honest output is *coverage changed; tempo
+  cannot be stated*.
+- **Baselines are per-conflict and rolling**, never cross-conflict. "Ukraine 72, Tigray 9" reads as
+  "Tigray is eight times quieter" when it may mean nobody is reporting Tigray.
+- **Narrative, with an evidence floor.** A per-conflict summary per window is the largest thing
+  missing from this dashboard and the one job a model is genuinely better at than a heuristic. It is
+  also the most dangerous artefact available, because a model handed three observations writes a
+  confident paragraph in the same voice as one handed three hundred. Below the floor it must decline:
+  *two reports this week; too little to characterise*.
+
+**Done when** conflicts are discovered rather than hand-authored, a thin one says so instead of
+showing a number, and every AI assignment is auditable.
+
+### Sprint 17 — The system that keeps running
+
+The published page is a snapshot; the live system is the API host, and it already exists. It serves
+the dashboard from `wwwroot`, maps the SignalR hub, and ships with `SourcesEnabled` and
+`ProcessorEnabled` true — running it continuously is `dotnet run`, not a deployment project. What is
+missing is everything about being left running for months rather than seconds.
+
+- **Credentials have nowhere to live.** The workers project carries a `UserSecretsId`; the API
+  project does not, so `dotnet user-secrets` does not work for the host actually being run. One line,
+  and then credentials sit outside the repository where the rule requires.
+- **Nothing prunes the database.** No retention policy exists anywhere. Irrelevant on day one and a
+  real problem at month six with global datasets and a backfill walking backwards every night. The
+  policy must respect incident linkage: pruning the evidence behind a published incident would break
+  [ADR 023](adr/023-failure-boundary-and-evidence-retention.md), so what is prunable is unlinked,
+  failed and duplicate material, not anything an incident rests on. SQLite also needs an explicit
+  vacuum to give the space back.
+- **Measure before deciding.** Row counts and file size reported alongside coverage, so retention is
+  chosen against a number rather than a guess.
+- **One disk is not a backup.** A scheduled copy of a WAL-mode SQLite file, done properly.
+- **Surviving reboots.** `dotnet run` in a terminal dies with the terminal. A Windows service or a
+  scheduled task at logon, decided and documented.
+- **The downtime ledger.** The host has to know when it was not running. A per-source last-polled
+  timestamp, which the `IngestionCheckpoints` table added in Sprint 11 is already shaped to hold —
+  it keys on source and carries an updated-at. On startup, the gap between the newest of those and
+  now is a downtime period, recorded as such.
+- **Name the trigger for PostGIS** rather than a date. Sprint 14 owns the migration; this sprint owns
+  writing down the measurement that would set it off.
+
+**Done when** the host can be left running for a month unattended, and can state what it holds, what
+it pruned, and when it was down.
+
+### Sprint 18 — Closing the gaps after downtime
+
+A machine that is switched off misses the world. The goal here is explicitly **not** comprehensive
+recovery — it is that a gap is visible, partially recovered where recovery is possible, and
+summarised where it is not.
+
+The division is sharp and it decides the whole design:
+
+- **Datasets are archives, and the gap is fully recoverable.** ACLED and UCDP still hold what
+  happened while the machine was off, and Sprint 11 already built the machinery to ask for it: a
+  bounded date window, narrowed where the provider could not answer in one go. Recovering a
+  fortnight's downtime is pointing the existing window walk at the downtime interval. Nothing new is
+  needed.
+- **Flows are not recoverable.** Telegram previews, Bluesky feeds, Mastodon timelines and RSS are
+  rolling windows. A busy channel from three weeks ago is simply gone, and a wire feed offers its
+  last few dozen items regardless of how long you were away. No amount of engineering retrieves it.
+
+So a downtime period produces **two different things**, and conflating them would be the failure:
+recovered records, which are ordinary observations and behave like any other, and a **gap summary**,
+which is not.
+
+- **The summary is written from the recovered records only.** Never from the model's own memory of
+  world events. A model asked what happened in a theatre last month will answer, fluently, from
+  training data — unsourced, unverifiable, and indistinguishable from the cited material beside it.
+  This is the coordinate rule ([ADR 012](adr/012-ai-output-is-untrusted-input.md)) applied to prose.
+- **A gap summary is not an observation.** It creates no incident, joins no correlation, and does not
+  feed tempo — it would double-count against the very records it was written from. It is stored and
+  rendered as its own kind of thing, the way demo data already is.
+- **It states its own asymmetry.** A summary built from datasets alone systematically under-
+  represents exactly the fast-moving social material the downtime destroyed. Saying so is the
+  difference between a summary and a false reassurance.
+- **One summary per conflict being monitored**, which is why this follows Sprint 16 rather than
+  preceding it.
+
+**Done when** restarting after two weeks off produces, per conflict, a sourced account of what was
+recovered and an explicit statement of what could not be — and none of it is mistakable for live
+reporting.
+
+### Sprint 19 — Control layers
+
+Section 4 below records that an assessed control-of-terrain map is not something this repository can
+produce, and that stands: ISW's map is made by analysts, daily, from geolocated footage, and
+assessment is the product rather than a by-product. What *is* buildable, and is worth building, is
+the layer underneath it — control **asserted**, with provenance, rather than control **assessed**.
+
+Three tiers, in descending order of defensibility, and they should be built in this order:
+
+1. **A derived actor-activity surface.** Where has a given actor been coded as active in the last N
+   days. Computable today from ACLED and UCDP actor fields, needs no licence and no new source, and
+   is genuinely informative. It is **not control** and must never be labelled as it — an actor
+   fighting in a place is evidence about that place, not a claim to hold it.
+2. **Published control geometry from named sources**, as dated polygons carrying who drew them and
+   when. This is the tier the DeepState licence question blocks, and Sprint 9 deferred it whole for
+   that reason. The licence has to be resolved and recorded before a line of it is written; the
+   answer may be that a given source cannot be used, and that is an acceptable outcome.
+3. **Claimed control from Tier B.** A post asserting a town has fallen is a claim, and the
+   corroboration gate already governs exactly that shape. The hard part is placement, not policy,
+   which makes this dependent on Sprint 10.
+
+Two rules hold across all three:
+
+- **Never render a single merged front line.** Two sources disagreeing about who holds a town is
+  information, and averaging them manufactures a consensus that does not exist. Show both, dated and
+  attributed. This is the corroboration gate's argument applied to geometry.
+- **Control is a time series, not a state.** Assertions are dated, and "watch a conflict evolve"
+  means scrubbing through them. Dated geometry at global volume is the clearest argument yet for the
+  PostGIS question in Sprint 14, and this sprint should not pretend SQLite makes it comfortable.
+
+**Done when** the map can show who is asserted to hold what, on whose authority and as of when, with
+disagreement visible rather than resolved — and when the dashboard never uses the word *assessed*
+about anything this system generated.
+
 ---
 
 ## 4. What I would push back on
@@ -266,23 +432,62 @@ honest ceiling is set by things no amount of engineering moves:
   the social layer scales that exposure.
 - **Cost.** X is paid. Enrichment at global volume is paid. Neither is a blocker for the
   architecture and both are a blocker for a deployment, and the plan should be honest about which
-  parts need a budget rather than a weekend.
+  parts need a budget rather than a weekend. One deployment decision moves this a long way: run the
+  host on a machine you own with a local model behind [ADR 004](adr/004-ai-provider-abstraction.md),
+  and enrichment's marginal cost goes to zero, which is most of what makes Sprint 14 expensive.
+- **Analyst products are not pipeline products.** An assessed control-of-terrain map, a signed
+  judgement of the form *X is likely attempting Y*, and the frame-by-frame geolocation of combat
+  footage are all made by people. A model writes the sentence in a second; what it cannot produce is
+  the institution standing behind it, and an unaccountable confident sentence is the one artefact
+  this architecture has repeatedly decided against publishing. Sprint 19 builds the layer underneath
+  the assessment — asserted control, with provenance and disagreement intact — and stops there. If
+  the judgement layer is wanted later, the honest route is a named human writing over this data,
+  which is what a good aggregation layer is for.
 
 So the target worth aiming at is not "every conflict". It is **globally tasked, honestly measured,
 and deep where the data supports it** — with the panel saying exactly where it is thin. This project
 is unusually well placed for that, because it already built the thing that makes the claim
 falsifiable.
 
+That target is also not the same product as ISW, and chasing ISW would lose on every axis where they
+are strong and win on none. ISW is depth by analyst in about three theatres, and it does not tell a
+reader what it is *not* watching. This is breadth by pipeline everywhere, with coverage measured and
+published — a panel saying "a quiet district means nobody reported, not that nothing happened" has no
+ISW equivalent. Analysts do not scale to every local conflict, which is precisely why the
+under-reported ones stay under-reported.
+
 ---
 
-## 5. If you want one thing first
+## 5. Order
 
-**Sprint 11.** Request ACLED and UCDP credentials and turn on the two adapters that already exist.
+Sprint numbers are identities, not a sequence. This is the sequence.
 
-It is the largest single increase in coverage available, it is mostly operational, and it will
-immediately make the case for Sprint 10 impossible to ignore — because the map will fill with
-observations from countries the gazetteer cannot place, and the coverage panel will say so in
-numbers.
+**Sprint 11 is done**, and it made the case it was supposed to make: the published run now places
+observations into twenty-seven distinct regions, and the gazetteer covers three theatres. The gap is
+no longer an argument, it is a number on the page.
 
-Sprint 10 is the bigger and more interesting piece of engineering. Sprint 11 is what proves it is
-needed.
+Nothing else is started. In dependency order:
+
+1. **Sprint 10 — placement.** Still the prerequisite for everything local. An event this system
+   cannot draw is an event it cannot show, whatever coded it, and no amount of AI substitutes for a
+   gazetteer — letting a model supply a coordinate is the one substitution this repository forbids
+   outright, because a hallucinated coordinate is indistinguishable from a real one and gets drawn at
+   full confidence.
+2. **Sprint 16 — conflicts, tempo and narrative.** The largest visible change available, and it is
+   not blocked behind placement: membership can be decided from a country code or an actor without
+   any coordinate at all. A conflict whose events cannot be mapped can still be counted, and saying
+   so makes the placement gap *more* visible rather than less.
+3. **Sprint 17 — the system that keeps running.** Small, unglamorous, and the difference between a
+   thing that demonstrates and a thing that operates.
+4. **Sprint 18 — closing gaps after downtime.** Depends on 16 for its categories and 17 for its
+   ledger.
+5. **Sprint 13 — the fast layer.** What makes it *current* rather than *recorded*.
+6. **Sprint 19 — control layers.** Tier one is free today; tier two waits on a licence answer that
+   may be no.
+7. **Sprints 12, 14 and 15** as the volume and the appetite justify them. Sprint 14's headline cost —
+   one model call per observation — largely evaporates on a self-hosted model, so its priority
+   depends on a deployment decision rather than on a date.
+
+### If you want one thing first
+
+**Sprint 10.** Sprint 11 already proved it is needed.

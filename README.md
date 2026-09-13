@@ -52,7 +52,9 @@ dotnet run --project src/Geopolitics.Api
 
 ## What works today
 
-Sprints 1 to 6 are complete, and so is the final architecture review that follows them.
+Sprints 1 to 9 are complete, along with the final architecture review that follows them, and
+Sprint 11 — the two global conflict datasets read as the archives they are, with bounded and
+resumable history. What remains is in [the global coverage assessment](docs/global-coverage-plan.md).
 
 Three reviews are written up rather than summarised. The
 [security review](docs/security-review.md) found and fixed a credential that was being written to the

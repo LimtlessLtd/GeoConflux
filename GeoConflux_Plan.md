@@ -2650,13 +2650,51 @@ The credentials themselves cannot be obtained from inside this repository. Until
 them, the adapters stay dormant exactly as before and the published page is unchanged — which is the
 point of the pattern, not a caveat on it.
 
+## Where this runs
+
+Two deployments, and they are not the same thing.
+
+**The published page is a snapshot.** GitHub Pages serves static files, so the backend cannot run
+there. Every push executes the real pipeline, exports what it produced, and publishes that. It is
+genuine output and it is a demonstration.
+
+**The live system is the API host, run continuously on a machine its owner controls.** That host
+already serves the same dashboard from `wwwroot`, maps the SignalR hub, and ships with
+`SourcesEnabled` and `ProcessorEnabled` true — running it is `dotnet run`, not a deployment project.
+The dashboard detects which it is talking to: it probes `./api/incidents`, uses the live endpoints
+and the hub when something answers, and falls back to the exported JSON when nothing does. One page,
+two modes, and they cannot drift apart.
+
+The distinction decides several things elsewhere in this plan. A continuously-running host keeps its
+database, which is what makes Sprint 11's backfill genuinely walk history backwards rather than
+restart at the present; it can poll far more often than a build can; and with a local model behind
+[ADR 004](docs/adr/004-ai-provider-abstraction.md) its enrichment has no marginal cost, which removes
+most of what makes Sprint 14 expensive. It also introduces problems a snapshot build never has —
+unbounded database growth, credentials needing somewhere to live, surviving a reboot, and missing the
+world while switched off. Those are Sprints 17 and 18.
+
 ## What is left
 
-Nothing in the original plan, and Sprints 10 and 12 to 15 of
-[the global coverage assessment](docs/global-coverage-plan.md), which are not yet begun. The largest
-of them is Sprint 10: an event this system cannot **place** is an event it cannot draw, whatever
-coded it, and the gazetteer holds 2,750 places across three theatres. Sprint 11 sharpens that
-argument rather than answering it.
+Nothing in the original plan. Sprints 10 and 12 to 19 of
+[the global coverage assessment](docs/global-coverage-plan.md) are outstanding, none begun. That
+document holds the definitions and the recommended order; the shape of it is:
+
+- **Sprint 10 — global placement.** Still the prerequisite for anything local. An event this system
+  cannot **place** is an event it cannot draw, whatever coded it, and the gazetteer holds 2,750
+  places across three theatres. Sprint 11 sharpened that argument rather than answering it: the last
+  published run placed observations into twenty-seven distinct regions.
+- **Sprint 16 — conflicts as first-class objects.** Conflicts discovered from UCDP and ACLED coding
+  rather than hand-authored, membership as a predicate over actors as well as geography, AI assigning
+  into that register but never defining it, tempo reported against a coverage denominator, and
+  per-conflict narrative with an evidence floor.
+- **Sprints 17 and 18 — running continuously, and closing the gaps when it has not been.** Retention,
+  credentials, reboots, a downtime ledger; then recovery from the datasets, which are archives and
+  still hold what was missed, and a labelled summary for the flows, which are rolling windows and do
+  not.
+- **Sprint 19 — control layers.** Control **asserted**, with provenance and disagreement intact,
+  rather than control **assessed**. An assessed control-of-terrain map is an analyst product and is
+  recorded as out of reach; the layer underneath it is not.
+- **Sprints 12 to 15** as volume and appetite justify them.
 
 Three things are recorded as declined rather than pending, and each would reopen only if the world
 changed:
