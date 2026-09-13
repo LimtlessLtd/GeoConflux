@@ -111,6 +111,27 @@ public sealed class FirmsProviderOptions : ProviderOptionsBase
     /// frequently sun glint or cloud edges, and a dashboard that plots them is showing noise.
     /// </summary>
     public int MinimumConfidence { get; set; } = 50;
+
+    /// <summary>
+    /// Minimum fire radiative power in megawatts, or zero to accept any. Crop-residue burning is
+    /// weak; the events this system looks for are not. A detection whose dataset reports no power at
+    /// all is kept rather than read as a zero.
+    /// </summary>
+    public double MinimumRadiativePowerMegawatts { get; set; }
+
+    /// <summary>
+    /// Accept only night-side detections. The cheapest discriminator available: agricultural burning
+    /// is overwhelmingly a daytime activity and the things this system looks for are not.
+    /// </summary>
+    public bool NightOnly { get; set; }
+
+    /// <summary>
+    /// How many separate days a location must burn on before it is treated as infrastructure rather
+    /// than an event, or zero to disable the check. This is the flare mask, and it only sees as far
+    /// back as <see cref="ProviderOptionsBase"/> and <see cref="DayRange"/> let it — a deployment
+    /// that wants it to work has to request several days at a time.
+    /// </summary>
+    public int PersistentSourceDays { get; set; } = 3;
 }
 
 public sealed class AcledProviderOptions : ProviderOptionsBase

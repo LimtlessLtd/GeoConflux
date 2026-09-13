@@ -68,26 +68,24 @@ public sealed partial class NasaFirmsEventSource(
 
         var body = await response.Content.ReadAsStringAsync(cancellationToken);
         var hotspots = FirmsCsvParser.Parse(body);
-        var accepted = new List<ObservationEnvelope>();
-        var belowConfidence = 0;
+        var filtered = FirmsConflictFilter.Apply(hotspots, settings);
 
-        foreach (var hotspot in hotspots.OrderByDescending(value => value.AcquiredAt))
-        {
-            if (hotspot.Confidence < settings.MinimumConfidence)
-            {
-                belowConfidence++;
-                continue;
-            }
+        var accepted = filtered.Kept
+            .Take(settings.MaxItemsPerPoll)
+            .Select(hotspot => ToEnvelope(hotspot, settings.Dataset))
+            .ToArray();
 
-            if (accepted.Count >= settings.MaxItemsPerPoll)
-            {
-                break;
-            }
+        LogFiltered(
+            Logger,
+            settings.Dataset,
+            settings.Area,
+            hotspots.Count,
+            accepted.Length,
+            filtered.BelowConfidence,
+            filtered.Daytime,
+            filtered.BelowPower,
+            filtered.PersistentSource);
 
-            accepted.Add(ToEnvelope(hotspot, settings.Dataset));
-        }
-
-        LogFiltered(Logger, settings.Dataset, settings.Area, hotspots.Count, accepted.Count, belowConfidence);
         return accepted;
     }
 
@@ -131,14 +129,26 @@ public sealed partial class NasaFirmsEventSource(
         };
     }
 
+    /// <summary>
+    /// Every rejection reason is named rather than summed into one "filtered" figure. A poll that
+    /// yields nothing has said something useful if it also says four hundred detections were dropped
+    /// as persistent sources; the same empty result with no breakdown is indistinguishable from a
+    /// broken credential.
+    /// </summary>
     [LoggerMessage(
         Level = LogLevel.Debug,
-        Message = "FIRMS dataset {Dataset} over {Area} returned {DetectionCount} detection(s): {AcceptedCount} accepted, {BelowConfidenceCount} below the confidence floor.")]
+        Message = "FIRMS dataset {Dataset} over {Area} returned {DetectionCount} detection(s): "
+            + "{AcceptedCount} accepted, {BelowConfidenceCount} below the confidence floor, "
+            + "{DaytimeCount} daytime, {BelowPowerCount} below the radiative power floor, "
+            + "{PersistentSourceCount} burning persistently at one place.")]
     private static partial void LogFiltered(
         ILogger logger,
         string dataset,
         string area,
         int detectionCount,
         int acceptedCount,
-        int belowConfidenceCount);
+        int belowConfidenceCount,
+        int daytimeCount,
+        int belowPowerCount,
+        int persistentSourceCount);
 }

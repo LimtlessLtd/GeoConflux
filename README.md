@@ -524,6 +524,9 @@ credential is ever read from a committed file.
 | `Providers:NasaFirms:Dataset` | VIIRS_NOAA20_NRT | FIRMS dataset identifier |
 | `Providers:NasaFirms:Area` | world | `west,south,east,north`, or `world` |
 | `Providers:NasaFirms:MinimumConfidence` | 50 | Detections below this are noise and are dropped |
+| `Providers:NasaFirms:MinimumRadiativePowerMegawatts` | 0 | Fire radiative power floor; 0 accepts any |
+| `Providers:NasaFirms:NightOnly` | false | Accept only night-side detections. Agricultural burning is a daytime activity. |
+| `Providers:NasaFirms:PersistentSourceDays` | 3 | Days a location must burn on to be treated as infrastructure. Needs `DayRange` above 1 to see anything. |
 | `Providers:Acled:Enabled` | false | Whether coded conflict events are polled |
 | `Providers:Acled:Username` / `:Password` | none | **Never put these in a file.** Dormant without both. |
 | `Providers:Acled:BaseAddress` | `https://acleddata.com/api/` | Current API root. The retired `api.acleddata.com` no longer resolves. |

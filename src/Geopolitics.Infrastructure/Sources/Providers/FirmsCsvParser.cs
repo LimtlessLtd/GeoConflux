@@ -9,6 +9,11 @@ namespace Geopolitics.Infrastructure.Sources.Providers;
 /// <param name="RadiativePowerMegawatts">Fire radiative power, when the dataset reports it.</param>
 /// <param name="AcquiredAt">Acquisition time in UTC.</param>
 /// <param name="Satellite">Reporting platform, kept so one detection can be told from another.</param>
+/// <param name="IsNight">
+/// Whether the instrument recorded this on the night side. Carried because it is the cheapest
+/// discriminator there is between agricultural burning, which is overwhelmingly a daytime activity,
+/// and the things this system is actually looking for.
+/// </param>
 public sealed record FirmsHotspot(
     double Latitude,
     double Longitude,
@@ -16,7 +21,8 @@ public sealed record FirmsHotspot(
     double BrightnessKelvin,
     double? RadiativePowerMegawatts,
     DateTimeOffset AcquiredAt,
-    string Satellite)
+    string Satellite,
+    bool IsNight)
 {
     /// <summary>
     /// Identity for a detection, which FIRMS does not assign one of. Position, time, and platform
@@ -78,6 +84,7 @@ public static class FirmsCsvParser
         var confidence = Array.IndexOf(header, "confidence");
         var satellite = Array.IndexOf(header, "satellite");
         var power = Array.IndexOf(header, "frp");
+        var dayNight = Array.IndexOf(header, "daynight");
 
         // VIIRS reports brightness as bright_ti4; MODIS reports it as brightness.
         var brightness = Array.IndexOf(header, "bright_ti4");
@@ -113,7 +120,12 @@ public static class FirmsCsvParser
                 TryDouble(fields, brightness, out var parsedBrightness) ? parsedBrightness : 0,
                 TryDouble(fields, power, out var parsedPower) ? parsedPower : null,
                 acquiredAt,
-                Field(fields, satellite) ?? "unknown"));
+                Field(fields, satellite) ?? "unknown",
+
+                // "N" for night, "D" for day. An absent column reads as day, which is the
+                // conservative answer: a night-only filter then rejects it rather than letting an
+                // unknown detection through on a technicality.
+                string.Equals(Field(fields, dayNight), "N", StringComparison.OrdinalIgnoreCase)));
         }
 
         return hotspots;

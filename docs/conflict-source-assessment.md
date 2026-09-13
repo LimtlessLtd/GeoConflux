@@ -226,8 +226,9 @@ means nobody reported, not that nothing happened.
 4. **Model territorial control as polygons.** The domain currently has point observations and
    incidents; a control layer is a new concept, not a new adapter, and needs an ADR. DeepState's
    licence question should be settled first.
-5. **Enable FIRMS only behind conflict filtering** — persistent-flare mask, cropland mask, FRP
-   threshold, night-only. Without those it is an agricultural burn map.
+5. **Enable FIRMS only behind conflict filtering.** Partly done in Sprint 9: the FRP threshold,
+   night-only selection and a persistent-source mask are built, the cropland mask is not, and FIRMS
+   stays disabled because three of four is not four. See ADR 028.
 6. ~~**Do not build troop-movement mapping.**~~ Declined and recorded in Sprint 9, as ADR 027.
 
 Items 1 and 2 need no new domain concepts and no gazetteer work, because both sources are permitted

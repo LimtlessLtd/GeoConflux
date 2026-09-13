@@ -876,6 +876,13 @@ agricultural burning produces thousands of detections a week across exactly the 
 A persistent-flare mask, a cropland mask, a fire-radiative-power threshold and night-only selection
 are the work. The adapter already exists and is not the work.
 
+**Sprint 9 built three of the four.** The power floor, night-only selection, and a persistent-source
+mask derived from the detections themselves are in `FirmsConflictFilter`. The cropland mask is not:
+it needs a land-cover raster that cannot be committed, cannot be fetched during a hermetic build, and
+must not be approximated by hand. FIRMS therefore stays disabled for these theatres, because the
+plan's precondition is four filters and not three.
+[ADR 028](docs/adr/028-firms-conflict-filtering.md) has the reasoning.
+
 ## Territorial control is a different data shape
 
 Front-line control is polygons, not points, and the domain currently models point observations and
@@ -2556,7 +2563,11 @@ Sprint 9 progress:
    spellings beside the curated core, from a committed Wikidata (CC0) extract — Ukraine 2,105, Yemen
    482, Tigray 163. Sourcing, the collision rules, and the measured cost are in
    [ADR 026](docs/adr/026-gazetteer-sourcing.md).
-4. **FIRMS conflict filtering.** Not started.
+4. **FIRMS conflict filtering.** Three of the four filters built — radiative power floor, night-only
+   selection, and a persistent-source mask derived from the data rather than from a published flare
+   list. The cropland mask is **not** built and cannot honestly be built here, so the precondition
+   for enabling FIRMS in these theatres is not met and it stays disabled.
+   [ADR 028](docs/adr/028-firms-conflict-filtering.md) records why.
 5. **Theatre-level coverage reporting.** Done. A Coverage tab states, per theatre, what was placed
    and at what precision, how many place names the lexicon holds for it, and what that theatre's
    numbers cannot tell the reader. Exported as `coverage.json` and served from `/api/analytics/coverage`.
