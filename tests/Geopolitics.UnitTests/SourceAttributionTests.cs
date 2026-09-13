@@ -85,7 +85,7 @@ public sealed class SourceAttributionTests : IDisposable
         // on whether an enrichment model happened to be configured. A coverage-by-language figure
         // published on that footing would be reporting the model's availability, not the collection.
         Assert.Equal(
-            ["ar", "en", "ru", "zh"],
+            ["ar", "ar", "en", "ru", "zh"],
             envelopes.Select(envelope => envelope.DeclaredLanguage).Order(StringComparer.Ordinal));
     }
 

@@ -53,7 +53,7 @@ public sealed class AgentBriefSourceTests : IDisposable
 
         var envelopes = await Source().ReadBatchAsync(CancellationToken.None);
 
-        Assert.Equal(4, envelopes.Count);
+        Assert.Equal(5, envelopes.Count);
         Assert.All(envelopes, envelope => Assert.Equal(ObservationProvenance.Collected, envelope.Provenance));
         Assert.All(envelopes, envelope => Assert.StartsWith("collected:", envelope.SourceName, StringComparison.Ordinal));
 
@@ -96,9 +96,17 @@ public sealed class AgentBriefSourceTests : IDisposable
         Copy("bundle-valid.json");
 
         var envelopes = await Source().ReadBatchAsync(CancellationToken.None);
-        var arabic = envelopes.Single(envelope => envelope.Content.Contains("باب المندب", StringComparison.Ordinal));
+        var arabic = envelopes
+            .Where(envelope => envelope.Content.Contains("باب المندب", StringComparison.Ordinal))
+            .ToArray();
 
-        Assert.Equal("باب المندب", arabic.DeclaredLocationName);
+        // One from a wire and one from a Mastodon account. A name in a script the lexicon holds is
+        // passed through the same way whichever tier carried it, because the tier decides what may
+        // be concluded from a record and never how its text is read.
+        Assert.Equal(2, arabic.Length);
+        Assert.All(arabic, envelope => Assert.Equal("باب المندب", envelope.DeclaredLocationName));
+        Assert.Contains(arabic, envelope => envelope.Attribution.Tier == SourceTier.Published);
+        Assert.Contains(arabic, envelope => envelope.Attribution.Platform == "mastodon");
     }
 
     [Fact]
@@ -110,7 +118,7 @@ public sealed class AgentBriefSourceTests : IDisposable
 
         var envelopes = await Source().ReadBatchAsync(CancellationToken.None);
 
-        Assert.Equal(4, envelopes.Count);
+        Assert.Equal(5, envelopes.Count);
     }
 
     [Fact]
@@ -135,7 +143,7 @@ public sealed class AgentBriefSourceTests : IDisposable
         var envelopes = await Source(options => options.MaxBundleAge = TimeSpan.FromDays(1))
             .ReadBatchAsync(CancellationToken.None);
 
-        Assert.Equal(4, envelopes.Count);
+        Assert.Equal(5, envelopes.Count);
     }
 
     [Fact]

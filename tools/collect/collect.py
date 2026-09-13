@@ -126,6 +126,24 @@ def load_lexicon(path=GAZETTEER):
     return sorted(names, key=len, reverse=True)
 
 
+def matches_terms(text, terms):
+    """Whether this post is about what the brief asked for.
+
+    Searching in English finds what English publishes, so a brief carries the same concept in every
+    language it covers and a post qualifies by matching any one of them. Without this a run against
+    general-interest channels would collect whatever those channels happened to post, file it under a
+    brief about maritime chokepoints, and the bundle would misrepresent what was looked for — which
+    is the failure the brief exists to prevent.
+
+    No terms at all means no filter, for a brief that genuinely wants everything a channel says.
+    """
+    if not terms:
+        return True
+
+    folded = text.casefold()
+    return any(term.casefold() in folded for term in terms)
+
+
 def place_names(text, lexicon):
     """Every lexicon name the text actually contains, longest first, capped."""
     folded = text.casefold()
@@ -385,37 +403,78 @@ def build_bundle(brief_id, revision, items, collected_at):
     }
 
 
-def run(sources, brief_id, revision, caps, access=None, now=None):
+# A source is read generously and filtered afterwards, so that "nothing matched" is measurable. This
+# is how many posts are pulled from one channel before the brief's terms are applied.
+READ_DEPTH = 40
+
+
+def run(plan, access=None, now=None):
+    """Reads every source the run names and reports, per source, what came of it.
+
+    The per-source outcome is the point as much as the items are. A channel that could not be read
+    and a channel that was read and said nothing relevant are different facts, and a bundle that
+    recorded only the items would make them look identical — an empty space, which is the one thing
+    the coverage measurement exists to stop this project presenting.
+    """
     access = access or Access()
     collected_at = (now or dt.datetime.now(dt.timezone.utc)).strftime("%Y-%m-%dT%H:%M:%SZ")
     lexicon = load_lexicon()
+    terms = plan.get("terms") or []
+    caps = plan.get("caps") or {}
     found = []
+    outcomes = []
 
-    for source in sources:
+    for source in plan["sources"]:
         platform = source["platform"]
+        channel = f"{platform}/{source['channel']}"
 
         try:
             if platform == "telegram":
-                found += read_telegram(access, source["channel"], caps["per_channel"], collected_at, lexicon)
+                read = read_telegram(access, source["channel"], READ_DEPTH, collected_at, lexicon)
             elif platform == "bluesky":
-                found += read_bluesky(access, source["channel"], caps["per_channel"], collected_at, lexicon)
+                read = read_bluesky(access, source["channel"], READ_DEPTH, collected_at, lexicon)
             elif platform == "mastodon":
-                found += read_mastodon(
-                    access, source["instance"], source["channel"], caps["per_channel"], collected_at, lexicon)
+                read = read_mastodon(
+                    access, source["instance"], source["channel"], READ_DEPTH, collected_at, lexicon)
             else:
                 raise ValueError(f"'{platform}' is not a Tier B platform this reads")
         except Refused as refusal:
             # A refusal is a coverage gap, not an error to retry around. The run continues and says
             # what it could not reach, because a gap that is recorded is a known limitation and a gap
             # that is not is a false claim of coverage.
-            print(f"gap: {refusal}", file=sys.stderr)
+            outcomes.append({"channel": channel, "outcome": "unreachable", "reason": refusal.reason})
+            continue
 
-    kept, dropped = apply_caps(found, caps["per_channel"], caps["per_platform"], caps["total"])
+        if not read:
+            # Three outcomes, not two, because they are three different facts. A refusal is above.
+            # This is a source that answered and carried nothing readable: a Telegram channel with no
+            # public preview redirects to its join page, which parses cleanly and contains no posts,
+            # and an account can exist on Bluesky while publishing none — bbcnews.bsky.social does,
+            # verified 2026-09-13. Neither is a quiet week, and both would look like one without
+            # this.
+            outcomes.append({"channel": channel, "outcome": "no public posts", "reason": "served nothing readable"})
+            continue
+
+        relevant = [item for item in read if matches_terms(item["excerpt"], terms)]
+        outcomes.append({
+            "channel": channel,
+            "outcome": "collected" if relevant else "nothing matched",
+            "read": len(read),
+            "matched": len(relevant),
+        })
+        found += relevant
+
+    kept, dropped = apply_caps(
+        found,
+        caps.get("perChannel", 3),
+        caps.get("perPlatform", 8),
+        caps.get("total", 40),
+    )
 
     for url, reason in dropped:
         print(f"dropped ({reason}): {url}", file=sys.stderr)
 
-    return build_bundle(brief_id, revision, kept, collected_at), access.gaps
+    return build_bundle(plan["brief"], plan["revision"], kept, collected_at), outcomes, access.gaps
 
 
 # --- offline self-test -------------------------------------------------------------------------
@@ -548,6 +607,28 @@ def self_test():
     check("Kyiv is, because it is a city", "Kyiv" in names)
     check("longer names need no population", "Kharkiv" in names)
 
+    # 9. The brief's terms decide what a run keeps, in whichever language they are written.
+    check("an english term matches", matches_terms("Shelling near the strait.", ["strait", "مضيق"]))
+    check("an arabic term matches the same concept", matches_terms("إطلاق نار قرب مضيق باب المندب", ["strait", "مضيق"]))
+    check("an unrelated post does not match", not matches_terms("Our design contest winners.", ["strait", "مضيق"]))
+    check("a brief with no terms filters nothing", matches_terms("Anything at all.", []))
+
+    # 10. Read-but-nothing-matched and could-not-be-read are different outcomes.
+    plan = {
+        "brief": "test", "revision": 1, "terms": ["strait"],
+        "sources": [{"platform": "telegram", "channel": "quiet"}, {"platform": "telegram", "channel": "closed"}],
+    }
+    access = _stub({
+        "https://t.me/s/quiet": TELEGRAM_SAMPLE,
+        "https://t.me/s/closed": "<html><body>Please join to view.</body></html>",
+    })
+    bundle, outcomes, _ = run(plan, access=access, now=dt.datetime(2026, 9, 12, 21, 0, tzinfo=dt.timezone.utc))
+
+    check("a channel read that matched nothing says so", outcomes[0]["outcome"] == "nothing matched")
+    check("it still records how much it read", outcomes[0]["read"] == 2)
+    check("a channel serving no posts is not a quiet channel", outcomes[1]["outcome"] == "no public posts")
+    check("neither contributes items", bundle["items"] == [])
+
     failures = [name for name, passed in checks if not passed]
 
     for name, passed in checks:
@@ -576,36 +657,21 @@ def main():
 
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--self-test", action="store_true", help="run the offline checks and exit")
-    parser.add_argument("--sources", help="JSON file listing the channels this run reads")
-    parser.add_argument("--brief", default="maritime-chokepoints")
-    parser.add_argument("--revision", type=int, default=2)
-    parser.add_argument("--per-channel", type=int, default=3)
-    parser.add_argument("--per-platform", type=int, default=8)
-    parser.add_argument("--total", type=int, default=40)
+    parser.add_argument("--run", dest="plan", help="the committed run file: brief, terms, caps, sources")
     parser.add_argument("--out", help="where to write the bundle; stdout when absent")
     arguments = parser.parse_args()
 
     if arguments.self_test:
         return self_test()
 
-    if not arguments.sources:
+    if not arguments.plan:
         parser.print_help()
         return 2
 
-    with open(arguments.sources, encoding="utf-8") as handle:
-        sources = json.load(handle)
+    with open(arguments.plan, encoding="utf-8") as handle:
+        plan = json.load(handle)
 
-    bundle, gaps = run(
-        sources,
-        arguments.brief,
-        arguments.revision,
-        {
-            "per_channel": arguments.per_channel,
-            "per_platform": arguments.per_platform,
-            "total": arguments.total,
-        },
-    )
-
+    bundle, outcomes, gaps = run(plan)
     rendered = json.dumps(bundle, ensure_ascii=False, indent=2) + "\n"
 
     if arguments.out:
@@ -616,8 +682,12 @@ def main():
     else:
         print(rendered)
 
+    for outcome in outcomes:
+        detail = outcome.get("reason") or f"{outcome.get('matched', 0)} of {outcome.get('read', 0)} matched"
+        print(f"{outcome['outcome']:>15}: {outcome['channel']} — {detail}", file=sys.stderr)
+
     for gap in gaps:
-        print(f"gap: {gap['url']} — {gap['reason']}", file=sys.stderr)
+        print(f"            gap: {gap['url']} — {gap['reason']}", file=sys.stderr)
 
     return 0
 

@@ -1,0 +1,57 @@
+{
+  "$comment": "The executable half of docs/../briefs/maritime-chokepoints.md. Committed so a run is reproducible and so a reader can see exactly which channels the dashboard was and was not looking at. Run with: python tools/collect/collect.py --run data/osint/briefs/maritime-chokepoints.run.json --out data/osint/<date>-maritime-chokepoints.json",
+  "brief": "maritime-chokepoints",
+  "revision": 2,
+
+  "caps": {
+    "$comment": "The brief's source diversity limits. A prolific channel must not dominate the picture by posting more, and one busy platform must not stand in for the world.",
+    "perChannel": 3,
+    "perPlatform": 6,
+    "total": 40
+  },
+
+  "termsNote": "Searching in English finds what English publishes, so each concept is carried in every language this brief covers. Terms are matched as substrings against the post text, which is why generic weapon words are absent: 'drone' and 'missile' appear in the brief's scope but match far more than this brief is about, and a term list that over-collects makes the bundle misrepresent what was looked for.",
+
+  "terms": [
+    "strait", "chokepoint", "Red Sea", "Gulf of Aden", "Suez", "Hormuz", "Bab el-Mandeb",
+    "Bab al-Mandab", "Bab-el-Mandeb", "Black Sea", "Kerch", "Malacca", "Panama Canal",
+    "Gulf of Guinea", "shipping lane", "merchant vessel", "cargo ship", "tanker", "port closed",
+    "port seized", "rerouting", "war risk", "naval", "maritime",
+
+    "مضيق", "باب المندب", "مضيق هرمز", "البحر الأحمر", "خليج عدن", "قناة السويس", "ميناء", "سفينة", "ناقلة",
+
+    "пролив", "Чорне море", "Чёрное море", "Керченськ", "Ормузский", "Баб-эль-Мандеб",
+    "судоходств", "судно", "танкер", "порту", "Чорному морі",
+
+    "海峡", "海峽", "航运", "船只", "港口", "红海", "紅海",
+
+    "تنگه", "دریای سرخ"
+  ],
+
+  "sources": [
+    {
+      "$comment": "Verified 2026-09-13: each of these serves its posts publicly, with no credential and no JavaScript. A Telegram channel without a public preview redirects to its join page, which this project reads as a refusal rather than as a quiet channel — three otherwise obvious candidates were dropped for exactly that.",
+      "platform": "telegram",
+      "channel": "bbcbreaking"
+    },
+    {
+      "$comment": "bbcnews.bsky.social is deliberately kept even though it publishes nothing. A source that is listed and produces nothing is a stated gap; a source quietly dropped from the list is an unstated one, and the difference is the whole of why coverage is measured rather than asserted.",
+      "platform": "bluesky",
+      "channel": "bbcnews.bsky.social"
+    },
+    { "platform": "telegram", "channel": "ukrainenowenglish" },
+    {
+      "$comment": "State media, read as what it is: a government's account of events, valuable precisely because it states a position and never mistaken for an independent one. It is also the run's main source of Russian-script text.",
+      "platform": "telegram",
+      "channel": "tass_agency"
+    },
+
+    { "platform": "bluesky", "channel": "reuters.com" },
+    { "platform": "bluesky", "channel": "apnews.com" },
+    { "platform": "bluesky", "channel": "afp.com" },
+    { "platform": "bluesky", "channel": "aljazeera.com" },
+    { "platform": "bluesky", "channel": "npr.org" },
+
+    { "platform": "mastodon", "instance": "mastodon.social", "channel": "theguardian" }
+  ]
+}

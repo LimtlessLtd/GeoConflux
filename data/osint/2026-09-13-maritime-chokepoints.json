@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-09-13T1112Z-maritime-chokepoints",
+  "collectedAt": "2026-09-13T11:12:07Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "4d5c0cc1"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mveky74tza2w",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-09-13T02:40:07Z",
+      "retrievedAt": "2026-09-13T11:12:07Z",
+      "contentHash": "sha256:f514fa90d63c533bdf8c78569f4fa487b0828667e82e927bb4ab7f1c6b30676d",
+      "excerpt": "New report of attack on Strait of Hormuz shipping fans fears of threats to oil supplies reut.rs/4xUvvzp",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mvdklouqce2v",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-09-12T17:00:27Z",
+      "retrievedAt": "2026-09-13T11:12:07Z",
+      "contentHash": "sha256:166e132e0d8fbc77eec3d21ebb90ba1db05a96e1d84d7215fc84232f07073e82",
+      "excerpt": "Iran-Oman understanding does not provide for immediate reopening of Strait of Hormuz, Tasnim reports reut.rs/4Afh2j6",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mvd7xdpkrp2g",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-09-12T13:50:07Z",
+      "retrievedAt": "2026-09-13T11:12:07Z",
+      "contentHash": "sha256:2a36bd171051a6d68baff61266ad9f681c662e32c4cd9899f0b73ddb750cc8f4",
+      "excerpt": "No signed Hormuz deal expected yet from Oman meeting on Monday, Iranian official says reut.rs/4ytGlfu",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mvewqt7dq52n",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-09-13T06:10:45Z",
+      "retrievedAt": "2026-09-13T11:12:07Z",
+      "contentHash": "sha256:0f6927b9810a4ea2d4295bb9f367dbe5d6f898432b192fb315dce2fe9e168ce7",
+      "excerpt": "An Iranian commercial vessel was struck off Qeshm Island near the Strait of Hormuz, with one person killed and three wounded, Iran's state media say.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3mvadka7yh52l",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-09-11T10:16:23Z",
+      "retrievedAt": "2026-09-13T11:12:07Z",
+      "contentHash": "sha256:16a0c49d0bbdfd2593bce7b22900e4312769a937f4d184c74330d38094f4b01f",
+      "excerpt": "Les Houthis, combattants yéménites pro-iraniens, se sont emparés vendredi d'une île clé dans le détroit de Bab el-Mandeb, a indiqué un responsable gouvernemental affirmant qu'ils avaient pris le contrôle du secteur, passage stratégique reliant l'Europe à l'Asie.➡️ u.afp.com/SjMg",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mvesshz6wn2q",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-13T05:00:05Z",
+      "retrievedAt": "2026-09-13T11:12:07Z",
+      "contentHash": "sha256:ab44c5ba2bc086970a81c132f1a453fa810c8d8b136d09b4611aa00d92865001",
+      "excerpt": "Yemeni refugees arrive in Obock, Djibouti, within 24 hours as Houthis tighten their grip on the Bab al-Mandeb strait.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ]
+}

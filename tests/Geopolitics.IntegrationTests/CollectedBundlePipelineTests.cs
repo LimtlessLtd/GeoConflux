@@ -111,6 +111,76 @@ public sealed class CollectedBundlePipelineTests
     }
 
     [Fact]
+    public async Task ACollectedPostEntersCitedToItsChannelAndCannotFormAnIncidentAlone()
+    {
+        // The sprint's definition of done, asserted against the bundles this repository actually
+        // publishes rather than against a fixture. A Tier B item reaches the read model cited to the
+        // channel that posted it, is distinguishable from wire reporting by something a renderer can
+        // read, and has opened no incident on its own.
+        using var factory = Host();
+        using var client = factory.CreateClient();
+
+        var collected = await WaitForCollectedAsync(client);
+        var posts = collected
+            .Where(observation => observation.GetProperty("tier").GetString() == "UserGenerated")
+            .ToArray();
+
+        Assert.NotEmpty(posts);
+
+        foreach (var post in posts)
+        {
+            // Cited to a channel on a named platform, not to a publisher.
+            var platform = post.GetProperty("platform").GetString();
+            var channel = post.GetProperty("channel").GetString();
+
+            Assert.False(string.IsNullOrWhiteSpace(platform));
+            Assert.False(string.IsNullOrWhiteSpace(channel));
+            Assert.Equal($"collected:{platform}/{channel}", post.GetProperty("sourceName").GetString());
+
+            // Fully retained either way: stored, classified and shown. What is withheld is only the
+            // assertion that the thing it describes happened.
+            Assert.False(string.IsNullOrWhiteSpace(post.GetProperty("summary").GetString()));
+
+            if (post.GetProperty("incidentId").ValueKind == JsonValueKind.Null)
+            {
+                Assert.Equal("Uncorroborated", post.GetProperty("status").GetString());
+                continue;
+            }
+
+            // A post that does belong to an incident did not bring it into being by itself. This is
+            // the rule stated exactly: not "a claim never reaches an incident", which would make the
+            // gate a way of discarding the fastest reporting, but "a claim is never the whole of
+            // one". The published bundle exercises both halves — three Hormuz posts from one channel
+            // stay held, and a post the Tier A documents already account for is released into their
+            // incident.
+            var incident = await client.GetFromJsonAsync<JsonElement>(
+                $"/api/incidents/{post.GetProperty("incidentId").GetGuid()}");
+
+            Assert.True(
+                incident.GetProperty("observationCount").GetInt32() > 1,
+                "a user-generated claim is the only observation behind an incident");
+        }
+    }
+
+    [Fact]
+    public async Task ACollectedPostIsStillPlacedOnTheMapWhileItIsHeld()
+    {
+        // Held is not hidden, and this is the assertion that keeps it that way. A claim nobody can
+        // see is a claim nobody can corroborate, and hiding claims would also conceal how much of
+        // the picture rests on unsupported posts — which is the bias coverage exists to expose.
+        using var factory = Host();
+        using var client = factory.CreateClient();
+
+        var collected = await WaitForCollectedAsync(client);
+        var placed = collected
+            .Where(observation => observation.GetProperty("tier").GetString() == "UserGenerated"
+                && observation.GetProperty("location").ValueKind != JsonValueKind.Null)
+            .ToArray();
+
+        Assert.NotEmpty(placed);
+    }
+
+    [Fact]
     public async Task NoCollectedObservationTakesTheSourceProvidedPath()
     {
         // A collected item enters as News or Manual and neither kind may declare coordinates, so any

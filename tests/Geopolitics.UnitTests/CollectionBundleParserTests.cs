@@ -28,7 +28,7 @@ public sealed class CollectionBundleParserTests
         var result = Parse("bundle-valid.json");
 
         Assert.Empty(result.RejectedItems);
-        Assert.Equal(4, result.Bundle.Items.Count);
+        Assert.Equal(5, result.Bundle.Items.Count);
         Assert.Equal("2026-09-12T0915Z-maritime-chokepoints", result.Bundle.BundleId);
         Assert.Equal("maritime-chokepoints", result.Bundle.BriefId);
         Assert.Equal(3, result.Bundle.BriefRevision);
@@ -56,9 +56,16 @@ public sealed class CollectionBundleParserTests
     {
         var items = Parse("bundle-valid.json").Bundle.Items;
 
-        var arabic = items.Single(item => item.Language == "ar");
-        Assert.Contains("باب المندب", arabic.Excerpt);
-        Assert.Equal(["باب المندب"], arabic.PlaceNames);
+        // Arabic arrives through both tiers, which is the case worth pinning: the same script reaches
+        // this parser from a wire and from a Mastodon account, and nothing about the handling differs.
+        var arabic = items.Where(item => item.Language == "ar").ToArray();
+        Assert.Equal(2, arabic.Length);
+        Assert.All(arabic, item => Assert.Contains("باب المندب", item.Excerpt, StringComparison.Ordinal));
+        Assert.All(arabic, item => Assert.Equal(["باب المندب"], item.PlaceNames));
+
+        Assert.Equal(
+            [CollectedItemKind.Document, CollectedItemKind.UserGenerated],
+            arabic.Select(item => item.Kind).Order());
 
         var chinese = items.Single(item => item.Language == "zh");
         Assert.Equal(["台湾海峡"], chinese.PlaceNames);
@@ -170,7 +177,7 @@ public sealed class CollectionBundleParserTests
         var result = Parse("bundle-valid.json", new CollectionBundleLimits(MaxExcerptLength: 200));
 
         Assert.Empty(result.RejectedItems);
-        Assert.Equal(4, result.Bundle.Items.Count);
+        Assert.Equal(5, result.Bundle.Items.Count);
     }
 
     [Fact]

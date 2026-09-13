@@ -64,6 +64,21 @@
     },
     {
       "kind": "userGenerated",
+      "url": "https://mastodon.example/@observer/109876543210",
+      "platform": "mastodon",
+      "channel": "observer@mastodon.example",
+      "postedAt": "2026-09-11T21:45:00Z",
+      "retrievedAt": "2026-09-12T09:13:12Z",
+      "contentHash": "sha256:31dabc639c1b0d99af85a5618ed8e90ab5a0fc91fea9abba0717d04e10d82249",
+      "language": "ar",
+      "excerpt": "تستمر الاشتباكات قرب باب المندب لليوم الثالث، وفق شهود عيان.",
+      "placeNames": [
+        "باب المندب"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
       "url": "https://bsky.app/profile/example.bsky.social/post/3kabc",
       "platform": "bluesky",
       "channel": "example.bsky.social",
