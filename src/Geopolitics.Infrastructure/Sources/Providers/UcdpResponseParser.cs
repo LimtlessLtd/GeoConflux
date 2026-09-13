@@ -23,6 +23,10 @@ public sealed record UcdpEvent(
     DateTimeOffset? OccurredAt,
     int Deaths);
 
+/// <param name="Events">The rows this parser could make sense of.</param>
+/// <param name="Truncated">Whether UCDP's own envelope says a further page exists.</param>
+public sealed record UcdpPage(IReadOnlyList<UcdpEvent> Events, bool Truncated);
+
 /// <summary>
 /// Reads the JSON returned by the UCDP API.
 /// <para>
@@ -38,7 +42,20 @@ public static class UcdpResponseParser
     /// Parses a UCDP resource response.
     /// </summary>
     /// <exception cref="FormatException">The payload is not JSON, or is not a UCDP response.</exception>
-    public static IReadOnlyList<UcdpEvent> Parse(string document)
+    public static IReadOnlyList<UcdpEvent> Parse(string document) => ParsePage(document).Events;
+
+    /// <summary>
+    /// Parses a response and says whether UCDP had more for the request than it sent.
+    /// <para>
+    /// Unlike ACLED this needs no inference. UCDP's envelope states the total number of pages and
+    /// carries a link to the next one, so a request that asked for the first page and got back a
+    /// non-empty <c>NextPageUrl</c> is definitively incomplete. The link is read as a flag and not
+    /// followed: a URL supplied by a response is not a URL this process should dial, which is the
+    /// same reason redirects are judged at connection time rather than trusted from the payload.
+    /// </para>
+    /// </summary>
+    /// <exception cref="FormatException">The payload is not JSON, or is not a UCDP response.</exception>
+    public static UcdpPage ParsePage(string document)
     {
         if (string.IsNullOrWhiteSpace(document))
         {
@@ -80,9 +97,38 @@ public static class UcdpResponseParser
                 }
             }
 
-            return events;
+            return new UcdpPage(events, HasFurtherPages(root));
         }
     }
+
+    /// <summary>
+    /// Whether the envelope says another page exists. Either signal is enough, and both are checked
+    /// because a field that is absent from a future revision should degrade to the other rather than
+    /// silently start reporting every response as complete.
+    /// </summary>
+    private static bool HasFurtherPages(JsonElement root)
+    {
+        if (root.TryGetProperty("NextPageUrl", out var next)
+            && next.ValueKind == JsonValueKind.String
+            && !string.IsNullOrWhiteSpace(next.GetString()))
+        {
+            return true;
+        }
+
+        return root.TryGetProperty("TotalPages", out var totalPages)
+            && Number(totalPages) is > 1;
+    }
+
+    private static double? Number(JsonElement element) => element.ValueKind switch
+    {
+        JsonValueKind.Number when element.TryGetDouble(out var value) => value,
+        JsonValueKind.String when double.TryParse(
+            element.GetString(),
+            NumberStyles.Float,
+            CultureInfo.InvariantCulture,
+            out var parsed) => parsed,
+        _ => null,
+    };
 
     private static UcdpEvent? ReadEvent(JsonElement element)
     {

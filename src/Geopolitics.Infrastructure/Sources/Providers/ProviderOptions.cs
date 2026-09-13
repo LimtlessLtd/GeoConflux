@@ -62,6 +62,53 @@ public abstract class ProviderOptionsBase
     public int MaxItemsPerPoll { get; set; } = 50;
 }
 
+/// <summary>
+/// Settings for an adapter that reads a coded dataset rather than a feed.
+/// <para>
+/// The difference is not the transport, it is what the thing on the other end <em>is</em>. A feed is
+/// a window onto the present and returns everything it has in one answer. ACLED and UCDP are
+/// archives with years behind them, and reading one means asking about a bounded slice of time and
+/// finding out whether the answer was complete. That needs a request budget, a history floor, and a
+/// smallest window worth narrowing to — none of which an RSS feed has any use for.
+/// </para>
+/// </summary>
+public abstract class DatasetProviderOptions : ProviderOptionsBase
+{
+    /// <summary>
+    /// How many requests one poll may make in total, across the live window and the backfill walk.
+    /// <para>
+    /// This is the bound. Combined with <see cref="ProviderOptionsBase.MaxItemsPerPoll"/> — which for
+    /// a dataset adapter is the row limit on a single request rather than on the poll — it caps a
+    /// poll at a number a deployment chose rather than at whatever the archive happens to hold.
+    /// </para>
+    /// </summary>
+    public int MaxRequestsPerPoll { get; set; } = 4;
+
+    /// <summary>
+    /// The earliest date history should be walked back to, or null for no backfill at all.
+    /// <para>
+    /// Null by default, and deliberately: a clone of this repository that acquires a credential
+    /// should start by reading the present, not by pulling a decade of coded conflict out of someone
+    /// else's API because nobody said otherwise.
+    /// </para>
+    /// </summary>
+    public DateTimeOffset? BackfillSince { get; set; }
+
+    /// <summary>How much history to request per step of the backfill walk.</summary>
+    public TimeSpan BackfillWindow { get; set; } = TimeSpan.FromDays(7);
+
+    /// <summary>
+    /// The smallest window worth narrowing to before giving up on completeness.
+    /// <para>
+    /// A floor is needed because narrowing is not guaranteed to terminate usefully: a provider that
+    /// truncates a one-second window will truncate both halves of it, and without a floor the walk
+    /// would split towards zero spending its whole budget on an instant. Reaching this floor and
+    /// still being truncated is logged as a real gap rather than absorbed.
+    /// </para>
+    /// </summary>
+    public TimeSpan MinimumWindow { get; set; } = TimeSpan.FromHours(6);
+}
+
 public sealed class RssProviderOptions : ProviderOptionsBase
 {
     /// <summary>
@@ -134,9 +181,17 @@ public sealed class FirmsProviderOptions : ProviderOptionsBase
     public int PersistentSourceDays { get; set; } = 3;
 }
 
-public sealed class AcledProviderOptions : ProviderOptionsBase
+public sealed class AcledProviderOptions : DatasetProviderOptions
 {
-    public AcledProviderOptions() => PollInterval = TimeSpan.FromHours(6);
+    public AcledProviderOptions()
+    {
+        PollInterval = TimeSpan.FromHours(6);
+
+        // ACLED codes events to a calendar day and its date filter takes dates, so a window shorter
+        // than a day asks the same question as a window of exactly one. Narrowing past this point
+        // would spend requests re-asking rather than learning anything.
+        MinimumWindow = TimeSpan.FromDays(1);
+    }
 
     /// <summary>
     /// Root of the current ACLED API. The previous platform lived at <c>api.acleddata.com</c>, which
@@ -178,13 +233,17 @@ public sealed class AcledProviderOptions : ProviderOptionsBase
     public IList<string> Countries { get; } = [];
 }
 
-public sealed class UcdpProviderOptions : ProviderOptionsBase
+public sealed class UcdpProviderOptions : DatasetProviderOptions
 {
     public UcdpProviderOptions()
     {
         // GED Candidate publishes monthly. Polling faster than daily returns the rows already seen,
         // and the API's allowance of 5,000 requests a day is not a reason to spend them.
         PollInterval = TimeSpan.FromHours(24);
+
+        // Same reasoning as ACLED: UCDP's date filters take dates, so a sub-day window is the same
+        // request as a one-day window.
+        MinimumWindow = TimeSpan.FromDays(1);
     }
 
     public string BaseAddress { get; set; } = "https://ucdpapi.pcr.uu.se/api/";

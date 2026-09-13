@@ -36,12 +36,14 @@ internal sealed partial class AcledEventSource : PollingEventSource
 
     private readonly IHttpClientFactory httpClientFactory;
     private readonly AcledTokenProvider tokens;
+    private readonly IIngestionCheckpointStore checkpoints;
     private readonly ProviderOptions options;
     private readonly TimeProvider timeProvider;
 
     public AcledEventSource(
         IHttpClientFactory httpClientFactory,
         AcledTokenProvider tokens,
+        IIngestionCheckpointStore checkpoints,
         IOptions<ProviderOptions> options,
         PipelineDiagnostics diagnostics,
         TimeProvider timeProvider,
@@ -52,6 +54,7 @@ internal sealed partial class AcledEventSource : PollingEventSource
 
         this.httpClientFactory = httpClientFactory;
         this.tokens = tokens;
+        this.checkpoints = checkpoints;
         this.options = options.Value;
         this.timeProvider = timeProvider;
     }
@@ -70,16 +73,39 @@ internal sealed partial class AcledEventSource : PollingEventSource
 
     protected override TimeSpan PollInterval => options.Acled.PollInterval;
 
+    /// <summary>
+    /// Reads the live window, then spends whatever request budget is left walking history backwards.
+    /// <para>
+    /// The live window comes first and may consume the entire budget, which is the intended
+    /// priority: what happened this week outranks what happened in 2019. A deployment whose live
+    /// window regularly leaves nothing for the backfill needs a larger budget, and the logs say so
+    /// rather than the walk quietly never advancing.
+    /// </para>
+    /// </summary>
     protected override async Task<IReadOnlyList<ObservationEnvelope>> FetchAsync(CancellationToken cancellationToken)
     {
         var settings = options.Acled;
-        var since = timeProvider.GetUtcNow().AddDays(-Math.Max(1, settings.DaysBack));
-        var body = await ReadAsync(settings, since, cancellationToken);
-        var events = AcledResponseParser.Parse(body);
+        var now = timeProvider.GetUtcNow();
+        var budget = new RequestBudget(settings.MaxRequestsPerPoll);
+        var live = new DatasetWindow(now.AddDays(-Math.Max(1, settings.DaysBack)), now);
 
-        LogRead(Logger, events.Count, since);
+        var current = await DatasetHistory.ReadAsync(
+            live, RequestAsync, budget, settings.MinimumWindow, Name, Logger, cancellationToken);
 
-        return [.. events.Take(settings.MaxItemsPerPoll).Select(ToEnvelope)];
+        var history = await DatasetBackfill.ReadAsync(
+            settings, live.Start, RequestAsync, budget, checkpoints, Name, Logger, cancellationToken);
+
+        LogRead(Logger, current.Envelopes.Count, history.Count, live.Start, budget.Remaining);
+
+        return [.. current.Envelopes, .. history];
+
+        async Task<DatasetWindowResult> RequestAsync(DatasetWindow window, CancellationToken token)
+        {
+            var body = await ReadAsync(settings, window, token);
+            var page = AcledResponseParser.ParsePage(body, Math.Max(1, settings.MaxItemsPerPoll));
+
+            return new DatasetWindowResult([.. page.Events.Select(ToEnvelope)], page.Truncated);
+        }
     }
 
     /// <summary>
@@ -95,10 +121,10 @@ internal sealed partial class AcledEventSource : PollingEventSource
     /// </summary>
     private async Task<string> ReadAsync(
         AcledProviderOptions settings,
-        DateTimeOffset since,
+        DatasetWindow window,
         CancellationToken cancellationToken)
     {
-        var requestUri = BuildRequestUri(settings, since);
+        var requestUri = BuildRequestUri(settings, window);
 
         for (var attempt = 0; ; attempt++)
         {
@@ -123,20 +149,35 @@ internal sealed partial class AcledEventSource : PollingEventSource
     }
 
     /// <summary>
-    /// Composes the read query.
+    /// Composes the read query for one window.
     /// <para>
     /// Country filtering is how this adapter is pointed at a theatre, and ACLED joins multiple values
     /// for one field with a pipe. The companion <c>country_where=%3D</c> asks for exact matches: the
     /// default for a text field is <c>LIKE</c>, which would quietly widen a request for one country
     /// into every country whose name contains it.
     /// </para>
+    /// <para>
+    /// The window uses ACLED's documented <c>BETWEEN</c> filter, two dates joined by a pipe. It
+    /// replaces the open-ended <c>&gt;=</c> this adapter used to send, which could only ask for
+    /// "recently" and had no way to ask about a span of history at all.
+    /// </para>
+    /// <para>
+    /// ACLED codes to a calendar day and <c>BETWEEN</c> is inclusive at both ends, so adjacent
+    /// windows overlap by a day and return some events twice. That is the right way round to be
+    /// wrong: repeats cost nothing, because the poll suppresses them within a run and the fingerprint
+    /// index rejects them against the database, whereas excluding the final day would drop that day's
+    /// events at every boundary and leave gaps no later poll goes back for.
+    /// </para>
     /// </summary>
-    private static Uri BuildRequestUri(AcledProviderOptions settings, DateTimeOffset since)
+    private static Uri BuildRequestUri(AcledProviderOptions settings, DatasetWindow window)
     {
+        var opens = window.Start.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var closes = window.End.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
         var query = new List<string>
         {
-            $"event_date={Uri.EscapeDataString(since.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))}",
-            "event_date_where=%3E%3D",
+            $"event_date={Uri.EscapeDataString($"{opens}|{closes}")}",
+            "event_date_where=BETWEEN",
             $"limit={Math.Max(1, settings.MaxItemsPerPoll).ToString(CultureInfo.InvariantCulture)}",
             "_format=json",
         };
@@ -203,8 +244,15 @@ internal sealed partial class AcledEventSource : PollingEventSource
             ? entry.CountryCode
             : null;
 
-    [LoggerMessage(Level = LogLevel.Debug, Message = "ACLED returned {EventCount} event(s) recorded since {Since}.")]
-    private static partial void LogRead(ILogger logger, int eventCount, DateTimeOffset since);
+    [LoggerMessage(
+        Level = LogLevel.Debug,
+        Message = "ACLED returned {LiveCount} event(s) since {Since} and {HistoryCount} from backfill, with {RemainingRequests} request(s) left in this poll's budget.")]
+    private static partial void LogRead(
+        ILogger logger,
+        int liveCount,
+        int historyCount,
+        DateTimeOffset since,
+        int remainingRequests);
 
     [LoggerMessage(Level = LogLevel.Information, Message = "ACLED rejected the cached access token before its stated expiry; re-authenticating once.")]
     private static partial void LogTokenRejected(ILogger logger);

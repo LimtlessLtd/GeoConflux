@@ -372,6 +372,34 @@ public sealed class ProviderAdapterTests
     /// A token valid for twenty-four hours has to survive between six-hourly polls, or the account
     /// rate limit is spent on authentication rather than on data.
     /// </summary>
+    /// <summary>
+    /// The request that makes history readable at all. The old query sent <c>event_date_where=&gt;=</c>
+    /// with a single date, which can ask for "recently" and cannot ask about a span of 2019 at all.
+    /// </summary>
+    [Fact]
+    public async Task AcledAsksForABoundedDateRangeRatherThanEverythingSinceADate()
+    {
+        using var stop = new CancellationTokenSource();
+        var handler = new ScriptedHttpHandler(
+            stop,
+            AcledToken(),
+            ScriptedHttpHandler.Respond(Fixture("acled-response.json"), mediaType: "application/json"));
+
+        using var provider = Build(handler, AcledEventSource.HttpClientName, LiveAcled);
+
+        await DrainAsync(Source<AcledEventSource>(provider), stop.Token);
+
+        var read = handler.Exchanges.First(exchange =>
+            exchange.Url.Contains("/acled/read", StringComparison.Ordinal));
+
+        Assert.Contains("event_date_where=BETWEEN", read.Url, StringComparison.Ordinal);
+
+        // Two dates joined by a pipe, which ACLED's documentation gives as the BETWEEN syntax. The
+        // pipe is percent-encoded because it is a value, not a query separator.
+        Assert.Contains("%7C", read.Url, StringComparison.Ordinal);
+        Assert.DoesNotContain("event_date_where=%3E%3D", read.Url, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task AcledReusesItsAccessTokenAcrossPollsRatherThanReAuthenticating()
     {

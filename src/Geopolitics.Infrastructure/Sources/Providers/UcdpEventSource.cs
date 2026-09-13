@@ -30,6 +30,7 @@ namespace Geopolitics.Infrastructure.Sources.Providers;
 /// </summary>
 internal sealed partial class UcdpEventSource(
     IHttpClientFactory httpClientFactory,
+    IIngestionCheckpointStore checkpoints,
     IOptions<ProviderOptions> options,
     PipelineDiagnostics diagnostics,
     TimeProvider timeProvider,
@@ -58,31 +59,49 @@ internal sealed partial class UcdpEventSource(
 
     protected override TimeSpan PollInterval => options.Ucdp.PollInterval;
 
+    /// <summary>
+    /// Reads the live window, then spends whatever request budget is left walking history backwards,
+    /// exactly as the ACLED adapter does and for the same reasons.
+    /// </summary>
     protected override async Task<IReadOnlyList<ObservationEnvelope>> FetchAsync(CancellationToken cancellationToken)
     {
         var settings = options.Ucdp;
-        var client = httpClientFactory.CreateClient(HttpClientName);
-        var since = timeProvider.GetUtcNow().AddDays(-Math.Max(1, settings.DaysBack));
+        var now = timeProvider.GetUtcNow();
+        var budget = new RequestBudget(settings.MaxRequestsPerPoll);
+        var live = new DatasetWindow(now.AddDays(-Math.Max(1, settings.DaysBack)), now);
 
-        using var request = new HttpRequestMessage(HttpMethod.Get, BuildRequestUri(settings, since));
+        var current = await DatasetHistory.ReadAsync(
+            live, RequestAsync, budget, settings.MinimumWindow, Name, Logger, cancellationToken);
 
-        // A header rather than a query parameter, which is UCDP's design and a helpful one: it keeps
-        // the credential out of the request line that logging and proxies write down.
-        request.Headers.Add(TokenHeader, settings.AccessToken);
+        var history = await DatasetBackfill.ReadAsync(
+            settings, live.Start, RequestAsync, budget, checkpoints, Name, Logger, cancellationToken);
 
-        using var response = await client.SendAsync(request, cancellationToken);
-        response.EnsureSuccessStatusCode();
+        LogRead(Logger, current.Envelopes.Count, history.Count, live.Start, budget.Remaining);
 
-        var body = await response.Content.ReadAsStringAsync(cancellationToken);
-        var events = UcdpResponseParser.Parse(body);
+        return [.. current.Envelopes, .. history];
 
-        LogRead(Logger, events.Count, since);
+        async Task<DatasetWindowResult> RequestAsync(DatasetWindow window, CancellationToken token)
+        {
+            var client = httpClientFactory.CreateClient(HttpClientName);
 
-        return [.. events.Take(settings.MaxItemsPerPoll).Select(ToEnvelope)];
+            using var request = new HttpRequestMessage(HttpMethod.Get, BuildRequestUri(settings, window));
+
+            // A header rather than a query parameter, which is UCDP's design and a helpful one: it
+            // keeps the credential out of the request line that logging and proxies write down.
+            request.Headers.Add(TokenHeader, settings.AccessToken);
+
+            using var response = await client.SendAsync(request, token);
+            response.EnsureSuccessStatusCode();
+
+            var body = await response.Content.ReadAsStringAsync(token);
+            var page = UcdpResponseParser.ParsePage(body);
+
+            return new DatasetWindowResult([.. page.Events.Select(ToEnvelope)], page.Truncated);
+        }
     }
 
     /// <summary>
-    /// Composes the read query.
+    /// Composes the read query for one window.
     /// <para>
     /// The resource and version are configuration rather than constants because UCDP versions its
     /// datasets and publishes the yearly and candidate series at different versions at the same time
@@ -90,18 +109,25 @@ internal sealed partial class UcdpEventSource(
     /// requiring a build.
     /// </para>
     /// <para>
-    /// <c>StartDate</c> filters on the event's end date, so this asks for events that finished on or
-    /// after the window opens. Countries are Gleditsch and Ward numbers rather than names or ISO
-    /// codes, which is why none are configured by default: a wrong number here is a silently wrong
-    /// country, and guessing at one in a committed default would be exactly that.
+    /// <c>StartDate</c> and <c>EndDate</c> both filter on the event's <em>end</em> date, which is
+    /// UCDP's documented behaviour and not an oversight in how this reads: the pair asks for events
+    /// that had definitely finished within the window. The adapter previously sent only
+    /// <c>StartDate</c>, which meant every request asked for everything from that date to the end of
+    /// the dataset and there was no way to ask about a bounded slice of history at all.
+    /// </para>
+    /// <para>
+    /// Countries are Gleditsch and Ward numbers rather than names or ISO codes, which is why none are
+    /// configured by default: a wrong number here is a silently wrong country, and guessing at one in
+    /// a committed default would be exactly that.
     /// </para>
     /// </summary>
-    private static Uri BuildRequestUri(UcdpProviderOptions settings, DateTimeOffset since)
+    private static Uri BuildRequestUri(UcdpProviderOptions settings, DatasetWindow window)
     {
         var query = new List<string>
         {
             $"pagesize={Math.Max(1, settings.MaxItemsPerPoll).ToString(CultureInfo.InvariantCulture)}",
-            $"StartDate={Uri.EscapeDataString(since.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))}",
+            $"StartDate={Uri.EscapeDataString(window.Start.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))}",
+            $"EndDate={Uri.EscapeDataString(window.End.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))}",
         };
 
         var countries = settings.Countries
@@ -152,6 +178,13 @@ internal sealed partial class UcdpEventSource(
             ? entry.CountryCode
             : null;
 
-    [LoggerMessage(Level = LogLevel.Debug, Message = "UCDP returned {EventCount} event(s) ending on or after {Since}.")]
-    private static partial void LogRead(ILogger logger, int eventCount, DateTimeOffset since);
+    [LoggerMessage(
+        Level = LogLevel.Debug,
+        Message = "UCDP returned {LiveCount} event(s) ending on or after {Since} and {HistoryCount} from backfill, with {RemainingRequests} request(s) left in this poll's budget.")]
+    private static partial void LogRead(
+        ILogger logger,
+        int liveCount,
+        int historyCount,
+        DateTimeOffset since,
+        int remainingRequests);
 }

@@ -78,6 +78,11 @@ public static class ProviderRegistration
         // and its HTTP client comes from the factory, like every other outbound call here.
         services.AddSingleton<AcledTokenProvider>();
 
+        // Shared by the two dataset adapters so that a backfill survives a restart. A singleton
+        // holding a scope factory rather than a DbContext: the adapters that use it are singletons,
+        // and a context on one of those is the classic way this goes wrong.
+        services.AddSingleton<IIngestionCheckpointStore, IngestionCheckpointStore>();
+
         services.AddSingleton<IEventSource, RssEventSource>();
         services.AddSingleton<IEventSource, NasaFirmsEventSource>();
         services.AddSingleton<IEventSource, AcledEventSource>();

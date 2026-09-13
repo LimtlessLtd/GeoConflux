@@ -273,4 +273,22 @@ public sealed class ProviderParserTests
     [Fact]
     public void AcledNonJsonResponseIsAFormatProblem() =>
         Assert.Throws<FormatException>(() => AcledResponseParser.Parse("<html>gateway timeout</html>"));
+
+    /// <summary>
+    /// ACLED publishes no "there is more" flag, so a response holding as many rows as the request
+    /// allowed is treated as possibly cut off. Judged on the rows ACLED sent, not the rows this
+    /// parser could use: the fixture carries four, one of which has no identifier and is dropped, and
+    /// counting only the usable three would read a full page as a complete answer.
+    /// </summary>
+    [Fact]
+    public void AcledTruncationIsJudgedOnRowsReturnedNotRowsUnderstood()
+    {
+        var atTheLimit = AcledResponseParser.ParsePage(Fixture("acled-response.json"), requestedLimit: 4);
+        var wellUnder = AcledResponseParser.ParsePage(Fixture("acled-response.json"), requestedLimit: 50);
+
+        Assert.True(atTheLimit.Truncated);
+        Assert.False(wellUnder.Truncated);
+
+        Assert.Equal(3, atTheLimit.Events.Count);
+    }
 }

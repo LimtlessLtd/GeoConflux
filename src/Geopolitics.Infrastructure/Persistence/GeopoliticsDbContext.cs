@@ -17,6 +17,9 @@ public sealed class GeopoliticsDbContext(DbContextOptions<GeopoliticsDbContext> 
     /// <summary>Append-only audit trail of enrichment attempts, successful and otherwise.</summary>
     public DbSet<AiInference> Inferences => Set<AiInference>();
 
+    /// <summary>How far back each dataset adapter has asked, so a backfill survives a restart.</summary>
+    public DbSet<IngestionCheckpoint> Checkpoints => Set<IngestionCheckpoint>();
+
     /// <summary>
     /// Commits, translating a lost deduplication race into a signal the pipeline understands.
     /// <para>
@@ -68,6 +71,26 @@ public sealed class GeopoliticsDbContext(DbContextOptions<GeopoliticsDbContext> 
         ConfigureIncidents(modelBuilder, utcTicksConverter);
         ConfigureObservations(modelBuilder, utcTicksConverter, nullableUtcTicksConverter);
         ConfigureInferences(modelBuilder, utcTicksConverter);
+        ConfigureCheckpoints(modelBuilder, utcTicksConverter);
+    }
+
+    /// <summary>
+    /// One row per adapter, keyed by its name. There is no surrogate key because there is nothing a
+    /// surrogate would buy: a source has exactly one frontier, and letting the table hold two rows
+    /// for "acled" would be letting it hold two answers to a question with one.
+    /// </summary>
+    private static void ConfigureCheckpoints(
+        ModelBuilder modelBuilder,
+        ValueConverter<DateTimeOffset, long> utcTicks)
+    {
+        modelBuilder.Entity<IngestionCheckpoint>(checkpoint =>
+        {
+            checkpoint.ToTable("IngestionCheckpoints");
+            checkpoint.HasKey(value => value.Source);
+            checkpoint.Property(value => value.Source).HasMaxLength(60);
+            checkpoint.Property(value => value.RequestedFrom).HasConversion(utcTicks).IsRequired();
+            checkpoint.Property(value => value.UpdatedAt).HasConversion(utcTicks).IsRequired();
+        });
     }
 
     private static void ConfigureInferences(ModelBuilder modelBuilder, ValueConverter<DateTimeOffset, long> utcTicks)

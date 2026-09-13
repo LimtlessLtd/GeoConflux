@@ -199,6 +199,66 @@ public sealed class UcdpProviderTests
         Assert.Contains("Country=369%2C678%2C530", handler.Requests.First(), StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// UCDP states how many pages a query matched and links to the next one, so completeness needs
+    /// no inference here. The fixture is the case a row-count heuristic gets wrong: two rows back,
+    /// and an envelope saying the query matched four hundred.
+    /// </summary>
+    [Fact]
+    public void CompletenessIsReadFromUcdpsOwnEnvelopeRatherThanFromHowManyRowsArrived()
+    {
+        var complete = UcdpResponseParser.ParsePage(Fixture("ucdp-gedevents.json"));
+        var paged = UcdpResponseParser.ParsePage(Fixture("ucdp-gedevents-paged.json"));
+
+        Assert.False(complete.Truncated);
+        Assert.True(paged.Truncated);
+
+        // The rows that did arrive are still read. A truncated answer is a partial answer, not a
+        // failed one.
+        Assert.Equal(2, paged.Events.Count);
+    }
+
+    /// <summary>
+    /// A link in a response is a fact about the response, not an instruction. Following one would
+    /// let a provider — or anything that could answer as one — choose the next address this process
+    /// dials, which is the same reason redirects are judged at connection time rather than trusted.
+    /// </summary>
+    [Fact]
+    public async Task TheNextPageLinkIsReadAsASignalAndNeverDialled()
+    {
+        using var stop = new CancellationTokenSource();
+        var handler = new ScriptedHttpHandler(
+            stop,
+            ScriptedHttpHandler.Respond(Fixture("ucdp-gedevents-paged.json"), mediaType: "application/json"));
+
+        using var provider = Build(handler, LiveUcdp);
+
+        await DrainAsync(Source(provider), stop.Token);
+
+        Assert.All(handler.Requests, request =>
+            Assert.DoesNotContain("page=2", request, StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// The request that makes history readable at all. Sending only <c>StartDate</c> asked for
+    /// everything from that date to the end of the dataset, which is a fine way to poll for recent
+    /// events and no way at all to ask about a bounded slice of 2019.
+    /// </summary>
+    [Fact]
+    public async Task ARequestAsksForABoundedWindowRatherThanEverythingSinceADate()
+    {
+        using var stop = new CancellationTokenSource();
+        var handler = new ScriptedHttpHandler(stop, Events());
+        using var provider = Build(handler, LiveUcdp);
+
+        await DrainAsync(Source(provider), stop.Token);
+
+        var request = handler.Requests.First();
+
+        Assert.Contains("StartDate=", request, StringComparison.Ordinal);
+        Assert.Contains("EndDate=", request, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task NoCountryFilterIsSentWhenNoneIsConfigured()
     {

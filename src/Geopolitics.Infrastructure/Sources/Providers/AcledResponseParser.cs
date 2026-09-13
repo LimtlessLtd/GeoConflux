@@ -24,6 +24,13 @@ public sealed record AcledEvent(
     DateTimeOffset? OccurredAt,
     int Fatalities);
 
+/// <param name="Events">The rows this parser could make sense of.</param>
+/// <param name="Truncated">
+/// Whether ACLED returned as many rows as the request allowed, meaning there may be more it did not
+/// send. See <see cref="AcledResponseParser.ParsePage"/> for why this is inferred rather than read.
+/// </param>
+public sealed record AcledPage(IReadOnlyList<AcledEvent> Events, bool Truncated);
+
 /// <summary>
 /// Reads the JSON returned by the ACLED read API.
 /// <para>
@@ -40,7 +47,21 @@ public static class AcledResponseParser
     /// Parses an ACLED read response.
     /// </summary>
     /// <exception cref="FormatException">The payload is not JSON, or is not an ACLED response.</exception>
-    public static IReadOnlyList<AcledEvent> Parse(string document)
+    public static IReadOnlyList<AcledEvent> Parse(string document) => ParsePage(document, int.MaxValue).Events;
+
+    /// <summary>
+    /// Parses a response and says whether ACLED had more for the request than it sent.
+    /// <para>
+    /// ACLED publishes no "there is more" flag, so completeness is inferred the only way its API
+    /// allows: a response holding as many rows as the request asked for is a response that may have
+    /// been cut off at the limit. Judged on the rows ACLED <em>returned</em>, not the rows this
+    /// parser could make sense of — a row skipped for having no identifier still consumed a slot in
+    /// the limit, and counting only the usable ones would read a truncated page as a complete one.
+    /// </para>
+    /// </summary>
+    /// <param name="requestedLimit">The <c>limit</c> sent with the request.</param>
+    /// <exception cref="FormatException">The payload is not JSON, or is not an ACLED response.</exception>
+    public static AcledPage ParsePage(string document, int requestedLimit)
     {
         if (string.IsNullOrWhiteSpace(document))
         {
@@ -80,7 +101,8 @@ public static class AcledResponseParser
                 throw new FormatException("The ACLED response contained no data array.");
             }
 
-            var events = new List<AcledEvent>(data.GetArrayLength());
+            var returned = data.GetArrayLength();
+            var events = new List<AcledEvent>(returned);
 
             foreach (var element in data.EnumerateArray())
             {
@@ -90,7 +112,7 @@ public static class AcledResponseParser
                 }
             }
 
-            return events;
+            return new AcledPage(events, returned >= requestedLimit);
         }
     }
 
