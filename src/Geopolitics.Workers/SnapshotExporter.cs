@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Geopolitics.Application;
 using Geopolitics.Application.Abstractions;
 using Geopolitics.Application.Analytics;
+using Geopolitics.Application.Coverage;
 using Geopolitics.Application.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -170,6 +171,14 @@ public static partial class SnapshotExporter
             var report = await analyticsQueries.BuildAsync(window, cancellationToken);
             await WriteJsonAsync(Path.Combine(analyticsDirectory, $"{window.Token}.json"), report, cancellationToken);
         }
+
+        // The per-theatre statement of what this run managed to place, and at what precision. It is
+        // exported alongside the data rather than derived in the browser because the honest version
+        // of it needs the whole database, not the two hundred records the page happens to load.
+        var coverage = await scope.ServiceProvider.GetRequiredService<ICoverageService>()
+            .BuildAsync(cancellationToken);
+
+        await WriteJsonAsync(Path.Combine(outputDirectory, "coverage.json"), coverage, cancellationToken);
 
         // Counted, never assumed. This exporter used to hard-code IsDemoData: true because the only
         // source it could read was the recorded stream. Now that live adapters can feed it, a fixed

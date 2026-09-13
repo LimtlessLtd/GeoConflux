@@ -1,0 +1,81 @@
+using Geopolitics.Application.Abstractions;
+using Geopolitics.Application.Coverage;
+using Geopolitics.Domain;
+using Microsoft.EntityFrameworkCore;
+
+namespace Geopolitics.Infrastructure.Persistence;
+
+/// <summary>
+/// Coverage counts against the relational store.
+/// <para>
+/// Grouped in the database rather than tallied in memory, for the same reason the analytics queries
+/// are: the cost should grow with the number of precision levels and sources, which is small and
+/// fixed, rather than with how much has been ingested.
+/// </para>
+/// </summary>
+public sealed class EfCoverageRepository(GeopoliticsDbContext dbContext) : ICoverageRepository
+{
+    public async Task<TheatreTotals> CountPlacedAsync(Theatre theatre, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(theatre);
+
+        var placed = InTheatre(theatre);
+
+        var byPrecision = await placed
+            .GroupBy(observation => observation.Location!.Precision)
+            .Select(group => new CategoryCount(group.Key.ToString(), group.Count()))
+            .ToListAsync(cancellationToken);
+
+        // Ordered on the group's own count rather than on the projected record's property. The
+        // latter reads more naturally and does not translate: the provider has no way to map a
+        // record's property back to the aggregate it came from, so it gives up on the whole query.
+        var bySource = await placed
+            .GroupBy(observation => observation.SourceName)
+            .OrderByDescending(group => group.Count())
+            .Select(group => new CategoryCount(group.Key, group.Count()))
+            .ToListAsync(cancellationToken);
+
+        return new TheatreTotals(byPrecision.Sum(count => count.Count), byPrecision, bySource);
+    }
+
+    public Task<int> CountUnplacedAsync(CancellationToken cancellationToken) =>
+        dbContext.Observations
+            .AsNoTracking()
+
+            // Named somewhere and still unplaced. An observation that named nowhere at all is not a
+            // coverage failure — there was nothing to look up — and counting it here would inflate
+            // the figure with items no gazetteer could ever have helped.
+            .CountAsync(
+                observation => observation.Location == null && observation.LocationName != null,
+                cancellationToken);
+
+    /// <summary>
+    /// Placed observations inside one theatre.
+    /// <para>
+    /// Country code first, because it is indexed and selective, and then the latitude and longitude
+    /// limits where a theatre is smaller than its country. Tigray is the only one of the three that
+    /// needs the second half, and without it every report from anywhere in Ethiopia would be counted
+    /// as Tigray coverage — which would make the one theatre whose thinness most needs stating look
+    /// considerably better covered than it is.
+    /// </para>
+    /// </summary>
+    private IQueryable<RawObservation> InTheatre(Theatre theatre)
+    {
+        var query = dbContext.Observations
+            .AsNoTracking()
+            .Where(observation =>
+                observation.Location != null
+                && observation.Location.CountryCode == theatre.CountryCode);
+
+        if (theatre.Bounds is not { } bounds)
+        {
+            return query;
+        }
+
+        return query.Where(observation =>
+            observation.Location!.Latitude >= bounds.South
+            && observation.Location.Latitude <= bounds.North
+            && observation.Location.Longitude >= bounds.West
+            && observation.Location.Longitude <= bounds.East);
+    }
+}

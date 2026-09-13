@@ -1,4 +1,5 @@
 using Geopolitics.Application.Abstractions;
+using Geopolitics.Application.Coverage;
 using Geopolitics.Application.Analytics;
 
 namespace Geopolitics.Api.Endpoints;
@@ -46,6 +47,13 @@ public static class AnalyticsEndpoints
             })))
             .WithName("ListAnalyticsWindows")
             .WithSummary("The time windows analytics can be requested over.");
+
+        analytics.MapGet(
+            "/coverage",
+            async (ICoverageService service, CancellationToken cancellationToken) =>
+                Results.Ok(await service.BuildAsync(cancellationToken)))
+            .WithName("GetCoverage")
+            .WithSummary("What has been placed per theatre, how precisely, and what the gaps are.");
 
         return builder;
     }

@@ -2557,7 +2557,9 @@ Sprint 9 progress:
    482, Tigray 163. Sourcing, the collision rules, and the measured cost are in
    [ADR 026](docs/adr/026-gazetteer-sourcing.md).
 4. **FIRMS conflict filtering.** Not started.
-5. **Theatre-level coverage reporting.** Not started.
+5. **Theatre-level coverage reporting.** Done. A Coverage tab states, per theatre, what was placed
+   and at what precision, how many place names the lexicon holds for it, and what that theatre's
+   numbers cannot tell the reader. Exported as `coverage.json` and served from `/api/analytics/coverage`.
 6. **Territorial control layer.** Deferred whole, per the sprint definition: the DeepState licence
    question is unsettled.
 7. **Troop movements.** Declined and recorded, as the sprint requires, in

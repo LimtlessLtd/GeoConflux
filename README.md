@@ -534,6 +534,16 @@ credential is ever read from a committed file.
 | `Providers:Ucdp:Resource` / `:Version` | `gedevents` / `26.0.7` | GED Candidate, the monthly series |
 | `Providers:Ucdp:Countries` | empty | Gleditsch and Ward numbers, not ISO codes. Empty means no filter. |
 
+### Coverage
+
+The dashboard has a **Coverage** tab that states, per theatre, how much has been placed and how
+precisely, which sources it came from, how many place names the lexicon holds, and what that
+theatre's numbers cannot tell you.
+
+It exists because a map is silent about its own gaps. Three dots over Tigray look identical whether
+three things happened or three things were reported, and the tab makes that difference explicit —
+including saying plainly that Tigray coverage is sparser than its conflict, and why.
+
 ### Place names
 
 The gazetteer has two layers. A small curated core — chokepoints, seas, country centroids, and the

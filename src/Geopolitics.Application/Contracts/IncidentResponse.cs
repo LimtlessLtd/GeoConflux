@@ -41,7 +41,8 @@ public sealed record IncidentResponse(
                     incident.Location.Name,
                     incident.Location.CountryCode,
                     incident.Location.Latitude,
-                    incident.Location.Longitude),
+                    incident.Location.Longitude,
+                    incident.Location.Precision),
             incident.ObservationCount,
             incident.IsDemo,
             incident.Provenance,
@@ -50,4 +51,14 @@ public sealed record IncidentResponse(
     }
 }
 
-public sealed record LocationResponse(string Name, string? CountryCode, double Latitude, double Longitude);
+/// <param name="Precision">
+/// How much ground this coordinate stands for. Carried to the client rather than left in the
+/// database, because it is the difference between a marker that means "here" and one that means
+/// "somewhere in this country", and a reader looking at two identical dots cannot tell them apart.
+/// </param>
+public sealed record LocationResponse(
+    string Name,
+    string? CountryCode,
+    double Latitude,
+    double Longitude,
+    LocationPrecision Precision);

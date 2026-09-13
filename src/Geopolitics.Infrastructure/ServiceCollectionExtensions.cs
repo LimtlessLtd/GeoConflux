@@ -1,6 +1,7 @@
 using Geopolitics.Application;
 using Geopolitics.Application.Abstractions;
 using Geopolitics.Application.Analytics;
+using Geopolitics.Application.Coverage;
 using Geopolitics.Application.Enrichment;
 using Geopolitics.Application.Pipeline;
 using Geopolitics.Application.Spatial;
@@ -41,9 +42,16 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IObservationRepository, EfObservationRepository>();
         services.AddScoped<IAiInferenceRepository, EfAiInferenceRepository>();
         services.AddScoped<IAnalyticsRepository, EfAnalyticsRepository>();
+        services.AddScoped<ICoverageRepository, EfCoverageRepository>();
         services.AddScoped<IIncidentQueryService, IncidentQueryService>();
         services.AddScoped<ISpatialQueryService, SpatialQueryService>();
         services.AddScoped<IAnalyticsService, AnalyticsService>();
+        services.AddScoped<ICoverageService, CoverageService>();
+
+        // Singleton because it reports on tables built once at startup and holds no per-request
+        // state. It is the one component that answers "how much could this system place at all",
+        // which the coverage report needs and the resolver has no reason to expose.
+        services.AddSingleton<IPlaceLexicon, GazetteerPlaceLexicon>();
 
         // Reference data, immutable and shared.
         services.AddSingleton<IChokepointCatalogue, MaritimeChokepointCatalogue>();

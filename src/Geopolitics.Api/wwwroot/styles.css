@@ -962,3 +962,57 @@ html, body {
 .model-opinion strong { font-weight: 700; }
 
 .model-confidence { margin-left: auto; font-variant-numeric: tabular-nums; }
+
+/* ---- Coverage -------------------------------------------------------------------------------
+   The panel that stops an empty region from reading as a quiet one. Styled like the chokepoint
+   cards because it answers a neighbouring question, and deliberately without a red/green scale:
+   thin coverage is a fact about reporting, not a warning state. */
+
+.coverage-list { display: grid; gap: .5rem; padding: .8rem .8rem 0; }
+.coverage-gaps { display: grid; gap: .4rem; padding: .6rem .8rem .8rem; }
+
+.coverage {
+  padding: .65rem .75rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--muted);
+  border-radius: 6px;
+  background: var(--panel-2);
+}
+
+/* A theatre with something on the map is bordered, exactly as an active chokepoint is. It marks
+   "this has data" and nothing about how good or bad the situation there is. */
+.coverage.is-active { border-left-color: var(--accent); }
+
+.coverage h3 { margin: 0 0 .25rem; font-size: .86rem; font-weight: 600; }
+.coverage-summary { margin: .2rem 0 0; font-size: .74rem; line-height: 1.45; }
+
+.coverage-meta {
+  margin-top: .4rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem;
+}
+
+.coverage-chip {
+  padding: .1rem .4rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: .66rem;
+  color: var(--muted);
+}
+
+/* The precise end of the scale is marked and the coarse end is not, so a row of pale chips reads
+   at a glance as "we mostly know roughly". */
+.coverage-chip.coverage-exact,
+.coverage-chip.coverage-settlement { color: var(--text); border-color: var(--accent); }
+
+.coverage-lexicon { margin: .4rem 0 0; font-size: .68rem; color: var(--muted); }
+
+.coverage-caveat {
+  margin: .35rem 0 0;
+  font-size: .68rem;
+  line-height: 1.45;
+  color: var(--muted);
+  border-left: 2px solid var(--line);
+  padding-left: .5rem;
+}

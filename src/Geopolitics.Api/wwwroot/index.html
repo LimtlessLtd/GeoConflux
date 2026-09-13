@@ -120,6 +120,7 @@
         <button class="tab" role="tab" data-tab="chokepoints" aria-selected="false">
           Chokepoints <span id="chokepointCount" class="count">0</span>
         </button>
+        <button class="tab" role="tab" data-tab="coverage" aria-selected="false">Coverage</button>
         <button class="tab" role="tab" data-tab="analytics" aria-selected="false">Analytics</button>
         <button class="tab" role="tab" data-tab="submit" aria-selected="false" id="submitTabButton">Submit</button>
         <button class="tab" role="tab" data-tab="about" aria-selected="false">About</button>
@@ -145,6 +146,16 @@
         </p>
         <p class="feed-hint" id="chokepointMethod"></p>
         <div id="chokepointList" class="chokepoint-list"></div>
+      </div>
+
+      <div id="coverageTab" class="tab-panel" role="tabpanel" hidden>
+        <p class="feed-hint">
+          What this system has managed to place in each theatre, and how precisely. A map cannot say
+          anything about its own gaps, so they are stated here: an empty region means
+          <strong>nobody reported</strong>, not that nothing happened.
+        </p>
+        <div id="coverageList" class="coverage-list"></div>
+        <div id="coverageGaps" class="coverage-gaps"></div>
       </div>
 
       <div id="analyticsTab" class="tab-panel analytics" role="tabpanel" hidden>

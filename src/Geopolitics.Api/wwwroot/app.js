@@ -38,6 +38,9 @@ import { confidenceChip, modelOpinion } from './lib/classification.js';
 import { canHideDemoNotice, provenanceChip, provenanceSummary } from './lib/provenance.js';
 import { selectVisibleIncidents } from './lib/incidents.js';
 import { resolveDataSource as resolveSourceOrder } from './lib/datasource.js';
+import {
+  coverageSummary, gapNotes, hasCoverage, lexiconNote, orderByPrecision, precisionLabel,
+} from './lib/coverage.js';
 
 (() => {
   'use strict';
@@ -141,6 +144,8 @@ import { resolveDataSource as resolveSourceOrder } from './lib/datasource.js';
     submitStatus: document.querySelector('#submitStatus'),
     submitDisabled: document.querySelector('#submitDisabled'),
     chokepointList: document.querySelector('#chokepointList'),
+    coverageList: document.querySelector('#coverageList'),
+    coverageGaps: document.querySelector('#coverageGaps'),
     chokepointCount: document.querySelector('#chokepointCount'),
     chokepointMethod: document.querySelector('#chokepointMethod'),
     basemapFilter: document.querySelector('#basemapFilter'),
@@ -230,6 +235,10 @@ import { resolveDataSource as resolveSourceOrder } from './lib/datasource.js';
       if (!response.ok) throw new Error(`Analytics endpoint returned ${response.status}`);
       return response.json();
     },
+    async loadCoverage() {
+      const response = await fetch('./api/analytics/coverage', { headers: { Accept: 'application/json' } });
+      return response.ok ? response.json() : null;
+    },
   };
 
   /** Reads the snapshot a real pipeline run exported at build time. */
@@ -268,6 +277,12 @@ import { resolveDataSource as resolveSourceOrder } from './lib/datasource.js';
       const response = await fetch(`./data/analytics/${encodeURIComponent(token)}.json`, { headers: { Accept: 'application/json' } });
       if (!response.ok) throw new Error(`Snapshot analytics returned ${response.status}`);
       return response.json();
+    },
+    async loadCoverage() {
+      // A snapshot published before this panel existed has no such file, which leaves the panel
+      // empty rather than failing the load.
+      const response = await fetch('./data/coverage.json', { headers: { Accept: 'application/json' } });
+      return response.ok ? response.json() : null;
     },
   };
 
@@ -930,6 +945,76 @@ import { resolveDataSource as resolveSourceOrder } from './lib/datasource.js';
    * moment this panel ranks by anything other than what it measured, it starts asserting an
    * assessment the system has not made.
    */
+  /**
+   * Draws the per-theatre coverage statement.
+   *
+   * Every decision about wording lives in lib/coverage.js and is tested there; this builds elements
+   * and nothing else. The caveat is rendered for every theatre including the well-covered ones,
+   * because a caveat that only appears on the bad news reads as an excuse rather than as a
+   * description of the data.
+   */
+  function renderCoverage(report) {
+    dom.coverageList.replaceChildren();
+    dom.coverageGaps.replaceChildren();
+
+    if (!hasCoverage(report)) {
+      const empty = document.createElement('p');
+      empty.className = 'feed-hint';
+      empty.textContent = 'No coverage report is available from this data source.';
+      dom.coverageList.append(empty);
+      return;
+    }
+
+    report.theatres.forEach((theatre) => {
+      const card = document.createElement('article');
+      card.className = asCount(theatre.placedCount) > 0 ? 'coverage is-active' : 'coverage';
+
+      const heading = document.createElement('h3');
+      heading.textContent = theatre.theatre;
+      card.append(heading);
+
+      const summary = document.createElement('p');
+      summary.className = 'coverage-summary';
+      summary.textContent = coverageSummary(theatre);
+      card.append(summary);
+
+      const precisions = orderByPrecision(theatre.byPrecision);
+
+      if (precisions.length > 0) {
+        const meta = document.createElement('div');
+        meta.className = 'coverage-meta';
+
+        precisions.forEach((entry) => {
+          const chip = document.createElement('span');
+          chip.className = `coverage-chip coverage-${String(entry.category).toLowerCase()}`;
+          chip.textContent = `${asCount(entry.count)} ${precisionLabel(entry.category)}`;
+          meta.append(chip);
+        });
+
+        card.append(meta);
+      }
+
+      const lexicon = document.createElement('p');
+      lexicon.className = 'coverage-lexicon';
+      lexicon.textContent = lexiconNote(theatre);
+      card.append(lexicon);
+
+      const caveat = document.createElement('p');
+      caveat.className = 'coverage-caveat';
+      caveat.textContent = theatre.caveat ?? '';
+      card.append(caveat);
+
+      dom.coverageList.append(card);
+    });
+
+    gapNotes(report).forEach((note) => {
+      const paragraph = document.createElement('p');
+      paragraph.className = 'feed-hint';
+      paragraph.textContent = note;
+      dom.coverageGaps.append(paragraph);
+    });
+  }
+
   function renderChokepoints(analysis) {
     const entries = analysis?.chokepoints ?? [];
     dom.chokepointList.replaceChildren();
@@ -1362,7 +1447,7 @@ import { resolveDataSource as resolveSourceOrder } from './lib/datasource.js';
   }
 
   async function loadSnapshotState() {
-    const [loadedIncidents, loadedObservations, chokepoints] = await Promise.all([
+    const [loadedIncidents, loadedObservations, chokepoints, coverage] = await Promise.all([
       dataSource.loadIncidents(),
       dataSource.loadObservations(),
 
@@ -1370,6 +1455,9 @@ import { resolveDataSource as resolveSourceOrder } from './lib/datasource.js';
       // failing the whole load, because the map and the feed do not depend on it.
       dataSource.loadChokepoints?.().catch(() => ({ method: '', chokepoints: [] }))
         ?? { method: '', chokepoints: [] },
+
+      // Same treatment, and for the same reason.
+      dataSource.loadCoverage?.().catch(() => null) ?? null,
     ]);
 
     incidents.clear();
@@ -1386,6 +1474,7 @@ import { resolveDataSource as resolveSourceOrder } from './lib/datasource.js';
     renderIncidents();
     renderFeed();
     renderChokepoints(chokepoints);
+    renderCoverage(coverage);
   }
 
   function startPolling(reason) {
