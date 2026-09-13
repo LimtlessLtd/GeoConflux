@@ -2549,7 +2549,9 @@ dependency review. `main` is green and deploys to
 <https://limtlessltd.github.io/GeoConflux/> on every push.
 
 **Sprint 8** (open social) remains specified and unbuilt, blocked on the corroboration gate.
-**Sprint 9** (theatre depth for Ukraine, Yemen and Tigray) is in progress.
+**Sprint 9** (theatre depth for Ukraine, Yemen and Tigray) is complete apart from two items recorded
+as declined: the territorial control layer, deferred whole because the DeepState licence question is
+unsettled, and the FIRMS cropland mask, which cannot be sourced from inside this repository.
 
 Read [docs/conflict-source-assessment.md](docs/conflict-source-assessment.md) before continuing it.
 
