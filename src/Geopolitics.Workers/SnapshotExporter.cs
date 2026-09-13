@@ -51,6 +51,19 @@ public static partial class SnapshotExporter
         var queue = services.GetRequiredService<IObservationQueueWriter>();
         var reader = services.GetRequiredService<IObservationQueueReader>();
 
+        // Draining starts before filling, and that ordering is the whole of the fix.
+        //
+        // The queue is bounded and blocks its producer when full, per ADR 003. That is right for a
+        // running host, where a consumer is always there to relieve it. This exporter used to fill
+        // the queue to completion and only then begin draining, which works for exactly as long as a
+        // whole run fits inside the queue and deadlocks permanently the moment it does not. Four RSS
+        // feeds fit inside 512 slots. A dataset adapter paging through global conflict history does
+        // not, and the failure would not have been a slow export or a truncated one — it would have
+        // been a build that hung until the runner timed it out.
+        var drain = Task.Run(
+            () => DrainAsync(services, reader, logger, cancellationToken),
+            CancellationToken.None);
+
         var queued = 0;
 
         foreach (var source in sources)
@@ -60,7 +73,7 @@ public static partial class SnapshotExporter
             // export forever rather than write a snapshot.
             var envelopes = source is IBatchEventSource batch
                 ? await batch.ReadBatchAsync(cancellationToken)
-                : await DrainAsync(source, cancellationToken);
+                : await ReadToEndAsync(source, cancellationToken);
 
             var accepted = 0;
 
@@ -82,19 +95,10 @@ public static partial class SnapshotExporter
             LogSourceRead(logger, source.Name, envelopes.Count, accepted);
         }
 
-        // Closing the queue is what lets the drain loop below terminate rather than wait for more.
+        // Closing the queue is what lets the drain loop terminate rather than wait for more.
         queue.Complete();
 
-        var processed = 0;
-
-        await foreach (var envelope in reader.DequeueAllAsync(cancellationToken))
-        {
-            // A scope per item mirrors how the background processor isolates each unit of work.
-            await using var scope = services.CreateAsyncScope();
-            var processor = scope.ServiceProvider.GetRequiredService<IObservationProcessor>();
-            await processor.ProcessAsync(envelope, cancellationToken);
-            processed++;
-        }
+        var processed = await drain;
 
         LogProcessed(logger, queued, processed);
 
@@ -106,10 +110,55 @@ public static partial class SnapshotExporter
     }
 
     /// <summary>
+    /// Consumes the queue until it is completed, and reports how many items it processed.
+    /// <para>
+    /// Deliberately one consumer rather than the several the hosted processor runs. Correlation
+    /// depends on the order records arrive in — which observation reaches an empty database first is
+    /// what decides which one opens an incident — so a concurrent drain would make the published
+    /// snapshot differ between runs of identical input. Throughput is not the constraint here; a
+    /// reproducible build is.
+    /// </para>
+    /// <para>
+    /// A failing item must not end the loop. The producer above is blocked on a bounded queue, so a
+    /// consumer that dies on one bad record does not merely lose that record: it strands the
+    /// producer, and the export hangs instead of failing. Each item is therefore contained, exactly
+    /// as a failed poll is contained inside a polling source.
+    /// </para>
+    /// </summary>
+    private static async Task<int> DrainAsync(
+        IServiceProvider services,
+        IObservationQueueReader reader,
+        ILogger logger,
+        CancellationToken cancellationToken)
+    {
+        var processed = 0;
+
+        await foreach (var envelope in reader.DequeueAllAsync(cancellationToken))
+        {
+            try
+            {
+                // A scope per item mirrors how the background processor isolates each unit of work.
+                await using var scope = services.CreateAsyncScope();
+                var processor = scope.ServiceProvider.GetRequiredService<IObservationProcessor>();
+                await processor.ProcessAsync(envelope, cancellationToken);
+            }
+            catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
+            {
+                LogProcessingFailed(logger, exception, envelope.SourceName);
+                continue;
+            }
+
+            processed++;
+        }
+
+        return processed;
+    }
+
+    /// <summary>
     /// Reads a finite source to exhaustion. Only used for sources that genuinely end, such as the
     /// recorded replay stream.
     /// </summary>
-    private static async Task<IReadOnlyList<ObservationEnvelope>> DrainAsync(
+    private static async Task<IReadOnlyList<ObservationEnvelope>> ReadToEndAsync(
         IEventSource source,
         CancellationToken cancellationToken)
     {
@@ -298,6 +347,9 @@ public static partial class SnapshotExporter
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Queued {Queued} envelope(s) and processed {Processed}.")]
     private static partial void LogProcessed(ILogger logger, int queued, int processed);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "An envelope from {SourceName} could not be processed and was dropped from this snapshot. The export continues.")]
+    private static partial void LogProcessingFailed(ILogger logger, Exception exception, string sourceName);
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Snapshot written to {OutputDirectory}.")]
     private static partial void LogExported(ILogger logger, string outputDirectory);

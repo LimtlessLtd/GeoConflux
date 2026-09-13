@@ -22,6 +22,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Geopolitics.Api\Geopolitics.Api.csproj" />
+
+    <!-- The snapshot exporter is what builds the published dashboard, and it lives in the worker
+         host rather than the API. Referencing it here is what lets the export be tested against the
+         real composed application instead of a reconstruction of it. -->
+    <ProjectReference Include="..\..\src\Geopolitics.Workers\Geopolitics.Workers.csproj" />
   </ItemGroup>
 
 </Project>
