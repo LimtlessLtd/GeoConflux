@@ -474,6 +474,38 @@ public sealed class RawObservation
         LocationResolutionNote = reason.Trim();
     }
 
+    /// <summary>
+    /// Records that this claim stands alone and may not open an incident.
+    /// <para>
+    /// The observation is kept in full — stored, placed, classified, and shown. What is withheld is
+    /// the assertion that the thing it describes happened, because a single post is evidence that a
+    /// post exists and nothing more. That distinction is the whole of the corroboration rule, and
+    /// putting it in a status rather than in a filter is deliberate: a claim that is hidden is a
+    /// claim nobody can corroborate, and hiding it would also quietly conceal how much of the
+    /// picture rests on unsupported posts.
+    /// </para>
+    /// <para>
+    /// Refuses to hold published reporting. A wire story or a coded dataset record stands on its
+    /// own, and a bug that routed one through here would look exactly like a quiet outage — the map
+    /// would keep filling with claims while incidents stopped opening, and nothing would say why.
+    /// </para>
+    /// </summary>
+    public void HoldAsUncorroborated()
+    {
+        if (Tier != SourceTier.UserGenerated)
+        {
+            throw new DomainException(
+                "Only a user-generated claim may be held for corroboration; published reporting stands on its own.");
+        }
+
+        IncidentId = null;
+        Status = ObservationStatus.Uncorroborated;
+        FailureReason = null;
+    }
+
+    /// <summary>Whether this is a claim currently waiting for a second source.</summary>
+    public bool IsHeldForCorroboration => Status == ObservationStatus.Uncorroborated;
+
     public void LinkToIncident(Guid incidentId)
     {
         if (incidentId == Guid.Empty)
@@ -530,6 +562,13 @@ public sealed class RawObservation
         if (status is ObservationStatus.Failed or ObservationStatus.Received)
         {
             throw new DomainException("Use MarkFailed for failures and do not reset an observation to received.");
+        }
+
+        if (status is ObservationStatus.Uncorroborated)
+        {
+            // Holding a claim carries an invariant this method cannot check, so it is not reachable
+            // as a plain status assignment.
+            throw new DomainException("Use HoldAsUncorroborated to hold a claim for corroboration.");
         }
 
         Status = status;

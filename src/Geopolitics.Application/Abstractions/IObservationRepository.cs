@@ -18,6 +18,22 @@ public interface IObservationRepository
     Task<IReadOnlyList<RawObservation>> ListByIncidentAsync(Guid incidentId, CancellationToken cancellationToken);
 
     /// <summary>
+    /// User-generated claims of one category that are waiting for a second source, inside a window.
+    /// <para>
+    /// Returned tracked rather than read-only, unlike every other query here, because these are the
+    /// one set the caller exists to modify: a released claim is linked to an incident and saved in
+    /// the same transaction that creates it. Reading them detached would mean re-loading each one to
+    /// write it, inside the lock, for no benefit.
+    /// </para>
+    /// </summary>
+    Task<IReadOnlyList<RawObservation>> ListHeldClaimsAsync(
+        EventType eventType,
+        DateTimeOffset windowStart,
+        DateTimeOffset windowEnd,
+        int take,
+        CancellationToken cancellationToken);
+
+    /// <summary>
     /// Stores this observation and the audit trail of the attempt, discarding the incident that
     /// attempt had staged.
     /// <para>

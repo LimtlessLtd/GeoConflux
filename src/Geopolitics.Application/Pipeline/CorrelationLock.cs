@@ -21,12 +21,19 @@ namespace Geopolitics.Application.Pipeline;
 /// distributed one. Running two processor hosts against one database would reintroduce the race;
 /// that would need a database-level guard, and it is not a configuration this project supports.
 /// </para>
+/// <para>
+/// Not to be confused with <see cref="CorroborationGate"/>, which shares neither a purpose nor a
+/// mechanism with this. That decides whether a claim is <em>allowed</em> to open an incident; this
+/// only stops two threads opening the same one twice. It was called <c>CorrelationGate</c> until the
+/// other one existed, and the rename happened because reading the name alone was enough to mistake
+/// a mutex for the trust rule.
+/// </para>
 /// </summary>
-public sealed class CorrelationGate : IDisposable
+public sealed class CorrelationLock : IDisposable
 {
     private readonly SemaphoreSlim[] gates;
 
-    public CorrelationGate()
+    public CorrelationLock()
     {
         // One per enum member, indexed directly. The set is small, fixed at compile time, and never
         // grows at runtime, so a dictionary would add locking of its own to protect the lookup.

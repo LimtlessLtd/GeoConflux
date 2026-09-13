@@ -40,6 +40,34 @@ public sealed class EfObservationRepository(GeopoliticsDbContext dbContext) : IO
             .ToListAsync(cancellationToken);
 
     /// <summary>
+    /// Held claims inside a window, tracked so the caller can release them.
+    /// <para>
+    /// Deliberately not <c>AsNoTracking</c>. Every other read here feeds a projection; this one
+    /// feeds an update that has to commit alongside the incident releasing it, and a detached
+    /// entity would have to be re-loaded to do that.
+    /// </para>
+    /// <para>
+    /// Ordered oldest first so the claim that has waited longest is considered first. A sweep that
+    /// hits its cap then leaves the newest claims held, which is the right way round: they have the
+    /// most time left for a second source to arrive.
+    /// </para>
+    /// </summary>
+    public async Task<IReadOnlyList<RawObservation>> ListHeldClaimsAsync(
+        EventType eventType,
+        DateTimeOffset windowStart,
+        DateTimeOffset windowEnd,
+        int take,
+        CancellationToken cancellationToken) =>
+        await dbContext.Observations
+            .Where(value => value.Status == ObservationStatus.Uncorroborated
+                && value.EventType == eventType
+                && value.OccurredAt >= windowStart
+                && value.OccurredAt <= windowEnd)
+            .OrderBy(value => value.ReceivedAt)
+            .Take(take)
+            .ToListAsync(cancellationToken);
+
+    /// <summary>
     /// Stores the evidence from an attempt that failed, without the incident that attempt had
     /// staged.
     /// <para>

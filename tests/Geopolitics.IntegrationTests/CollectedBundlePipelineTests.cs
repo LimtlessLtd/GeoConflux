@@ -75,6 +75,42 @@ public sealed class CollectedBundlePipelineTests
     }
 
     [Fact]
+    public async Task PublishedReportingOpensAnIncidentAndCarriesItsAssessmentForward()
+    {
+        // The other side of the corroboration gate. A collected document has a named organisation
+        // behind it, so it stands on its own and needs nothing to agree with it — and the incident
+        // it opens repeats the confidence and method the observation was assessed with, rather than
+        // presenting a category the dashboard cannot say how much to trust.
+        using var factory = Host();
+        using var client = factory.CreateClient();
+
+        var collected = await WaitForCollectedAsync(client);
+        var documents = collected
+            .Where(observation => observation.GetProperty("tier").GetString() == "Published")
+            .ToArray();
+
+        Assert.NotEmpty(documents);
+
+        var correlated = documents
+            .Where(observation => observation.GetProperty("incidentId").ValueKind != JsonValueKind.Null)
+            .ToArray();
+
+        Assert.NotEmpty(correlated);
+
+        var observation = correlated[0];
+        var incident = await client.GetFromJsonAsync<JsonElement>(
+            $"/api/incidents/{observation.GetProperty("incidentId").GetGuid()}");
+
+        Assert.Equal(
+            observation.GetProperty("classificationConfidence").GetDouble(),
+            incident.GetProperty("classificationConfidence").GetDouble(),
+            precision: 6);
+        Assert.Equal(
+            observation.GetProperty("classificationMethod").GetString(),
+            incident.GetProperty("classificationMethod").GetString());
+    }
+
+    [Fact]
     public async Task NoCollectedObservationTakesTheSourceProvidedPath()
     {
         // A collected item enters as News or Manual and neither kind may declare coordinates, so any

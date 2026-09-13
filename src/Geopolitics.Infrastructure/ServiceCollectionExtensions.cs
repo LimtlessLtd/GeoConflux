@@ -117,7 +117,11 @@ public static class ServiceCollectionExtensions
 
         // Singleton by necessity, not convenience: its whole purpose is to be the one thing two
         // concurrent processor scopes contend on.
-        services.AddSingleton<CorrelationGate>();
+        services.AddSingleton<CorrelationLock>();
+
+        // Scoped, not singleton: it reads through the repository, which carries the request's
+        // DbContext, and a singleton would capture the first one it ever saw.
+        services.AddScoped<CorroborationGate>();
 
         services.AddSingleton<IObservationIngestionService, ObservationIngestionService>();
 

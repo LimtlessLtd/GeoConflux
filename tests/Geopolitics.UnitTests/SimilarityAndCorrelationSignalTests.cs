@@ -421,12 +421,12 @@ public sealed class IncidentEntityAggregationTests
         Now);
 }
 
-public sealed class CorrelationGateTests
+public sealed class CorrelationLockTests
 {
     [Fact]
     public async Task OneCategoryIsHeldExclusively()
     {
-        using var gate = new CorrelationGate();
+        using var gate = new CorrelationLock();
 
         var first = await gate.AcquireAsync(EventType.Conflict, CancellationToken.None);
         var second = gate.AcquireAsync(EventType.Conflict, CancellationToken.None);
@@ -442,7 +442,7 @@ public sealed class CorrelationGateTests
     [Fact]
     public async Task DifferentCategoriesDoNotWaitForEachOther()
     {
-        using var gate = new CorrelationGate();
+        using var gate = new CorrelationLock();
 
         using var conflict = await gate.AcquireAsync(EventType.Conflict, CancellationToken.None);
         var protest = gate.AcquireAsync(EventType.Protest, CancellationToken.None);
@@ -456,7 +456,7 @@ public sealed class CorrelationGateTests
     [Fact]
     public async Task ReleasingTwiceDoesNotLetTwoHoldersIn()
     {
-        using var gate = new CorrelationGate();
+        using var gate = new CorrelationLock();
 
         var handle = await gate.AcquireAsync(EventType.Piracy, CancellationToken.None);
         handle.Dispose();
@@ -473,7 +473,7 @@ public sealed class CorrelationGateTests
     [Fact]
     public async Task WaitingIsCancellable()
     {
-        using var gate = new CorrelationGate();
+        using var gate = new CorrelationLock();
         using var held = await gate.AcquireAsync(EventType.Sanctions, CancellationToken.None);
         using var cancellation = new CancellationTokenSource();
 

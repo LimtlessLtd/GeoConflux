@@ -51,6 +51,28 @@ public sealed class FakeObservationRepository : IObservationRepository
             committed.Where(value => value.IncidentId == incidentId).ToArray());
 
     /// <summary>
+    /// Reads only committed claims, like the database does. The distinction matters here more than
+    /// anywhere else in this class: a fake that also searched the pending list would let an
+    /// observation corroborate itself within a single save, which is exactly the mistake the gate
+    /// exists to prevent and exactly the one a test would not catch.
+    /// </summary>
+    public Task<IReadOnlyList<RawObservation>> ListHeldClaimsAsync(
+        EventType eventType,
+        DateTimeOffset windowStart,
+        DateTimeOffset windowEnd,
+        int take,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<RawObservation>>(
+            committed
+                .Where(value => value.Status == ObservationStatus.Uncorroborated
+                    && value.EventType == eventType
+                    && (value.OccurredAt ?? value.ReceivedAt) >= windowStart
+                    && (value.OccurredAt ?? value.ReceivedAt) <= windowEnd)
+                .OrderBy(value => value.ReceivedAt)
+                .Take(take)
+                .ToArray());
+
+    /// <summary>
     /// Drops the staged incident work and commits the evidence, which is what detaching the tracked
     /// incidents achieves against the real database. A fake that simply committed the observation
     /// would let a test pass against behaviour the database does not have; one that dropped the

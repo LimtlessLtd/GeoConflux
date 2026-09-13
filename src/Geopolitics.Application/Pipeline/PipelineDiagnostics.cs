@@ -29,6 +29,8 @@ public sealed class PipelineDiagnostics : IDisposable
         ItemsDeduplicated = meter.CreateCounter<long>("events.deduplicated", "{item}", "Observations rejected as exact re-deliveries.");
         IncidentsCreated = meter.CreateCounter<long>("events.created", "{incident}", "Incidents opened by the pipeline.");
         IncidentsCorrelated = meter.CreateCounter<long>("events.correlated", "{incident}", "Observations linked to an existing incident.");
+        ClaimsHeld = meter.CreateCounter<long>("claims.held", "{claim}", "User-generated claims stored without an incident, awaiting a second source.");
+        ClaimsReleased = meter.CreateCounter<long>("claims.released", "{claim}", "Held claims a later source corroborated.");
         GeocodingSuccess = meter.CreateCounter<long>("geocoding.success", "{resolution}", "Observations given authoritative coordinates.");
         GeocodingFailure = meter.CreateCounter<long>("geocoding.failure", "{resolution}", "Observations left without coordinates.");
         AiRequests = meter.CreateCounter<long>("ai.requests", "{request}", "Enrichment attempts sent to a provider.");
@@ -130,6 +132,16 @@ public sealed class PipelineDiagnostics : IDisposable
     public Counter<long> IncidentsCreated { get; }
 
     public Counter<long> IncidentsCorrelated { get; }
+
+    /// <summary>
+    /// Claims the corroboration gate declined to turn into incidents. Worth a counter of its own
+    /// because the gate is silent by design: it produces no error and no gap in the feed, so a rule
+    /// that started holding everything would otherwise look exactly like a quiet week.
+    /// </summary>
+    public Counter<long> ClaimsHeld { get; }
+
+    /// <summary>The other half of that figure. Held against released is how well Tier B is paying.</summary>
+    public Counter<long> ClaimsReleased { get; }
 
     public Counter<long> GeocodingSuccess { get; }
 

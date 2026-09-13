@@ -86,6 +86,24 @@ public sealed class PipelineOptions
     public double SimilarityWeight { get; set; } = 0.20;
 
 
+    /// <summary>
+    /// How close two user-generated claims must be placed before that alone corroborates them.
+    /// <para>
+    /// A third of the correlation radius, and tighter on purpose. The correlation radius is drawn
+    /// around a metropolitan area, which is the right size for deciding whether two reports concern
+    /// one event once something already believes the event happened. This one is the evidence that
+    /// an event happened at all, so it is drawn around a town and its outskirts: two channels
+    /// putting a strike 60 km apart are far more likely to be describing two strikes.
+    /// </para>
+    /// </summary>
+    public double CorroborationRadiusKilometres { get; set; } = 25;
+
+    /// <summary>
+    /// How many held claims one sweep will consider. A bound on work, not a judgement — the gate
+    /// logs when it hits this so a backlog of held claims is visible rather than silently trimmed.
+    /// </summary>
+    public int MaxHeldClaimsPerSweep { get; set; } = 50;
+
     /// <summary>Whether ingestion sources are started by the host.</summary>
     public bool SourcesEnabled { get; set; } = true;
 

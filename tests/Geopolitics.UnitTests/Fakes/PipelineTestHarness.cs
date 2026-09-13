@@ -170,7 +170,8 @@ public sealed class PipelineTestHarness
         Observations.Inferences = Inferences;
         LocationResolver = new StubLocationResolver();
         Similarity = new LexicalTextSimilarity();
-        CorrelationGate = new CorrelationGate();
+        CorrelationLock = new CorrelationLock();
+        Corroboration = new CorroborationGate(Observations, Similarity, Microsoft.Extensions.Options.Options.Create(Options));
         Correlator = new DeterministicIncidentCorrelator(Incidents, Similarity, Microsoft.Extensions.Options.Options.Create(Options));
         Normaliser = new ObservationNormaliser(new KeywordEventClassifier());
     }
@@ -197,7 +198,9 @@ public sealed class PipelineTestHarness
 
     public LexicalTextSimilarity Similarity { get; }
 
-    public CorrelationGate CorrelationGate { get; }
+    public CorrelationLock CorrelationLock { get; }
+
+    public CorroborationGate Corroboration { get; }
 
     public IIncidentCorrelator Correlator { get; set; }
 
@@ -219,7 +222,8 @@ public sealed class PipelineTestHarness
         SeverityModel,
         LocationResolver,
         Correlator,
-        CorrelationGate,
+        CorrelationLock,
+        Corroboration,
         Notifier,
         Diagnostics,
         Clock,
@@ -241,7 +245,8 @@ public sealed class PipelineTestHarness
         EventType? eventType = null,
         Severity? severity = null,
         DateTimeOffset? occurredAt = null,
-        string? locationName = null) => new()
+        string? locationName = null,
+        SourceAttribution? attribution = null) => new()
         {
             SourceName = sourceName,
             Kind = ObservationKind.News,
@@ -252,7 +257,24 @@ public sealed class PipelineTestHarness
             DeclaredSeverity = severity,
             OccurredAt = occurredAt,
             DeclaredLocationName = locationName,
+            Attribution = attribution ?? SourceAttribution.Published,
         };
+
+    /// <summary>
+    /// Places each report at the coordinates its own declared name maps to, for tests that turn on
+    /// two reports being a measured distance apart rather than on them sharing one point.
+    /// </summary>
+    public void ResolveByName(
+        IReadOnlyDictionary<string, (double Latitude, double Longitude)> places,
+        LocationPrecision precision = LocationPrecision.Settlement) =>
+        LocationResolver.Behaviour = request =>
+            request.LocationName is { } name && places.TryGetValue(name, out var point)
+                ? new LocationResolution(
+                    new GeoLocation(name, null, point.Latitude, point.Longitude, precision),
+                    LocationResolutionMethod.Gazetteer,
+                    0.7,
+                    null)
+                : LocationResolution.Failed($"'{request.LocationName}' is not in this test's gazetteer.");
 }
 
 /// <summary>

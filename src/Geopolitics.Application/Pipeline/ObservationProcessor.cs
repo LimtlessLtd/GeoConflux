@@ -23,7 +23,8 @@ public sealed partial class ObservationProcessor(
     ISeverityModel severityModel,
     ILocationResolver locationResolver,
     IIncidentCorrelator correlator,
-    CorrelationGate correlationGate,
+    CorrelationLock correlationLock,
+    CorroborationGate corroborationGate,
     IIncidentNotifier notifier,
     PipelineDiagnostics diagnostics,
     TimeProvider timeProvider,
@@ -130,7 +131,12 @@ public sealed partial class ObservationProcessor(
         }
 
         var incidentCreated = false;
-        GeopoliticalIncident incident;
+
+        // Null means held: a claim nothing else supports, which is stored and shown and attached to
+        // no incident. Modelled as the absence of an incident rather than as a flag beside one,
+        // because every downstream step then has to acknowledge it to compile.
+        GeopoliticalIncident? incident = null;
+        var released = new List<RawObservation>();
 
         // Held from the candidate read through to the commit, and released there. Correlating
         // outside it would let a second worker holding a report of the same event read the same
@@ -140,7 +146,7 @@ public sealed partial class ObservationProcessor(
         // Enrichment and location resolution are deliberately outside: they are the slow stages and
         // they touch no shared state, so serialising them would cost throughput and buy nothing.
         // Publication is outside for a sharper reason — see below.
-        using (await correlationGate.AcquireAsync(observation.EventType, cancellationToken))
+        using (await correlationLock.AcquireAsync(observation.EventType, cancellationToken))
         {
             using (var correlateStage = diagnostics.StartStage(PipelineDiagnostics.Stages.Correlate))
             {
@@ -185,51 +191,124 @@ public sealed partial class ObservationProcessor(
                 }
                 else
                 {
-                    incident = CreateIncident(observation);
-                    incident.LinkObservation(observation.Id, timeProvider.GetUtcNow());
-                    incident.MergeEntities(observation.Entities, timeProvider.GetUtcNow());
-                    incident.RecordAssessment(
-                        observation.ClassificationConfidence,
-                        observation.ClassificationMethod,
-                        timeProvider.GetUtcNow());
-                    await incidentRepository.AddAsync(incident, cancellationToken);
-                    incidentCreated = true;
+                    // The corroboration gate. A claim that matched no incident has nothing standing
+                    // behind it yet, and one post is evidence that a post exists rather than
+                    // evidence of an event. Published reporting skips this entirely: a wire item, a
+                    // coded dataset record and a satellite detection each stand on their own.
+                    var corroboration = observation.Attribution.IsClaim
+                        ? await corroborationGate.AssessAsync(observation, cancellationToken)
+                        : new CorroborationOutcome(observation, "published reporting stands on its own");
 
-                    diagnostics.IncidentsCreated.Add(1, new KeyValuePair<string, object?>("source", observation.SourceName));
-                    LogIncidentCreated(logger, incident.Id, observation.Id, assessment.Rationale);
+                    correlateStage.Tag("corroboration.required", observation.Attribution.IsClaim);
+                    correlateStage.Tag("corroboration.satisfied", corroboration.IsCorroborated);
+
+                    if (corroboration.IsCorroborated)
+                    {
+                        incident = CreateIncident(observation);
+                        incident.LinkObservation(observation.Id, timeProvider.GetUtcNow());
+                        incident.MergeEntities(observation.Entities, timeProvider.GetUtcNow());
+                        incident.RecordAssessment(
+                            observation.ClassificationConfidence,
+                            observation.ClassificationMethod,
+                            timeProvider.GetUtcNow());
+                        await incidentRepository.AddAsync(incident, cancellationToken);
+                        incidentCreated = true;
+
+                        diagnostics.IncidentsCreated.Add(1, new KeyValuePair<string, object?>("source", observation.SourceName));
+                        LogIncidentCreated(logger, incident.Id, observation.Id, assessment.Rationale);
+                    }
+                    else
+                    {
+                        diagnostics.ClaimsHeld.Add(1, new KeyValuePair<string, object?>("source", observation.SourceName));
+                        LogClaimHeld(logger, observation.SourceName, corroboration.Rationale);
+                    }
                 }
 
-                correlateStage.Tag("incident.id", incident.Id);
+                if (incident is not null)
+                {
+                    // Held claims this incident now accounts for. Runs on a join as well as on a
+                    // creation, because an incident that has just gained a location or an actor may
+                    // account for a claim it did not a moment ago.
+                    released = [.. await corroborationGate.ReleasableByAsync(incident, cancellationToken)];
+                }
+
+                correlateStage.Tag("incident.id", incident?.Id);
                 correlateStage.Tag("incident.created", incidentCreated);
+                correlateStage.Tag("claim.held", incident is null);
             }
 
             using (var persistStage = diagnostics.StartStage(PipelineDiagnostics.Stages.Persist))
             {
-                observation.LinkToIncident(incident.Id);
-                observation.MarkPersisted();
-                await observationRepository.AddAsync(observation, cancellationToken);
+                if (incident is null)
+                {
+                    observation.HoldAsUncorroborated();
+                    await observationRepository.AddAsync(observation, cancellationToken);
+                    await observationRepository.SaveChangesAsync(cancellationToken);
+                }
+                else
+                {
+                    observation.LinkToIncident(incident.Id);
+                    observation.MarkPersisted();
+                    await observationRepository.AddAsync(observation, cancellationToken);
 
-                // One save so the observation, the incident, and their linkage commit together.
-                // Nothing is announced to clients until this succeeds.
-                await incidentRepository.SaveChangesAsync(cancellationToken);
-                persistStage.Tag("incident.observation_count", incident.ObservationCount);
+                    foreach (var claim in released)
+                    {
+                        incident.LinkObservation(claim.Id, timeProvider.GetUtcNow());
+                        incident.MergeEntities(claim.Entities, timeProvider.GetUtcNow());
+                        claim.LinkToIncident(incident.Id);
+                        claim.MarkPersisted();
+                        LogClaimReleased(logger, claim.Id, incident.Id);
+                    }
+
+                    diagnostics.ClaimsReleased.Add(released.Count);
+
+                    // One save so the observation, the incident, the claims it released, and every
+                    // linkage between them commit together. Nothing is announced until it succeeds,
+                    // so a released claim can never be shown as corroborated by an incident that
+                    // failed to persist.
+                    await incidentRepository.SaveChangesAsync(cancellationToken);
+                    persistStage.Tag("incident.observation_count", incident.ObservationCount);
+                }
+
+                persistStage.Tag("claims.released", released.Count);
             }
         }
 
         diagnostics.ItemsProcessed.Add(1, new KeyValuePair<string, object?>("source", observation.SourceName));
 
-        // Outside the gate, deliberately. This is a fan-out to every connected client, and its
+        // Outside the lock, deliberately. This is a fan-out to every connected client, and its
         // duration is set by the slowest of them rather than by anything this pipeline controls.
         // Holding a per-category lock across it would let one stalled browser serialise the
         // processing of every later observation in that category. Nothing here can change what was
         // committed, so there is nothing left for the lock to protect.
         using (var stage = diagnostics.StartStage(PipelineDiagnostics.Stages.Publish))
         {
-            await PublishAsync(observation, incident, incidentCreated, cancellationToken);
+            if (incident is null)
+            {
+                // Announced like anything else. A held claim that clients never heard about would be
+                // a claim a reader cannot see, and the point of holding rather than discarding is
+                // that the post stays visible and visibly unsupported.
+                await PublishObservationAsync(observation, cancellationToken);
+            }
+            else
+            {
+                await PublishAsync(observation, incident, incidentCreated, cancellationToken);
+
+                foreach (var claim in released)
+                {
+                    // Re-announced so each released claim's label changes from an uncorroborated
+                    // claim to part of an incident without the reader reloading the page.
+                    await PublishObservationAsync(claim, cancellationToken);
+                }
+            }
+
             stage.Tag("incident.created", incidentCreated);
+            stage.Tag("claim.held", incident is null);
         }
 
-        return new ObservationProcessingResult(ProcessingOutcome.Persisted, observation.Id, incident.Id, incidentCreated, null);
+        return incident is null
+            ? new ObservationProcessingResult(ProcessingOutcome.Held, observation.Id, null, false, null)
+            : new ObservationProcessingResult(ProcessingOutcome.Persisted, observation.Id, incident.Id, incidentCreated, null);
     }
 
     /// <summary>
@@ -653,6 +732,16 @@ public sealed partial class ObservationProcessor(
         diagnostics.ProcessingDuration.Record(
             timeProvider.GetElapsedTime(startedAt).TotalMilliseconds,
             new KeyValuePair<string, object?>("outcome", outcome.ToString()));
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Claim from {SourceName} is held as uncorroborated: {Reason}")]
+    private static partial void LogClaimHeld(ILogger logger, string sourceName, string reason);
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Held claim {ObservationId} was released into incident {IncidentId}.")]
+    private static partial void LogClaimReleased(ILogger logger, Guid observationId, Guid incidentId);
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "Observation from {SourceName} duplicates observation {OriginalObservationId}.")]
     private static partial void LogDuplicate(ILogger logger, string sourceName, Guid originalObservationId);

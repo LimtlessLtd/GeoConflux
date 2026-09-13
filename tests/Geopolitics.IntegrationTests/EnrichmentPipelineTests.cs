@@ -65,15 +65,15 @@ public sealed class EnrichmentPipelineTests
         Assert.Equal(12.585, observation.Location.Latitude, precision: 3);
         Assert.Equal(43.334, observation.Location.Longitude, precision: 3);
 
-        // It reached an incident, and the incident carries the confidence forward to the dashboard.
-        Assert.NotNull(observation.IncidentId);
-        var incident = await client.GetFromJsonAsync<IncidentResponse>(
-            $"/api/incidents/{observation.IncidentId}",
-            Json);
-
-        Assert.NotNull(incident);
-        Assert.Equal(observation.ClassificationConfidence, incident.ClassificationConfidence);
-        Assert.StartsWith("ai:", incident.ClassificationMethod, StringComparison.Ordinal);
+        // And it opened no incident, because a submission through the open write path is an
+        // anonymous claim. Every assertion above still holds, which is the property worth keeping
+        // separate: the corroboration gate withholds the conclusion, not the enrichment.
+        //
+        // That an incident carries its observation's confidence forward is asserted against
+        // published reporting instead, in CollectedBundlePipelineTests, where the record actually
+        // has an organisation behind it.
+        Assert.Null(observation.IncidentId);
+        Assert.Equal(ObservationStatus.Uncorroborated, observation.Status);
     }
 
     [Fact]
@@ -95,12 +95,17 @@ public sealed class EnrichmentPipelineTests
 
         var observation = Assert.Single(await WaitForObservationsAsync(client, expected: 1));
 
-        Assert.Equal(ObservationStatus.Persisted, observation.Status);
+        // Held rather than persisted, because a submission through the open write path is an
+        // anonymous claim and the corroboration gate does not let one open an incident. Everything
+        // this test is actually about is unchanged by that: the model was called, its answer was
+        // not adopted, and the observation is stored, classified and placed.
+        Assert.Equal(ObservationStatus.Uncorroborated, observation.Status);
         Assert.Equal("keyword", observation.ClassificationMethod);
         Assert.NotNull(observation.Location);
 
-        // The attempt still happened and is still auditable, even though its output was not adopted.
-        Assert.NotNull(observation.IncidentId);
+        // No incident, and the claim is still fully retained — which is the whole distinction
+        // between holding a claim and dropping one.
+        Assert.Null(observation.IncidentId);
     }
 
     [Fact]
@@ -128,7 +133,7 @@ public sealed class EnrichmentPipelineTests
 
         var observation = Assert.Single(await WaitForObservationsAsync(client, expected: 1));
 
-        Assert.Equal(ObservationStatus.Persisted, observation.Status);
+        Assert.Equal(ObservationStatus.Uncorroborated, observation.Status);
         Assert.Equal(EventType.Piracy, observation.EventType);
         Assert.Equal("keyword", observation.ClassificationMethod);
         Assert.True(observation.ClassificationConfidence > 0);

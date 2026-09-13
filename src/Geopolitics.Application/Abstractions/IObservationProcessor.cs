@@ -12,6 +12,16 @@ public enum ProcessingOutcome
 
     /// <summary>Processing failed. The observation is retained with a failure reason where possible.</summary>
     Failed,
+
+    /// <summary>
+    /// A user-generated claim was stored and shown, and deliberately opened no incident because
+    /// nothing independent supports it yet.
+    /// <para>
+    /// Not a failure, and kept apart from one for that reason. Nothing went wrong, no evidence was
+    /// lost, and the outcome reverses by itself the moment a second source arrives.
+    /// </para>
+    /// </summary>
+    Held,
 }
 
 /// <param name="Outcome">What the pipeline decided.</param>
