@@ -135,6 +135,29 @@ Tigray needed its woredas as well as its towns. A settlement-only query missed t
 from Tigray names them constantly — the January 2026 clashes at Mai Degusha were reported as
 Tselemti, which is a woreda and not a town.
 
+### A short sourced name is resolvable but is not hunted for in prose
+
+The two entry points ask different questions, and the bulk extract made the difference matter. A
+caller passing "Sad" to `TryResolve` has asserted that it is a place name. The scanner finding "sad"
+inside a sentence has guessed.
+
+That guess is safe for a couple of hundred curated entries, whose two-letter aliases were each chosen
+deliberately and already have the word-boundary handling that makes `US` usable. It is not safe for
+eleven thousand sourced spellings. The extract contains real Ukrainian villages named **Sad, Rama,
+Gora, Aura, Bile and Ewa**, aliases including **Luck** (for Lutsk) and **Mare** (for Marianivka), and
+Roman numerals — `III` and `IV` are recorded alternate names for two Yemeni governorates.
+
+This was not a theoretical worry. Adding the extract dropped the evaluation suite's location
+extraction from **1.00 / 0.92 / 0.96** to **0.91 / 0.83 / 0.87**, because "a stroke of luck" now named
+a Ukrainian city. The thresholds are loose enough that every test still passed; the committed metrics
+file is what caught it.
+
+So a sourced spelling of four characters or fewer is searched for in prose only when it is the
+place's own preferred name *and* the place has at least twenty thousand inhabitants. Length alone
+would not do — Kyiv, Lviv, Sumy, Uman, Aden, Ibb, Axum and Adwa are all four characters or fewer and
+all are named by those names constantly. Exact lookup is untouched: every spelling still resolves
+when a caller asks about it directly. The metrics returned to 1.00 / 0.92 / 0.96.
+
 ### The linear scan stays, because it was measured rather than assumed
 
 `Gazetteer` has two entry points with very different costs. `TryResolve` is a frozen-dictionary

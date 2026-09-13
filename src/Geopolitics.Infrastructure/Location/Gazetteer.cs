@@ -472,7 +472,7 @@ public static class Gazetteer
     /// at two hundred entries and is not at several thousand.
     /// </para>
     /// </summary>
-    private static readonly (string Name, GazetteerEntry Entry)[] Names = BuildNames();
+    private static readonly (string Name, GazetteerEntry Entry, bool Searchable)[] Names = BuildNames();
 
     /// <summary>
     /// Names in the sourced layer that denote more than one place and were therefore dropped. Counted
@@ -605,15 +605,18 @@ public static class Gazetteer
     /// Where the two layers name the same place the curated entry wins, because somebody chose it.
     /// </para>
     /// </summary>
-    private static (string Name, GazetteerEntry Entry)[] BuildNames()
+    private static (string Name, GazetteerEntry Entry, bool Searchable)[] BuildNames()
     {
         var curated = new Dictionary<string, GazetteerEntry>(StringComparer.Ordinal);
-        var names = new List<(string Name, GazetteerEntry Entry)>(Entries.Length);
+        var names = new List<(string Name, GazetteerEntry Entry, bool Searchable)>(Entries.Length);
 
+        // Curated spellings are always searchable. They are few, every one of them was chosen
+        // deliberately, and the two-letter ones already have the word-boundary handling that makes
+        // "US" safe to look for. The size of that table is what keeps it trustworthy.
         foreach (var entry in Entries)
         {
             curated[NormaliseKey(entry.CanonicalName)] = entry;
-            names.Add((entry.CanonicalName, entry));
+            names.Add((entry.CanonicalName, entry, true));
         }
 
         foreach (var (alias, canonical) in Aliases.Concat(NativeScriptAliases))
@@ -632,7 +635,7 @@ public static class Gazetteer
             }
 
             curated[key] = target;
-            names.Add((alias, target));
+            names.Add((alias, target, true));
         }
 
         var sourced = SourcedNames(curated);
@@ -650,18 +653,18 @@ public static class Gazetteer
     /// written, and fixable at first touch.
     /// </para>
     /// </summary>
-    private static List<(string Name, GazetteerEntry Entry)> SourcedAliasNames(
+    private static List<(string Name, GazetteerEntry Entry, bool Searchable)> SourcedAliasNames(
         Dictionary<string, GazetteerEntry> curated,
-        List<(string Name, GazetteerEntry Entry)> sourced)
+        List<(string Name, GazetteerEntry Entry, bool Searchable)> sourced)
     {
         var byKey = new Dictionary<string, GazetteerEntry>(StringComparer.Ordinal);
 
-        foreach (var (name, entry) in sourced)
+        foreach (var (name, entry, _) in sourced)
         {
             byKey[NormaliseKey(name)] = entry;
         }
 
-        var added = new List<(string Name, GazetteerEntry Entry)>(SourcedAliases.Length);
+        var added = new List<(string Name, GazetteerEntry Entry, bool Searchable)>(SourcedAliases.Length);
 
         foreach (var (alias, target) in SourcedAliases)
         {
@@ -683,7 +686,9 @@ public static class Gazetteer
             }
 
             byKey[key] = entry;
-            added.Add((alias, entry));
+
+            // Hand-written, so trusted in prose exactly as the curated aliases are.
+            added.Add((alias, entry, true));
         }
 
         return added;
@@ -698,9 +703,29 @@ public static class Gazetteer
     /// layer shares that type and has no use for either, and because carrying them in a static side
     /// table would make the lexicon depend on the order its own fields happen to be declared in.
     /// </summary>
-    private readonly record struct Candidate(string Name, GazetteerEntry Entry, int Rank, int Population);
+    private readonly record struct Candidate(
+        string Name,
+        GazetteerEntry Entry,
+        int Rank,
+        int Population,
+        bool Searchable);
 
-    private static List<(string Name, GazetteerEntry Entry)> SourcedNames(
+    /// <summary>
+    /// At or below this length a sourced spelling is too short to hunt for in running prose unless
+    /// the place is well known. Four characters is where real place names stop being distinctive:
+    /// the extract contains villages genuinely named Sad, Rama, Gora, Aura and Bile, and aliases
+    /// including Luck, Mare and Musa.
+    /// </summary>
+    private const int ShortNameLength = 4;
+
+    /// <summary>
+    /// How many inhabitants a place needs before its short name is worth searching prose for. Set so
+    /// that Kyiv, Lviv, Sumy, Uman, Aden, Ibb, Axum and Adwa are all found and a hamlet called Sad is
+    /// not.
+    /// </summary>
+    private const int ShortNamePopulationFloor = 20_000;
+
+    private static List<(string Name, GazetteerEntry Entry, bool Searchable)> SourcedNames(
         Dictionary<string, GazetteerEntry> curated)
     {
         // Grouped by key first rather than added one at a time, because ambiguity is only visible
@@ -719,6 +744,7 @@ public static class Gazetteer
 
             foreach (var name in place.Aliases.Prepend(place.Name))
             {
+                var isPreferredName = ReferenceEquals(name, place.Name) || name == place.Name;
                 var key = NormaliseKey(name);
 
                 // A name that normalises to nothing — punctuation or digits only — cannot be looked
@@ -733,18 +759,27 @@ public static class Gazetteer
                     candidates[key] = forKey = [];
                 }
 
-                forKey.Add(new Candidate(name, entry, place.Rank, place.Population ?? 0));
+                // Short names are kept for exact lookup and withheld from the prose scan unless the
+                // place is well known. The two entry points are asking different questions: a caller
+                // passing "Sad" to TryResolve has asserted it is a place name, while the scanner
+                // finding "sad" inside a sentence has guessed — and a bulk extract supplies far too
+                // many short, ordinary-looking names for that guess to be safe. It was not: adding
+                // them cost nine points of location-extraction precision before this rule existed.
+                var searchable = name.Length > ShortNameLength
+                    || (isPreferredName && (place.Population ?? 0) >= ShortNamePopulationFloor);
+
+                forKey.Add(new Candidate(name, entry, place.Rank, place.Population ?? 0, searchable));
             }
         }
 
-        var accepted = new List<(string Name, GazetteerEntry Entry)>(candidates.Count);
+        var accepted = new List<(string Name, GazetteerEntry Entry, bool Searchable)>(candidates.Count);
         var ambiguous = 0;
 
         foreach (var (_, forKey) in candidates)
         {
             if (Disambiguate(forKey) is { } chosen)
             {
-                accepted.Add((chosen.Name, chosen.Entry));
+                accepted.Add((chosen.Name, chosen.Entry, chosen.Searchable));
                 continue;
             }
 
@@ -831,7 +866,10 @@ public static class Gazetteer
     {
         var map = new Dictionary<string, GazetteerEntry>(Names.Length, StringComparer.Ordinal);
 
-        foreach (var (name, entry) in Names)
+        // Every spelling, including the short ones the prose scan declines to hunt for. Asking
+        // TryResolve about "Ibb" is a caller stating that it is a place name; finding "ibb" inside a
+        // sentence is the system guessing, and only the second needs protecting against.
+        foreach (var (name, entry, _) in Names)
         {
             map[NormaliseKey(name)] = entry;
         }
@@ -841,6 +879,7 @@ public static class Gazetteer
 
     private static (string Term, GazetteerEntry Entry)[] BuildSearchTerms() =>
         [.. Names
+            .Where(pair => pair.Searchable)
             .Select(pair => (Term: FoldForSearch(pair.Name), pair.Entry))
             .OrderByDescending(item => item.Term.Length)];
 

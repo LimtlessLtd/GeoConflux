@@ -151,6 +151,44 @@ public sealed class TheatreGazetteerTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// A short sourced name is resolvable but is not hunted for inside running prose.
+    /// <para>
+    /// The two entry points ask different questions. A caller passing "Sad" to the resolver has
+    /// asserted that it is a place name; the scanner finding "sad" inside a sentence has guessed. A
+    /// bulk extract supplies far too many short, ordinary-looking names for that guess to be safe —
+    /// there are real Ukrainian villages named Sad, Rama, Gora and Aura, and Lutsk carries the alias
+    /// Luck. Searching for them cost nine points of location-extraction precision before this rule
+    /// existed.
+    /// </para>
+    /// </summary>
+    [Theory]
+    [InlineData("Sad")]
+    [InlineData("Rama")]
+    [InlineData("Luck")]
+    [InlineData("Mare")]
+    public void AShortOrdinaryLookingNameResolvesButIsNotHuntedForInProse(string name)
+    {
+        Assert.True(Gazetteer.TryResolve(name, out _), $"'{name}' should still resolve when asked about directly.");
+
+        var prose = $"The report noted the {name.ToLowerInvariant()} of it before naming Mekelle.";
+        Assert.Equal("Mekele", Gazetteer.FindFirstMention(prose));
+    }
+
+    /// <summary>
+    /// The rule has to keep the short names that matter. Cities are named by their short names
+    /// constantly, and a length rule alone would have thrown Kyiv and Lviv out with Sad and Gora.
+    /// </summary>
+    [Theory]
+    [InlineData("Lviv")]
+    [InlineData("Sumy")]
+    [InlineData("Uman")]
+    [InlineData("Axum")]
+    public void AShortNameOfASubstantialPlaceIsStillFoundInProse(string name)
+    {
+        Assert.Equal(name, Gazetteer.FindFirstMention($"Reporting overnight described shelling near {name} itself."));
+    }
+
+    /// <summary>
     /// Every extracted coordinate is a real coordinate. The extractor already refuses to write a file
     /// that fails this, but the file is what ships, so the assertion belongs here too.
     /// </summary>
