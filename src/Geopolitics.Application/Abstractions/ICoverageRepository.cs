@@ -34,4 +34,35 @@ public interface ICoverageRepository
     /// </para>
     /// </summary>
     Task<int> CountUnplacedAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// The four breakdowns the plan asks for: by region, language, tier and platform.
+    /// <para>
+    /// Returned together from one call because they are one statement. A reader comparing the tier
+    /// split against the language split is doing the thing this is for — seeing that the picture is
+    /// one platform, or one language, or one country — and assembling it from four round trips
+    /// invites three of them to be shown while the fourth quietly fails.
+    /// </para>
+    /// </summary>
+    Task<BreadthTotals> CountBreadthAsync(CancellationToken cancellationToken);
 }
+
+/// <param name="ByRegion">
+/// Placed observations per country code. Country rather than anything finer, because it is what the
+/// resolver actually establishes for every placed record: a theatre needs bounds and a continent
+/// needs a table, and both would be a second classification layered on top of the one that was
+/// measured. The per-theatre section above is where finer detail lives, for the three theatres where
+/// this project has done the work to support it.
+/// </param>
+/// <param name="ByLanguage">
+/// Observations per BCP-47 tag. Counts what sources stated and what enrichment detected together,
+/// because a reader asking "what languages is this reading" wants the answer, not the provenance of
+/// the answer. Unknown is its own row rather than being dropped.
+/// </param>
+/// <param name="ByTier">Published reporting against user-generated claims.</param>
+/// <param name="ByPlatform">Claims per open platform. Empty until Tier B has been collected.</param>
+public sealed record BreadthTotals(
+    IReadOnlyList<CategoryCount> ByRegion,
+    IReadOnlyList<CategoryCount> ByLanguage,
+    IReadOnlyList<CategoryCount> ByTier,
+    IReadOnlyList<CategoryCount> ByPlatform);

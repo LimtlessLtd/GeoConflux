@@ -46,6 +46,19 @@ public sealed class AgentBriefOptions
     /// </summary>
     public IList<string> AllowedPlatforms { get; } = [];
 
+    /// <summary>
+    /// Where the bundles actually are.
+    /// <para>
+    /// Resolved against the deployed binaries rather than the working directory or the content root.
+    /// Bundles are copied into the build output, so they travel with the application into a container
+    /// the same way the recorded replay stream does, and nothing that reads them keeps a dependency
+    /// on the hosting environment.
+    /// </para>
+    /// </summary>
+    internal string ResolveDirectory() => Path.IsPathRooted(Directory)
+        ? Directory
+        : Path.Combine(AppContext.BaseDirectory, Directory);
+
     internal CollectionBundleLimits ToLimits() => new(
         MaxItemsPerBundle,
         MaxExcerptLength,

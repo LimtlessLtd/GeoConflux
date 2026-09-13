@@ -25,12 +25,45 @@ public enum CollectedItemKind
 /// <param name="BriefId">The standing brief this run was tasked against.</param>
 /// <param name="BriefRevision">Which revision of that brief, so two runs are comparable.</param>
 /// <param name="Items">Items that survived validation.</param>
+/// <param name="Sources">What each source the run asked actually gave, including the ones that gave nothing.</param>
 public sealed record CollectionBundle(
     string BundleId,
     DateTimeOffset CollectedAt,
     string BriefId,
     int BriefRevision,
-    IReadOnlyList<CollectedItem> Items);
+    IReadOnlyList<CollectedItem> Items,
+    IReadOnlyList<CollectedSourceOutcome> Sources);
+
+/// <summary>
+/// One source a run asked, and what came back.
+/// <para>
+/// The entries that produced nothing are the reason this exists. A channel that refused, a channel
+/// that publishes nothing, and a channel that was read and had nothing relevant to say all reduce to
+/// the same absence otherwise — and an absence on a map reads as "nothing happened there" rather
+/// than as "we did not see". These are three different statements and the dashboard makes all three.
+/// </para>
+/// </summary>
+/// <param name="Channel">Platform and channel, in the form the attribution uses.</param>
+/// <param name="Outcome">
+/// <c>collected</c>, <c>nothing matched</c>, <c>no public posts</c>, or <c>unreachable</c>. A string
+/// rather than an enum because it is a report from a tool this build does not compile, and a value
+/// this build has never heard of should be shown rather than rejected.
+/// </param>
+/// <param name="Reason">Why, for the outcomes that have one.</param>
+/// <param name="Read">Posts the run read before the brief's terms were applied.</param>
+/// <param name="Matched">How many of those the brief's terms accepted.</param>
+/// <param name="Collected">
+/// How many survived the diversity caps. Below <paramref name="Matched"/> whenever a cap bound, and
+/// both are kept: how much a channel had to say and how much of it this run was willing to take are
+/// different facts.
+/// </param>
+public sealed record CollectedSourceOutcome(
+    string Channel,
+    string Outcome,
+    string? Reason,
+    int Read,
+    int Matched,
+    int Collected);
 
 /// <summary>
 /// One cited item. Everything here is either a fact about retrieval or a verbatim quotation; nothing

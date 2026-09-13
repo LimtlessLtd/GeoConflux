@@ -40,13 +40,7 @@ public sealed partial class AgentBriefEventSource : IEventSource, IBatchEventSou
         this.timeProvider = timeProvider;
         this.logger = logger;
 
-        // Resolved against the deployed binaries rather than the working directory or the content
-        // root. Bundles are copied into the build output, so they travel with the application into a
-        // container the same way the recorded replay stream does, and the source keeps no dependency
-        // on the hosting environment — which is what lets it be composed in a bare container.
-        directory = Path.IsPathRooted(this.options.Directory)
-            ? this.options.Directory
-            : Path.Combine(AppContext.BaseDirectory, this.options.Directory);
+        directory = this.options.ResolveDirectory();
     }
 
     public string Name => "collected";

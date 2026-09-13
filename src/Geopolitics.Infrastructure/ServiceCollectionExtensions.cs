@@ -13,6 +13,7 @@ using Geopolitics.Infrastructure.Persistence;
 using Geopolitics.Infrastructure.Queue;
 using Geopolitics.Infrastructure.Realtime;
 using Geopolitics.Infrastructure.Sources;
+using Geopolitics.Infrastructure.Sources.Briefs;
 using Geopolitics.Infrastructure.Sources.Providers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -52,6 +53,10 @@ public static class ServiceCollectionExtensions
         // state. It is the one component that answers "how much could this system place at all",
         // which the coverage report needs and the resolver has no reason to expose.
         services.AddSingleton<IPlaceLexicon, GazetteerPlaceLexicon>();
+
+        // Reads the committed bundles for what each run asked and what came back. Singleton because
+        // it holds no request state and its input is files on disk.
+        services.AddSingleton<ICollectionCoverage, BundleCollectionCoverage>();
 
         // Reference data, immutable and shared.
         services.AddSingleton<IChokepointCatalogue, MaritimeChokepointCatalogue>();

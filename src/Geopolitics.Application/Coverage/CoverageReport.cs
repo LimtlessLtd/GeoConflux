@@ -26,8 +26,25 @@ public sealed record TheatreCoverage(
 /// Place names dropped from the sourced lexicon because they denote more than one place. A direct,
 /// countable limit on coverage rather than an abstract one.
 /// </param>
+/// <param name="ByRegion">Placed observations per country code, busiest first.</param>
+/// <param name="ByLanguage">Observations per language tag, including an explicit unknown.</param>
+/// <param name="ByTier">Published reporting against user-generated claims.</param>
+/// <param name="ByPlatform">Claims per open platform.</param>
+/// <param name="Sources">
+/// What each source the last collection runs asked actually gave. The entries that gave nothing are
+/// the point: a source that refused, a source that publishes nothing, and a source read that had
+/// nothing relevant to say are three different statements, and an empty space on a map is none of
+/// them.
+/// </param>
+/// <param name="BreadthNote">What these counts do and do not establish.</param>
 public sealed record CoverageReport(
     IReadOnlyList<TheatreCoverage> Theatres,
     int UnplacedCount,
     string UnplacedNote,
-    int AmbiguousNameCount);
+    int AmbiguousNameCount,
+    IReadOnlyList<CategoryCount> ByRegion,
+    IReadOnlyList<CategoryCount> ByLanguage,
+    IReadOnlyList<CategoryCount> ByTier,
+    IReadOnlyList<CategoryCount> ByPlatform,
+    IReadOnlyList<SourceOutcome> Sources,
+    string BreadthNote);

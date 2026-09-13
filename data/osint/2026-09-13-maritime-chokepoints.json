@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "bundleId": "2026-09-13T1112Z-maritime-chokepoints",
-  "collectedAt": "2026-09-13T11:12:07Z",
+  "bundleId": "2026-09-13T1124Z-maritime-chokepoints",
+  "collectedAt": "2026-09-13T11:24:00Z",
   "brief": {
     "id": "maritime-chokepoints",
     "revision": 2
   },
   "collector": {
     "role": "agent",
-    "runId": "4d5c0cc1"
+    "runId": "97a706c8"
   },
   "items": [
     {
@@ -17,7 +17,7 @@
       "platform": "bluesky",
       "channel": "reuters.com",
       "postedAt": "2026-09-13T02:40:07Z",
-      "retrievedAt": "2026-09-13T11:12:07Z",
+      "retrievedAt": "2026-09-13T11:24:00Z",
       "contentHash": "sha256:f514fa90d63c533bdf8c78569f4fa487b0828667e82e927bb4ab7f1c6b30676d",
       "excerpt": "New report of attack on Strait of Hormuz shipping fans fears of threats to oil supplies reut.rs/4xUvvzp",
       "placeNames": [],
@@ -29,7 +29,7 @@
       "platform": "bluesky",
       "channel": "reuters.com",
       "postedAt": "2026-09-12T17:00:27Z",
-      "retrievedAt": "2026-09-13T11:12:07Z",
+      "retrievedAt": "2026-09-13T11:24:00Z",
       "contentHash": "sha256:166e132e0d8fbc77eec3d21ebb90ba1db05a96e1d84d7215fc84232f07073e82",
       "excerpt": "Iran-Oman understanding does not provide for immediate reopening of Strait of Hormuz, Tasnim reports reut.rs/4Afh2j6",
       "placeNames": [],
@@ -41,7 +41,7 @@
       "platform": "bluesky",
       "channel": "reuters.com",
       "postedAt": "2026-09-12T13:50:07Z",
-      "retrievedAt": "2026-09-13T11:12:07Z",
+      "retrievedAt": "2026-09-13T11:24:00Z",
       "contentHash": "sha256:2a36bd171051a6d68baff61266ad9f681c662e32c4cd9899f0b73ddb750cc8f4",
       "excerpt": "No signed Hormuz deal expected yet from Oman meeting on Monday, Iranian official says reut.rs/4ytGlfu",
       "placeNames": [],
@@ -53,7 +53,7 @@
       "platform": "bluesky",
       "channel": "apnews.com",
       "postedAt": "2026-09-13T06:10:45Z",
-      "retrievedAt": "2026-09-13T11:12:07Z",
+      "retrievedAt": "2026-09-13T11:24:00Z",
       "contentHash": "sha256:0f6927b9810a4ea2d4295bb9f367dbe5d6f898432b192fb315dce2fe9e168ce7",
       "excerpt": "An Iranian commercial vessel was struck off Qeshm Island near the Strait of Hormuz, with one person killed and three wounded, Iran's state media say.",
       "placeNames": [],
@@ -65,7 +65,7 @@
       "platform": "bluesky",
       "channel": "afp.com",
       "postedAt": "2026-09-11T10:16:23Z",
-      "retrievedAt": "2026-09-13T11:12:07Z",
+      "retrievedAt": "2026-09-13T11:24:00Z",
       "contentHash": "sha256:16a0c49d0bbdfd2593bce7b22900e4312769a937f4d184c74330d38094f4b01f",
       "excerpt": "Les Houthis, combattants yéménites pro-iraniens, se sont emparés vendredi d'une île clé dans le détroit de Bab el-Mandeb, a indiqué un responsable gouvernemental affirmant qu'ils avaient pris le contrôle du secteur, passage stratégique reliant l'Europe à l'Asie.➡️ u.afp.com/SjMg",
       "placeNames": [],
@@ -77,11 +77,83 @@
       "platform": "bluesky",
       "channel": "aljazeera.com",
       "postedAt": "2026-09-13T05:00:05Z",
-      "retrievedAt": "2026-09-13T11:12:07Z",
+      "retrievedAt": "2026-09-13T11:24:00Z",
       "contentHash": "sha256:ab44c5ba2bc086970a81c132f1a453fa810c8d8b136d09b4611aa00d92865001",
       "excerpt": "Yemeni refugees arrive in Obock, Djibouti, within 24 hours as Houthis tighten their grip on the Bab al-Mandeb strait.",
       "placeNames": [],
       "relatedTo": []
     }
-  ]
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 15,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 3,
+        "collected": 3
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "capped",
+        "read": 40,
+        "matched": 3,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
 }

@@ -148,8 +148,78 @@ public sealed class CoverageReportingTests
             theatre => Assert.Null(theatre.Bounds));
     }
 
-    private static Task<CoverageReport> Build(ICoverageRepository repository, IPlaceLexicon? lexicon = null) =>
-        new CoverageService(repository, lexicon ?? new StubLexicon()).BuildAsync(CancellationToken.None);
+    [Fact]
+    public async Task TheBreadthFiguresAreCarriedThroughUnchanged()
+    {
+        var report = await Build(new StubCoverageRepository
+        {
+            Breadth = new BreadthTotals(
+                [new("UA", 40), new("YE", 6)],
+                [new("en", 38), new("fr", 1), new("unknown", 7)],
+                [new("Published", 40), new("UserGenerated", 6)],
+                [new("bluesky", 6)]),
+        });
+
+        Assert.Equal(["UA", "YE"], report.ByRegion.Select(count => count.Category));
+        Assert.Equal(46, report.ByTier.Sum(count => count.Count));
+        Assert.Equal("bluesky", Assert.Single(report.ByPlatform).Category);
+
+        // Unknown is a row rather than an omission. A language breakdown that dropped what it could
+        // not identify would report a narrower, tidier picture than the data supports, which is the
+        // one failure mode a coverage figure must not have.
+        Assert.Contains(report.ByLanguage, count => count.Category == "unknown");
+    }
+
+    [Fact]
+    public async Task ASourceThatGaveNothingIsStillReported()
+    {
+        var report = await Build(
+            new StubCoverageRepository(),
+            collection: new StubCollectionCoverage
+            {
+                Outcomes =
+                [
+                    new("bluesky/reuters.com", "collected", null, 40, 3, 3),
+                    new("telegram/tass_agency", "nothing matched", null, 15, 0, 0),
+                    new("bluesky/bbcnews.bsky.social", "no public posts", "served nothing readable", 0, 0, 0),
+                    new("bluesky/npr.org", "capped", null, 40, 3, 0),
+                ],
+            });
+
+        // Four sources, three of which contributed nothing, and each for a different reason. Without
+        // this they are one absence, and an absence on a map reads as "nothing happened there".
+        Assert.Equal(4, report.Sources.Count);
+        Assert.Equal(3, report.Sources.Count(source => source.IsEmpty));
+
+        Assert.Equal(
+            ["capped", "collected", "no public posts", "nothing matched"],
+            report.Sources.Select(source => source.Outcome).Order(StringComparer.Ordinal));
+
+        // The channel that matched three and contributed none is not a quiet channel, and the two
+        // numbers together are what say so.
+        var capped = report.Sources.Single(source => source.Outcome == "capped");
+        Assert.Equal(3, capped.Matched);
+        Assert.Equal(0, capped.Collected);
+    }
+
+    [Fact]
+    public async Task CollectingNothingAtAllIsNotTheSameAsNeverHavingLooked()
+    {
+        var report = await Build(new StubCoverageRepository());
+
+        // No bundles at all: the source list is empty rather than full of failures, because nothing
+        // has been asked. A deployment that has collected nothing yet and one whose every source
+        // refused look identical on the map and must not look identical here.
+        Assert.Empty(report.Sources);
+        Assert.False(string.IsNullOrWhiteSpace(report.BreadthNote));
+    }
+
+    private static Task<CoverageReport> Build(
+        ICoverageRepository repository,
+        IPlaceLexicon? lexicon = null,
+        ICollectionCoverage? collection = null) =>
+        new CoverageService(repository, lexicon ?? new StubLexicon(), collection ?? new StubCollectionCoverage())
+            .BuildAsync(CancellationToken.None);
 
     private sealed class StubCoverageRepository : ICoverageRepository
     {
@@ -163,6 +233,18 @@ public sealed class CoverageReportingTests
                 : new TheatreTotals(0, [], []));
 
         public Task<int> CountUnplacedAsync(CancellationToken cancellationToken) => Task.FromResult(Unplaced);
+
+        public BreadthTotals Breadth { get; init; } = new([], [], [], []);
+
+        public Task<BreadthTotals> CountBreadthAsync(CancellationToken cancellationToken) =>
+            Task.FromResult(Breadth);
+    }
+
+    private sealed class StubCollectionCoverage : ICollectionCoverage
+    {
+        public List<SourceOutcome> Outcomes { get; init; } = [];
+
+        public IReadOnlyList<SourceOutcome> ReadOutcomes() => Outcomes;
     }
 
     private sealed class StubLexicon : IPlaceLexicon

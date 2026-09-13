@@ -49,6 +49,53 @@ public sealed class EfCoverageRepository(GeopoliticsDbContext dbContext) : ICove
                 observation => observation.Location == null && observation.LocationName != null,
                 cancellationToken);
 
+    public async Task<BreadthTotals> CountBreadthAsync(CancellationToken cancellationToken)
+    {
+        var observations = dbContext.Observations.AsNoTracking();
+
+        var byRegion = await observations
+            .Where(observation => observation.Location != null && observation.Location.CountryCode != null)
+            .GroupBy(observation => observation.Location!.CountryCode!)
+            .OrderByDescending(group => group.Count())
+            .Select(group => new CategoryCount(group.Key, group.Count()))
+            .ToListAsync(cancellationToken);
+
+        // Grouped on the tag itself rather than on a coalesced expression, then the unknowns are
+        // counted separately and appended. Coalescing inside the GroupBy translates on some
+        // providers and not others, and an unknown-language count that silently disappeared would
+        // make the breakdown look more complete than the data is — which is the one thing a coverage
+        // figure must never do.
+        var byLanguage = await observations
+            .Where(observation => observation.DetectedLanguage != null)
+            .GroupBy(observation => observation.DetectedLanguage!)
+            .OrderByDescending(group => group.Count())
+            .Select(group => new CategoryCount(group.Key, group.Count()))
+            .ToListAsync(cancellationToken);
+
+        var unknownLanguage = await observations
+            .CountAsync(observation => observation.DetectedLanguage == null, cancellationToken);
+
+        if (unknownLanguage > 0)
+        {
+            byLanguage.Add(new CategoryCount("unknown", unknownLanguage));
+        }
+
+        var byTier = await observations
+            .GroupBy(observation => observation.Tier)
+            .OrderByDescending(group => group.Count())
+            .Select(group => new CategoryCount(group.Key.ToString(), group.Count()))
+            .ToListAsync(cancellationToken);
+
+        var byPlatform = await observations
+            .Where(observation => observation.Platform != null)
+            .GroupBy(observation => observation.Platform!)
+            .OrderByDescending(group => group.Count())
+            .Select(group => new CategoryCount(group.Key, group.Count()))
+            .ToListAsync(cancellationToken);
+
+        return new BreadthTotals(byRegion, byLanguage, byTier, byPlatform);
+    }
+
     /// <summary>
     /// Placed observations inside one theatre.
     /// <para>

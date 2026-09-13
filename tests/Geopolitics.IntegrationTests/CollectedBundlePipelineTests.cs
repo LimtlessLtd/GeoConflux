@@ -181,6 +181,36 @@ public sealed class CollectedBundlePipelineTests
     }
 
     [Fact]
+    public async Task TheDashboardPublishesWhatEachSourceActuallyGave()
+    {
+        // The run's own account of itself, carried from the committed bundle to the API. The
+        // entries that produced nothing are what this is for: without them a refused channel, a
+        // channel that publishes nothing, a channel read that matched nothing and a channel the caps
+        // emptied are one absence — and an absence reads as "nothing happened there".
+        using var factory = Host();
+        using var client = factory.CreateClient();
+
+        await WaitForCollectedAsync(client);
+
+        var coverage = await client.GetFromJsonAsync<JsonElement>("/api/analytics/coverage");
+        var sources = coverage.GetProperty("sources").EnumerateArray().ToArray();
+
+        Assert.NotEmpty(sources);
+        Assert.Contains(sources, source => source.GetProperty("collected").GetInt32() > 0);
+
+        // At least one source that was asked and gave nothing, stated as such rather than absent.
+        Assert.Contains(sources, source => source.GetProperty("isEmpty").GetBoolean());
+        Assert.All(sources, source =>
+            Assert.False(string.IsNullOrWhiteSpace(source.GetProperty("outcome").GetString())));
+
+        // And the breadth the plan asks for, all four of them.
+        Assert.NotEmpty(coverage.GetProperty("byRegion").EnumerateArray());
+        Assert.NotEmpty(coverage.GetProperty("byLanguage").EnumerateArray());
+        Assert.NotEmpty(coverage.GetProperty("byTier").EnumerateArray());
+        Assert.NotEmpty(coverage.GetProperty("byPlatform").EnumerateArray());
+    }
+
+    [Fact]
     public async Task NoCollectedObservationTakesTheSourceProvidedPath()
     {
         // A collected item enters as News or Manual and neither kind may declare coordinates, so any

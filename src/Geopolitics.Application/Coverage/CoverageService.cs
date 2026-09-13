@@ -18,8 +18,26 @@ public interface ICoverageService
 /// empty region from an implied claim into a stated one.
 /// </para>
 /// </summary>
-public sealed class CoverageService(ICoverageRepository repository, IPlaceLexicon lexicon) : ICoverageService
+public sealed class CoverageService(
+    ICoverageRepository repository,
+    IPlaceLexicon lexicon,
+    ICollectionCoverage collection) : ICoverageService
 {
+    /// <summary>
+    /// What the breadth figures establish, stated next to them rather than left to be assumed.
+    /// <para>
+    /// A count of what arrived is not a count of what happened, and the gap between those two is the
+    /// whole reason to publish the first. Saying so here costs a sentence and stops the table being
+    /// read as a map of the world's conflicts rather than as a map of this system's reach.
+    /// </para>
+    /// </summary>
+    private const string BreadthNote =
+        "These count what reached this system, not what happened. A region low in this table is a "
+        + "region this system reads little about; whether that is because little was reported or "
+        + "because nothing here was looking is answered by the source list below, not by the "
+        + "counts above.";
+
+
     /// <summary>
     /// Why the unplaced count is a single number rather than three. An observation the resolver could
     /// not place has no coordinate, so there is no honest way to attribute it to a theatre — and
@@ -47,10 +65,18 @@ public sealed class CoverageService(ICoverageRepository repository, IPlaceLexico
                 theatre.Caveat));
         }
 
+        var breadth = await repository.CountBreadthAsync(cancellationToken);
+
         return new CoverageReport(
             theatres,
             await repository.CountUnplacedAsync(cancellationToken),
             UnplacedNote,
-            lexicon.AmbiguousNameCount);
+            lexicon.AmbiguousNameCount,
+            breadth.ByRegion,
+            breadth.ByLanguage,
+            breadth.ByTier,
+            breadth.ByPlatform,
+            collection.ReadOutcomes(),
+            BreadthNote);
     }
 }

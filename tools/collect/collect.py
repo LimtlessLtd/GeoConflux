@@ -392,8 +392,16 @@ def apply_caps(items, per_channel, per_platform, total):
     return kept, dropped
 
 
-def build_bundle(brief_id, revision, items, collected_at):
-    return {
+def build_bundle(brief_id, revision, items, collected_at, outcomes=None):
+    """The run, and the run's own account of itself.
+
+    The coverage block is not decoration. Without it a channel that refused, a channel that published
+    nothing, and a channel that was read and said nothing relevant all reduce to the same thing —
+    an absence — and an absence reads as "nothing happened there" rather than as "we did not see".
+    Recording it in the bundle rather than in a log is what lets the dashboard publish the count
+    alongside the claim, which is the only honest way to present breadth.
+    """
+    bundle = {
         "schemaVersion": SCHEMA_VERSION,
         "bundleId": f"{collected_at[:16].replace(':', '')}Z-{brief_id}",
         "collectedAt": collected_at,
@@ -401,6 +409,11 @@ def build_bundle(brief_id, revision, items, collected_at):
         "collector": {"role": "agent", "runId": hashlib.sha256(collected_at.encode()).hexdigest()[:8]},
         "items": items,
     }
+
+    if outcomes:
+        bundle["coverage"] = {"sources": outcomes}
+
+    return bundle
 
 
 # A source is read generously and filtered afterwards, so that "nothing matched" is measurable. This
@@ -474,7 +487,30 @@ def run(plan, access=None, now=None):
     for url, reason in dropped:
         print(f"dropped ({reason}): {url}", file=sys.stderr)
 
-    return build_bundle(plan["brief"], plan["revision"], kept, collected_at), outcomes, access.gaps
+    # A source's "matched" count is what the brief's terms accepted, before the diversity caps were
+    # applied across the run. The two differ whenever a cap binds, and the bundle records both rather
+    # than quietly reporting the smaller one: how much a channel had to say and how much of it this
+    # run was willing to take are different facts.
+    kept_by_channel = {}
+
+    for item in kept:
+        channel = f"{item['platform']}/{item['channel']}"
+        kept_by_channel[channel] = kept_by_channel.get(channel, 0) + 1
+
+    for outcome in outcomes:
+        if outcome["outcome"] in {"unreachable", "no public posts"}:
+            continue
+
+        outcome["collected"] = kept_by_channel.get(outcome["channel"], 0)
+
+        # A channel that had something to say and had all of it taken away by a cap is not a channel
+        # that was collected, and it is emphatically not a quiet one. Naming the state is the whole
+        # point: the run took nothing from here because it had already taken enough from this
+        # platform, which is a fact about this run rather than about the channel.
+        if outcome["matched"] > 0 and outcome["collected"] == 0:
+            outcome["outcome"] = "capped"
+
+    return build_bundle(plan["brief"], plan["revision"], kept, collected_at, outcomes), outcomes, access.gaps
 
 
 # --- offline self-test -------------------------------------------------------------------------
@@ -624,6 +660,11 @@ def self_test():
     })
     bundle, outcomes, _ = run(plan, access=access, now=dt.datetime(2026, 9, 12, 21, 0, tzinfo=dt.timezone.utc))
 
+    capped, _ = apply_caps(many, per_channel=9, per_platform=1, total=9)
+    check("a cap can take everything a channel offered", len(capped) == 2)
+
+    check("the run records its own coverage in the bundle", "coverage" in bundle)
+    check("every source appears in it", len(bundle["coverage"]["sources"]) == 2)
     check("a channel read that matched nothing says so", outcomes[0]["outcome"] == "nothing matched")
     check("it still records how much it read", outcomes[0]["read"] == 2)
     check("a channel serving no posts is not a quiet channel", outcomes[1]["outcome"] == "no public posts")

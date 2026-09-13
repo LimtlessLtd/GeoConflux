@@ -81,8 +81,11 @@ otherwise supply a whole run on its own, and one platform standing in for the wo
 looks exactly like working global coverage — the map has pins on it, nothing errored, and the picture
 is one platform's.
 
-The per-platform cap binds in practice and is meant to. The first run under this revision dropped an
-Al Jazeera item for it, which is recorded here rather than in a log nobody reads.
+The per-platform cap binds in practice and is meant to. In the first run under this revision NPR
+matched three items and contributed none, because Bluesky had already given its six — so that run
+records NPR as **capped**, which is a fact about the run rather than about the channel, and is neither
+"collected" nor "nothing found". A cap that trimmed silently would have made a productive channel
+look like a quiet one.
 
 Where a publisher runs editions in more than one language, collect both and keep them as separate
 items citing their own URLs. The divergence between them is itself the observation, and the pair does

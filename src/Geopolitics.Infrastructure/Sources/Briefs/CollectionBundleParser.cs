@@ -134,8 +134,53 @@ public static class CollectionBundleParser
         }
 
         return new CollectionBundleReadResult(
-            new CollectionBundle(bundleId, wire.CollectedAt, briefId, wire.Brief.Revision, accepted),
+            new CollectionBundle(
+                bundleId,
+                wire.CollectedAt,
+                briefId,
+                wire.Brief.Revision,
+                accepted,
+                ReadCoverage(wire.Coverage, limits)),
             rejected);
+    }
+
+    /// <summary>
+    /// The run's account of what each source gave, treated as untrusted like everything else here.
+    /// <para>
+    /// Absent is fine and means a run that predates the block, not a run that reached nothing. The
+    /// two would be worth distinguishing if anything acted on this; nothing does — it is displayed,
+    /// and a displayed figure that is missing is visibly missing.
+    /// </para>
+    /// </summary>
+    private static List<CollectedSourceOutcome> ReadCoverage(BundleCoverage? coverage, CollectionBundleLimits limits)
+    {
+        if (coverage?.Sources is not { Count: > 0 } sources)
+        {
+            return [];
+        }
+
+        var outcomes = new List<CollectedSourceOutcome>(sources.Count);
+
+        foreach (var source in sources.Take(limits.MaxItems))
+        {
+            var channel = Sanitise(source.Channel, limits.MaxFieldLength);
+            var outcome = Sanitise(source.Outcome, limits.MaxFieldLength);
+
+            if (string.IsNullOrEmpty(channel) || string.IsNullOrEmpty(outcome))
+            {
+                continue;
+            }
+
+            outcomes.Add(new CollectedSourceOutcome(
+                channel,
+                outcome,
+                NullIfEmpty(Sanitise(source.Reason, limits.MaxFieldLength)),
+                Math.Max(0, source.Read),
+                Math.Max(0, source.Matched),
+                Math.Max(0, source.Collected)));
+        }
+
+        return outcomes;
     }
 
     private static (CollectedItem? Item, string Reason) ReadItem(BundleItem item, DateTimeOffset now, CollectionBundleLimits limits)
@@ -438,6 +483,29 @@ public static class CollectionBundleParser
         public BundleCollector? Collector { get; init; }
 
         public IReadOnlyList<BundleItem>? Items { get; init; }
+
+        public BundleCoverage? Coverage { get; init; }
+    }
+
+    /// <summary>The run's account of what each source it asked actually gave.</summary>
+    private sealed record BundleCoverage
+    {
+        public IReadOnlyList<BundleSourceOutcome>? Sources { get; init; }
+    }
+
+    private sealed record BundleSourceOutcome
+    {
+        public string? Channel { get; init; }
+
+        public string? Outcome { get; init; }
+
+        public string? Reason { get; init; }
+
+        public int Read { get; init; }
+
+        public int Matched { get; init; }
+
+        public int Collected { get; init; }
     }
 
     private sealed record BundleBrief
