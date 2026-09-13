@@ -2553,6 +2553,10 @@ Ukraine, Yemen and Tigray) is complete apart from two items recorded as declined
 control layer, deferred whole because the DeepState licence question is unsettled, and the FIRMS
 cropland mask, which cannot be sourced from inside this repository.
 
+**Sprint 11** (the comprehensive layer) is complete. It is the first sprint from
+[the global coverage assessment](docs/global-coverage-plan.md), which extends this plan with Sprints
+10 to 15. Sprint 10 — global placement — is the larger piece of work and is not begun.
+
 All twenty entries in Section 42's final success criteria are met. The two that were outstanding —
 user-generated claims distinguished from published reporting and unable to form an incident
 uncorroborated, and coverage by region and language measured and published with unreachable sources
@@ -2614,12 +2618,48 @@ Items 1, 2 and 4 need credentials that cannot be obtained from inside this repos
 pinned by recorded fixtures and disabled, in the pattern NASA FIRMS already follows. Item 3 is the
 only one that changes the published page without a credential.
 
+Sprint 11 progress:
+
+Sprint 11 is the first of the sprints in
+[the global coverage assessment](docs/global-coverage-plan.md), which extends this plan past its
+original end. It is the comprehensive layer: turning on the two coded conflict datasets that cover
+every populated continent, and making them readable as the archives they are.
+
+1. **ACLED and UCDP read bounded windows of history.** Done. Both adapters could previously ask only
+   one question — what happened recently — and then discarded whatever the response said about
+   whether that was the whole answer. Both now request a date range, narrow it when the provider
+   signals it sent less than it holds, and use each API's own completeness signal rather than a
+   shared guess. [ADR 031](docs/adr/031-dataset-history.md) records why narrowing is by time and not
+   by page number.
+2. **Backfill, bounded and resumable.** Done. History is walked backwards a window at a time under a
+   per-poll request budget, resuming from a persisted record of how far back each source has asked.
+   A window left half-read never advances that record, because advancing past it would skip the
+   remainder permanently and the gap would be invisible. Off unless a deployment names a date.
+3. **Volume handling.** Done, and it exposed a real defect rather than a theoretical one. The
+   snapshot exporter filled the bounded queue of [ADR 003](docs/adr/003-processing-queue.md) to
+   completion before draining it, which deadlocks permanently for any run larger than the queue. Four
+   RSS feeds fit inside 512 slots; a dataset adapter does not. The export had no test at all before
+   this, which is a strange gap for the one component whose output is the published page.
+4. **Credentials through deployment secrets.** Done. The Pages workflow reads ACLED and UCDP
+   credentials from repository secrets, each adapter enabling itself only when its own secret is
+   present, and the run states which datasets were available rather than leaving a reader to infer it
+   from a thin map. Operator steps are in
+   [docs/operations/dataset-credentials.md](docs/operations/dataset-credentials.md).
+
+The credentials themselves cannot be obtained from inside this repository. Until somebody requests
+them, the adapters stay dormant exactly as before and the published page is unchanged — which is the
+point of the pattern, not a caveat on it.
+
 ## What is left
 
-Nothing in this plan. What remains is the ordinary work of a system that is running: collection runs
-produce new bundles, the coverage panel says where the picture is thin, and the thin places are the
-argument for the next brief. Three things are recorded as declined rather than pending, and each
-would reopen only if the world changed:
+Nothing in the original plan, and Sprints 10 and 12 to 15 of
+[the global coverage assessment](docs/global-coverage-plan.md), which are not yet begun. The largest
+of them is Sprint 10: an event this system cannot **place** is an event it cannot draw, whatever
+coded it, and the gazetteer holds 2,750 places across three theatres. Sprint 11 sharpens that
+argument rather than answering it.
+
+Three things are recorded as declined rather than pending, and each would reopen only if the world
+changed:
 
 - **The FIRMS cropland mask** ([ADR 028](docs/adr/028-firms-conflict-filtering.md)) — needs a
   land-cover raster that cannot be committed, fetched hermetically, or honestly approximated. Three

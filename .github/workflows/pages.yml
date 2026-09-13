@@ -94,15 +94,45 @@ jobs:
           Providers__Rss__Feeds__2__Url: https://feeds.bbci.co.uk/news/world/rss.xml
           Providers__Rss__Feeds__3__Name: al-jazeera
           Providers__Rss__Feeds__3__Url: https://www.aljazeera.com/xml/rss/all.xml
+
+          # ACLED and UCDP are the two sources that make coverage global rather than deep in a few
+          # theatres: human-coded conflict events, with their own coordinates and their own stated
+          # precision, for every populated continent. Both are credentialed, both are free to
+          # request for research use, and neither credential is in this repository or ever will be.
+          #
+          # Each adapter enables itself only if its secret is actually set. That is belt and braces
+          # -- the adapters already refuse to poll without a credential -- but it makes the log say
+          # "not enabled" rather than leaving a reader to work out why a live provider is silent.
+          # A fork with no secrets configured therefore builds and publishes exactly as before.
+          #
+          # Deliberately no Providers__*__BackfillSince here. The export runs against a throwaway
+          # database, so the checkpoint that makes a backfill resumable is discarded with it, and a
+          # walk configured here would re-read its first few windows on every push and never get
+          # any further back. Backfill belongs to a deployment that keeps its database.
+          Providers__Acled__Enabled: ${{ secrets.ACLED_PASSWORD != '' }}
+          Providers__Acled__Username: ${{ secrets.ACLED_USERNAME }}
+          Providers__Acled__Password: ${{ secrets.ACLED_PASSWORD }}
+          Providers__Acled__MaxItemsPerPoll: "500"
+          Providers__Acled__MaxRequestsPerPoll: "6"
+          Providers__Ucdp__Enabled: ${{ secrets.UCDP_ACCESS_TOKEN != '' }}
+          Providers__Ucdp__AccessToken: ${{ secrets.UCDP_ACCESS_TOKEN }}
+          Providers__Ucdp__MaxItemsPerPoll: "500"
+          Providers__Ucdp__MaxRequestsPerPoll: "6"
         run: >
           dotnet run --project src/Geopolitics.Workers --configuration Release --no-build
           --no-launch-profile -- --export "${{ github.workspace }}/dist/data"
 
       - name: Verify the exported snapshot
+        env:
+          # Read here as well as in the export step so the check below can say which sources were
+          # actually available to the run, rather than inferring it from how much data came out.
+          ACLED_ENABLED: ${{ secrets.ACLED_PASSWORD != '' }}
+          UCDP_ENABLED: ${{ secrets.UCDP_ACCESS_TOKEN != '' }}
         run: |
           set -euo pipefail
           for file in dist/index.html dist/app.js dist/styles.css \
                       dist/data/meta.json dist/data/incidents.json dist/data/observations.json \
+                      dist/data/coverage.json \
                       dist/data/analytics/24h.json dist/data/analytics/7d.json \
                       dist/data/analytics/30d.json dist/data/analytics/90d.json; do
             test -s "$file" || { echo "::error::Missing or empty: $file"; exit 1; }
@@ -133,6 +163,20 @@ jobs:
           # look exactly like one that was still working.
           if [ "$live" -eq 0 ]; then
             echo "::warning::No live observations were ingested; publishing the recorded stream only."
+          fi
+
+          # How many distinct regions this run actually placed something in. Reported, never
+          # asserted: the number depends on which credentials this repository holds, and a threshold
+          # would turn "nobody has requested an ACLED key yet" into a broken build. Echoing it means
+          # turning a credential on shows as a step change in the log of the run that did it.
+          regions=$(jq '[.byRegion[]?.category] | unique | length' dist/data/coverage.json)
+          echo "Snapshot places observations in $regions distinct region(s)."
+
+          # A statement of fact rather than a guess at a threshold. With neither dataset credential
+          # configured, global coverage is whatever the news feeds happened to mention that morning,
+          # and the page should not be read as more than that.
+          if [ "$ACLED_ENABLED" != "true" ] && [ "$UCDP_ENABLED" != "true" ]; then
+            echo "::notice::Neither ACLED nor UCDP is configured, so these $regions region(s) are whatever the news feeds happened to mention. Both credentials are free to request for research use; see docs/operations/dataset-credentials.md."
           fi
 
           # The label has to match the data. Publishing real reporting stamped as synthetic, or the

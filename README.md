@@ -543,6 +543,29 @@ credential is ever read from a committed file.
 | `Providers:Ucdp:AccessToken` | none | **Never put this in a file.** Requested from UCDP by email. Dormant without it. |
 | `Providers:Ucdp:Resource` / `:Version` | `gedevents` / `26.0.7` | GED Candidate, the monthly series |
 | `Providers:Ucdp:Countries` | empty | Gleditsch and Ward numbers, not ISO codes. Empty means no filter. |
+| `Providers:{Acled,Ucdp}:MaxItemsPerPoll` | 50 | Rows per **request**, not per poll. These two are datasets, so a poll can make several. |
+| `Providers:{Acled,Ucdp}:MaxRequestsPerPoll` | 4 | The bound on one poll, shared by the live window and the backfill |
+| `Providers:{Acled,Ucdp}:BackfillSince` | none | How far back to walk history. Absent means no backfill at all, which is the default. |
+| `Providers:{Acled,Ucdp}:BackfillWindow` | 7 days | How much history each step of the walk requests |
+
+### Datasets are archives, not feeds
+
+ACLED and UCDP have years of coded conflict behind them, and an archive can answer a question
+*partially* without saying so — a response holding as many rows as you asked for looks exactly like a
+complete one. So both adapters ask for a bounded window of dates, and narrow it when the provider
+signals it sent less than it holds. UCDP states how many pages a query matched; ACLED publishes no
+such flag, so a full page is treated as possibly cut off. A window still truncated at the one-day
+floor is logged as a real gap rather than passed over.
+
+History is walked backwards under a per-poll request budget and resumes from a record of how far back
+each source has already asked — stored rather than derived from the oldest record held, because a
+quiet fortnight returns nothing and a walk driven from the data would re-request it forever. A window
+left half-read never advances that record.
+
+The published dashboard gets the live window only. Its export runs against a throwaway database, so a
+resumable walk has nothing to resume from; backfill belongs to a deployment that keeps its data.
+[ADR 031](docs/adr/031-dataset-history.md) records the reasoning and
+[the operator notes](docs/operations/dataset-credentials.md) cover turning either one on.
 
 ### A post is not a report
 
@@ -697,10 +720,18 @@ Five limitations worth stating plainly:
 
 - **The default AI provider is a deterministic stand-in, not a language model.** Everything it
   produces is labelled as such. The published snapshot was built with it.
-- **NASA FIRMS and ACLED have never polled the real services.** Both need a credential, so they are
-  tested against recorded payloads only. The RSS adapter is no longer in that position: the published
-  dashboard is built by polling four public feeds on every deploy, so what you see there did come
-  from live providers. Anything still untested is described as untested rather than as working.
+- **NASA FIRMS, ACLED and UCDP have never polled the real services.** All three need a credential,
+  so they are tested against recorded payloads only. Their request shapes are built against each
+  provider's published documentation and pinned by fixtures; that is not the same as having been
+  answered by the live service, and it is not claimed to be. The RSS adapter is no longer in that
+  position: the published dashboard is built by polling four public feeds on every deploy, so what
+  you see there did come from live providers. Anything still untested is described as untested rather
+  than as working.
+- **Coverage is global in capability, not yet in fact.** The two datasets that would make it global
+  are built and dormant, waiting on credentials nobody has requested. Even with them, an event that
+  cannot be **placed** cannot be drawn, and the gazetteer holds 2,750 places across three theatres.
+  See [the global coverage assessment](docs/global-coverage-plan.md) for what that actually takes and
+  in what order.
 - **Correlation cannot corroborate across categories.** Candidates are pre-filtered by event type,
   so a satellite thermal detection is never linked to a piracy report however close it is. That is a
   deliberate trade, and it means cross-source corroboration works between sources that agree on a
