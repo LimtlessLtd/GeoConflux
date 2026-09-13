@@ -31,7 +31,9 @@ public sealed class RawObservation
         string? sourceIdentifier,
         DateTimeOffset receivedAt,
         ObservationProvenance provenance,
-        DateTimeOffset? collectedAt = null)
+        DateTimeOffset? collectedAt = null,
+        SourceAttribution? attribution = null,
+        string? declaredLanguage = null)
     {
         if (id == Guid.Empty)
         {
@@ -56,6 +58,19 @@ public sealed class RawObservation
         ReceivedAt = receivedAt;
         Provenance = provenance;
         CollectedAt = collectedAt;
+
+        var source = attribution ?? SourceAttribution.Published;
+        Tier = source.Tier;
+        Platform = source.Platform;
+        Channel = source.Channel;
+
+        // Recorded at intake rather than waiting for enrichment to guess. A collector quoting an
+        // Arabic post has stated the language of the text it quoted; a model reading that text
+        // later infers it. Both answers are useful and the stated one is the stronger claim, which
+        // is why enrichment fills this only when it is empty.
+        DeclaredLanguage = string.IsNullOrWhiteSpace(declaredLanguage) ? null : declaredLanguage.Trim();
+        DetectedLanguage = DeclaredLanguage;
+
         Status = ObservationStatus.Received;
         Fingerprint = ObservationFingerprint.Compute(SourceName, SourceIdentifier, Content);
     }
@@ -77,6 +92,31 @@ public sealed class RawObservation
 
     /// <summary>Which of the three intake paths this arrived by.</summary>
     public ObservationProvenance Provenance { get; private set; }
+
+    /// <summary>
+    /// Whether an organisation stands behind this or an account does. Set at intake and never
+    /// revised, because it is a fact about the source rather than an assessment of the claim.
+    /// </summary>
+    public SourceTier Tier { get; private set; }
+
+    /// <summary>The open platform a post appeared on. Null for everything that is not a post.</summary>
+    public string? Platform { get; private set; }
+
+    /// <summary>The account or channel that posted it. Null for everything that is not a post.</summary>
+    public string? Channel { get; private set; }
+
+    /// <summary>
+    /// Who said this, in the form the corroboration gate reasons about. Reassembled rather than
+    /// stored, so it cannot disagree with the three columns it is built from.
+    /// </summary>
+    public SourceAttribution Attribution => new(Tier, Platform, Channel);
+
+    /// <summary>
+    /// Language the source itself stated, as opposed to the one enrichment inferred. Kept apart from
+    /// <see cref="DetectedLanguage"/> so a coverage count can say whether the breakdown rests on
+    /// what sources declared or on what a model guessed — those deserve different confidence.
+    /// </summary>
+    public string? DeclaredLanguage { get; private set; }
 
     /// <summary>
     /// When the collection run that found this happened. Null for anything not collected.
@@ -265,7 +305,7 @@ public sealed class RawObservation
         Summary = summary.Trim();
         EventType = eventType;
         Severity = severity;
-        DetectedLanguage = string.IsNullOrWhiteSpace(detectedLanguage) ? null : detectedLanguage.Trim();
+        AdoptDetectedLanguage(detectedLanguage);
         SeverityRationale = Cap(severityRationale, AiInference.MaxRationaleLength);
 
         // A proposed place name only fills a gap. A name the source stated itself is a fact about
@@ -312,7 +352,7 @@ public sealed class RawObservation
     {
         ArgumentNullException.ThrowIfNull(extractedEntities);
 
-        DetectedLanguage = string.IsNullOrWhiteSpace(detectedLanguage) ? null : detectedLanguage.Trim();
+        AdoptDetectedLanguage(detectedLanguage);
 
         if (string.IsNullOrWhiteSpace(LocationName) && !string.IsNullOrWhiteSpace(locationName))
         {
@@ -367,6 +407,27 @@ public sealed class RawObservation
     {
         Status = ObservationStatus.Validated;
         FailureReason = null;
+    }
+
+    /// <summary>
+    /// Takes the model's reading of the language only where the source stated none.
+    /// <para>
+    /// The same rule the proposed place name follows, for the same reason: a language the collector
+    /// declared is a fact about the record, and a language inferred from prose is a reading of it.
+    /// Letting the inference win would also mean a model that answered with nothing could erase a
+    /// stated value, which is the case that actually bites — it turns a known Arabic item into an
+    /// item of unknown language, and the coverage count then reports one fewer language read than
+    /// was read.
+    /// </para>
+    /// </summary>
+    private void AdoptDetectedLanguage(string? detectedLanguage)
+    {
+        if (!string.IsNullOrWhiteSpace(DeclaredLanguage) || string.IsNullOrWhiteSpace(detectedLanguage))
+        {
+            return;
+        }
+
+        DetectedLanguage = detectedLanguage.Trim();
     }
 
     private static string? Cap(string? value, int maxLength)

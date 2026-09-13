@@ -72,6 +72,21 @@ public sealed record ObservationEnvelope
     /// <summary>When the collection run that produced this happened. Set only for collected items.</summary>
     public DateTimeOffset? CollectedAt { get; init; }
 
+    /// <summary>
+    /// Who is standing behind this: an organisation, or an account. Published by default, because an
+    /// adapter that forgets to say is far more likely to be a wire or a dataset than a social post,
+    /// and the wrong default in the other direction would silently hold back reporting nobody meant
+    /// to gate.
+    /// </summary>
+    public SourceAttribution Attribution { get; init; } = SourceAttribution.Published;
+
+    /// <summary>
+    /// BCP-47 tag the source itself stated for the original text, where it stated one. Distinct from
+    /// the language enrichment detects: this is a fact the record carries, and it survives a model
+    /// being unavailable, disabled, or wrong.
+    /// </summary>
+    public string? DeclaredLanguage { get; init; }
+
     /// <summary>Correlation identifier carried through the pipeline for tracing.</summary>
     public string? TraceId { get; init; }
 }

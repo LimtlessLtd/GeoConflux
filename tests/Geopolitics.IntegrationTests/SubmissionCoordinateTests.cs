@@ -77,6 +77,35 @@ public sealed class SubmissionCoordinateTests
         Assert.False(string.IsNullOrWhiteSpace(observation.GetProperty("locationResolutionNote").GetString()));
     }
 
+    [Fact]
+    public async Task ASubmissionIsRecordedAsAnUnattributedClaim()
+    {
+        // The same reasoning one field over. A caller who may not place a pin is also a caller with
+        // no editorial process and no identity — the endpoint takes no credential and is not going
+        // to start — so a submission is user-generated in exactly the sense the corroboration gate
+        // means, and it names no channel because there is none.
+        using var factory = new PipelineFactory(runPipeline: true, runSources: false);
+        using var client = factory.CreateClient();
+
+        using var response = await client.PostAsJsonAsync("/api/observations", new
+        {
+            sourceName = "attribution-test",
+            title = "An anonymous report",
+            content = "Shelling was reported at Odesa overnight.",
+            locationName = "Odesa",
+        });
+
+        Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
+
+        var observation = await WaitForObservationAsync(client, "attribution-test");
+
+        Assert.Equal("UserGenerated", observation.GetProperty("tier").GetString());
+
+        // Both null, and that pair is what stops two strangers corroborating each other.
+        Assert.Equal(JsonValueKind.Null, observation.GetProperty("platform").ValueKind);
+        Assert.Equal(JsonValueKind.Null, observation.GetProperty("channel").ValueKind);
+    }
+
     private static async Task<JsonElement> WaitForObservationAsync(HttpClient client, string source)
     {
         // The endpoint answers 202 before processing, so the read model is polled rather than assumed

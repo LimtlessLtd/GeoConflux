@@ -160,6 +160,18 @@ public sealed class GeopoliticsDbContext(DbContextOptions<GeopoliticsDbContext> 
         observation.Property(value => value.Status).HasConversion<string>().HasMaxLength(30).IsRequired();
         observation.Property(value => value.Provenance).HasConversion<string>().HasMaxLength(20).IsRequired();
         observation.Property(value => value.CollectedAt).HasConversion(nullableUtcTicks);
+        observation.Property(value => value.Tier).HasConversion<string>().HasMaxLength(20).IsRequired();
+        observation.Property(value => value.Platform).HasMaxLength(60);
+        observation.Property(value => value.Channel).HasMaxLength(200);
+        observation.Property(value => value.DeclaredLanguage).HasMaxLength(16);
+
+        // Reassembled from the three columns above rather than stored, for the same reason IsDemo is.
+        observation.Ignore(value => value.Attribution);
+
+        // The gate's read: every held claim in a time window. Tier leads because it is the selective
+        // half — claims are a small minority of the table, so filtering on it first discards nearly
+        // all of it before a status or a timestamp is considered.
+        observation.HasIndex(value => new { value.Tier, value.Status, value.OccurredAt });
 
         // Derived from Provenance rather than stored. Two columns would eventually disagree.
         observation.Ignore(value => value.IsDemo);

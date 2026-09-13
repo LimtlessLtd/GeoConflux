@@ -129,5 +129,11 @@ public sealed record ObservationSubmission
         DeclaredEventType = EventType,
         DeclaredSeverity = Severity,
         Provenance = ObservationProvenance.Collected,
+
+        // A stranger on the network, which is the definitional user-generated claim: no editorial
+        // process, and no identity either, since the endpoint takes no credential and is not going
+        // to start. It is therefore subject to the corroboration gate like any other claim, and
+        // being unattributed it can never be the second source that releases one.
+        Attribution = SourceAttribution.Unattributed,
     };
 }

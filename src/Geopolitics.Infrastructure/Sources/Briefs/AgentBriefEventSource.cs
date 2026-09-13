@@ -188,6 +188,19 @@ public sealed partial class AgentBriefEventSource : IEventSource, IBatchEventSou
 
         Provenance = ObservationProvenance.Collected,
         CollectedAt = bundle.CollectedAt,
+
+        // The distinction the corroboration gate acts on, carried from the only place that knows it.
+        // A document is a publisher with an editorial process behind it; a post is a handle. The
+        // bundle states which, the schema enforces that a post names its platform and channel, and
+        // from here on nothing downstream has to parse a source name to tell them apart.
+        Attribution = item.Kind == CollectedItemKind.UserGenerated
+            ? SourceAttribution.Post(item.Platform!, item.Channel!)
+            : SourceAttribution.Published,
+
+        // Stated by the collector about the text it quoted. Previously discarded, which left the
+        // language of every collected item resting on whether an enrichment model happened to be
+        // configured — and the coverage-by-language count is not worth publishing on that footing.
+        DeclaredLanguage = item.Language,
     };
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Collected-bundle source is disabled by configuration.")]
