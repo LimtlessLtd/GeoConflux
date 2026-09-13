@@ -262,15 +262,31 @@ html, body {
 .sev-Medium { color: var(--medium); }
 .sev-Low { color: var(--low); }
 
-.manual-chip {
+/* The two claim chips. Held and corroborated are separate rules rather than one restyled, because
+   they say different things and the difference stops being true the moment a second source arrives:
+   a reader who learned to skip the chip would be skipping the change. */
+.claim-chip {
   padding: .05rem .35rem;
-  border: 1px solid #5a3a6e;
   border-radius: 3px;
-  background: rgba(120, 80, 160, .28);
-  color: #d9baf0;
   font-size: .6rem;
   font-weight: 700;
   letter-spacing: .05em;
+}
+
+/* Warm and unmistakable, in the same register as DEMO. This is the one chip on the page that says
+   "the system has not concluded this", and it has to survive being on a busy row. */
+.claim-uncorroborated {
+  border: 1px solid #6e4a2a;
+  background: rgba(150, 95, 45, .3);
+  color: #f0c89a;
+}
+
+/* Quieter, because a corroborated claim is ordinary evidence. It still carries a chip so that where
+   a record came from stays legible, but it does not compete with the one above. */
+.claim-corroborated {
+  border: 1px solid #4a4a62;
+  background: rgba(90, 90, 130, .22);
+  color: #c3c6de;
 }
 
 .demo-chip,
@@ -1015,4 +1031,82 @@ html, body {
   color: var(--muted);
   border-left: 2px solid var(--line);
   padding-left: .5rem;
+}
+
+/* ---------------------------------------------------- coverage breadth and sources */
+
+.coverage-breadth {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: .6rem;
+  margin-top: .8rem;
+}
+
+.coverage-breadth-card {
+  padding: .6rem .7rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.coverage-breadth-card h4 { margin: 0 0 .2rem; font-size: .78rem; }
+
+.coverage-breadth-rows {
+  list-style: none;
+  margin: .5rem 0 0;
+  padding: 0;
+  font-size: .72rem;
+}
+
+.coverage-breadth-rows li {
+  display: flex;
+  justify-content: space-between;
+  gap: .5rem;
+  padding: .15rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, .05);
+}
+
+.coverage-breadth-rows li:last-child { border-bottom: 0; }
+
+.coverage-breadth-count { color: var(--text); font-variant-numeric: tabular-nums; }
+
+.coverage-sources { margin-top: 1rem; }
+
+.coverage-sources h4 { margin: 0 0 .2rem; font-size: .78rem; }
+
+.coverage-source-rows {
+  list-style: none;
+  margin: .5rem 0 0;
+  padding: 0;
+  font-size: .72rem;
+}
+
+.coverage-source {
+  display: grid;
+  grid-template-columns: minmax(140px, auto) 1fr;
+  gap: .2rem .6rem;
+  padding: .3rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, .05);
+}
+
+.coverage-source:last-child { border-bottom: 0; }
+
+/* Dimmed rather than hidden. A source that gave nothing is the entry a reader most needs, and the
+   whole reason it is on the page is that an absence and a silence look identical otherwise. */
+.coverage-source.is-empty .coverage-source-channel { color: var(--muted); }
+
+.coverage-source-channel { color: var(--text); word-break: break-word; }
+.coverage-source-outcome { color: var(--muted); }
+
+.coverage-source-detail {
+  grid-column: 2;
+  font-size: .66rem;
+  color: var(--muted);
+  opacity: .8;
+}
+
+/* The sentence under a held claim in the feed. Set apart from the other notes because it is the one
+   that qualifies the record rather than describing it. */
+.feed-note.claim-note {
+  border-left: 2px solid #6e4a2a;
+  padding-left: .45rem;
 }

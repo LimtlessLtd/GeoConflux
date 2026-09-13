@@ -2,7 +2,15 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  coverageSummary, gapNotes, hasCoverage, lexiconNote, orderByPrecision, precisionLabel,
+  breadthSections,
+  coverageSummary,
+  gapNotes,
+  hasCoverage,
+  lexiconNote,
+  orderByPrecision,
+  precisionLabel,
+  sourceOutcomes,
+  sourceSummary,
 } from '../../src/Geopolitics.Api/wwwroot/lib/coverage.js';
 
 /**
@@ -139,4 +147,82 @@ test('counts arriving as strings are coerced rather than concatenated', () => {
   // "70" or a count into NaN halfway through a sentence.
   assert.match(coverageSummary(theatre({ placedCount: '5' })), /5 observations placed/);
   assert.deepEqual(gapNotes({ unplacedCount: 'nonsense', ambiguousNameCount: 0 }), []);
+});
+
+test('the breadth tables carry a note saying what they do not establish', () => {
+  const sections = breadthSections({
+    byRegion: [{ category: 'UA', count: 40 }],
+    byLanguage: [{ category: 'en', count: 40 }],
+    byTier: [{ category: 'Published', count: 40 }],
+    byPlatform: [],
+  });
+
+  // Every one of these is readable as a claim about the world when it is only a claim about this
+  // system's reach, so none of them is allowed on screen without the sentence that says so.
+  assert.equal(sections.length, 3);
+  assert.ok(sections.every((section) => section.note.length > 0));
+  assert.match(sections.find((section) => section.key === 'region').note, /not the same as/);
+});
+
+test('an empty breadth table is dropped rather than shown as zero', () => {
+  // Before any open social has been collected a platform table is furniture. The source list below
+  // says why it is empty, which is the part a reader actually needs.
+  const sections = breadthSections({ byRegion: [{ category: 'UA', count: 3 }], byPlatform: [] });
+
+  assert.deepEqual(sections.map((section) => section.key), ['region']);
+});
+
+test('each source outcome is given plain wording and keeps its numbers', () => {
+  const outcomes = sourceOutcomes({
+    sources: [
+      { channel: 'bluesky/reuters.com', outcome: 'collected', read: 40, matched: 3, collected: 3 },
+      { channel: 'telegram/tass_agency', outcome: 'nothing matched', read: 15, matched: 0, collected: 0 },
+      { channel: 'bluesky/npr.org', outcome: 'capped', read: 40, matched: 3, collected: 0 },
+      {
+        channel: 'bluesky/bbcnews.bsky.social',
+        outcome: 'no public posts',
+        reason: 'served nothing readable',
+        read: 0,
+        matched: 0,
+        collected: 0,
+      },
+    ],
+  });
+
+  assert.deepEqual(outcomes.map((outcome) => outcome.empty), [false, true, true, true]);
+  assert.match(outcomes[1].text, /nothing matched this brief/);
+
+  // The capped channel had three matching posts and gave none. Reporting only the second number
+  // would make a productive channel look like a quiet one.
+  assert.match(outcomes[2].text, /diversity caps/);
+  assert.match(outcomes[2].detail, /3 matched, 0 kept/);
+  assert.equal(outcomes[3].detail, 'served nothing readable');
+});
+
+test('an outcome this build has never heard of is shown, not dropped', () => {
+  // The string comes from a tool versioned separately from this page. A panel that silently omitted
+  // what it could not name would be the exact failure it exists to prevent.
+  const [outcome] = sourceOutcomes({ sources: [{ channel: 'x/y', outcome: 'rate-limited', collected: 0 }] });
+
+  assert.equal(outcome.outcome, 'rate-limited');
+  assert.match(outcome.text, /rate-limited/);
+});
+
+test('having collected nothing is not the same as every source having failed', () => {
+  // These look identical on a map and must not look identical here.
+  assert.equal(sourceSummary({ sources: [] }), null);
+  assert.match(sourceSummary({ sources: [{ channel: 'a/b', outcome: 'collected', collected: 2 }] }), /1 contributed/);
+});
+
+test('the source summary counts only the sources that gave something', () => {
+  const summary = sourceSummary({
+    sources: [
+      { channel: 'a/b', outcome: 'collected', collected: 2 },
+      { channel: 'c/d', outcome: 'nothing matched', collected: 0 },
+      { channel: 'e/f', outcome: 'unreachable', collected: 0 },
+    ],
+  });
+
+  assert.match(summary, /3 sources were asked/);
+  assert.match(summary, /1 contributed/);
 });

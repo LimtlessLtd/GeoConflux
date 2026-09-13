@@ -105,3 +105,27 @@ test('app.js binds its whole import graph, failing only for want of a browser', 
     },
   );
 });
+
+/**
+ * Every element app.js reaches for must actually be on the page.
+ *
+ * A querySelector that matches nothing returns null, and the panel it belonged to simply never
+ * renders — no error, no console message, no visible difference from "there was no data". This is
+ * the failure mode a browser check catches only if somebody happens to open that tab, and it is one
+ * character of typo away at all times.
+ */
+test('every element id app.js queries exists in the page', async () => {
+  const source = await readWwwroot('app.js');
+  const html = await readWwwroot('index.html');
+
+  const queried = [...source.matchAll(/querySelector\('#([A-Za-z0-9_-]+)'\)/g)].map(([, id]) => id);
+
+  assert.ok(queried.length > 0, 'app.js should bind to the page by id');
+
+  for (const id of new Set(queried)) {
+    assert.ok(
+      new RegExp(`id="${id}"`).test(html),
+      `app.js queries #${id}, which the page does not contain`,
+    );
+  }
+});

@@ -109,3 +109,110 @@ export function gapNotes(report) {
 
   return notes;
 }
+
+/**
+ * The four breadth tables: region, language, tier, platform.
+ *
+ * Each carries a note saying what it does and does not establish, because every one of them is
+ * readable as a claim about the world when it is only a claim about this system's reach. A table of
+ * countries with Ukraine at the top says where this system reads, not where fighting is.
+ *
+ * Empty sections are dropped rather than shown as zero. A platform table with nothing in it before
+ * any open social has been collected is furniture; the source list below says why it is empty, which
+ * is the part a reader actually needs.
+ */
+export function breadthSections(report) {
+  return [
+    {
+      key: 'region',
+      title: 'By country',
+      note: 'Where placed records were placed. A country low here is one this system reads little '
+        + 'about, which is not the same as one where little happened.',
+      rows: report?.byRegion ?? [],
+    },
+    {
+      key: 'language',
+      title: 'By language',
+      note: 'The language of the original text, as the source stated it or enrichment identified it. '
+        + 'Reading widely in one language is not global reach, and this is the figure that says which.',
+      rows: report?.byLanguage ?? [],
+    },
+    {
+      key: 'tier',
+      title: 'By source tier',
+      note: 'Published reporting against claims posted on open platforms. A claim is shown and placed '
+        + 'like anything else; what it cannot do is open an incident on its own.',
+      rows: report?.byTier ?? [],
+    },
+    {
+      key: 'platform',
+      title: 'By platform',
+      note: 'Which open platforms the claims came from. One platform standing in for the world is the '
+        + 'bias that looks most like working coverage.',
+      rows: report?.byPlatform ?? [],
+    },
+  ].filter((section) => section.rows.some((row) => asCount(row?.count) > 0));
+}
+
+/** Plain wording for each outcome a source can have, keyed by what the collection tool wrote. */
+const OUTCOME_WORDING = {
+  collected: 'read, and contributed',
+  'nothing matched': 'read in full; nothing matched this brief',
+  'no public posts': 'exists, and publishes nothing readable',
+  capped: 'had matching posts, all of which the diversity caps dropped',
+  unreachable: 'could not be read',
+};
+
+/**
+ * What each source the last run asked actually gave.
+ *
+ * This is the half of coverage that counting cannot supply. A channel that refused, a channel that
+ * publishes nothing, a channel read that had nothing relevant to say, and a channel the caps emptied
+ * are four different statements that reduce to the same absence — and an absence on a map reads as
+ * "nothing happened there" rather than as "we did not see".
+ *
+ * An outcome this build has never heard of is shown rather than dropped. The string comes from a
+ * tool that is versioned separately, and a coverage panel that silently omitted what it could not
+ * name would be the exact failure it exists to prevent.
+ */
+export function sourceOutcomes(report) {
+  return (report?.sources ?? []).map((source) => {
+    const matched = asCount(source?.matched);
+    const collected = asCount(source?.collected);
+    const read = asCount(source?.read);
+    const wording = OUTCOME_WORDING[source?.outcome] ?? `reported as “${source?.outcome ?? 'unstated'}”`;
+
+    const detail = source?.reason
+      ? source.reason
+      : (read > 0 ? `${read} posts read, ${matched} matched, ${collected} kept` : null);
+
+    return {
+      channel: source?.channel ?? 'an unnamed source',
+      outcome: source?.outcome ?? 'unstated',
+      empty: collected === 0,
+      text: wording,
+      detail,
+    };
+  });
+}
+
+/**
+ * One sentence on how much of what was asked actually answered.
+ *
+ * Returns null when nothing has been collected at all, which is a different fact from every source
+ * having failed and must not be rendered as one. A deployment that has run no collection and a
+ * deployment whose every channel refused look identical on the map; here they do not.
+ */
+export function sourceSummary(report) {
+  const sources = sourceOutcomes(report);
+
+  if (sources.length === 0) {
+    return null;
+  }
+
+  const contributing = sources.filter((source) => !source.empty).length;
+
+  return `${sources.length} source${sources.length === 1 ? '' : 's'} were asked in the last run and `
+    + `${contributing} contributed. The rest are listed with what came of asking, because a source `
+    + 'that gave nothing and a source that was never asked are different things.';
+}

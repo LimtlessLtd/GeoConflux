@@ -39,8 +39,12 @@ import { canHideDemoNotice, provenanceChip, provenanceSummary } from './lib/prov
 import { selectVisibleIncidents } from './lib/incidents.js';
 import { resolveDataSource as resolveSourceOrder } from './lib/datasource.js';
 import {
-  coverageSummary, gapNotes, hasCoverage, lexiconNote, orderByPrecision, precisionLabel,
+  breadthSections, coverageSummary, gapNotes, hasCoverage, lexiconNote, orderByPrecision,
+  precisionLabel, sourceOutcomes, sourceSummary,
 } from './lib/coverage.js';
+import {
+  attributionLine, claimChip, claimSummary, heldClaimNote, isHeldClaim,
+} from './lib/attribution.js';
 
 (() => {
   'use strict';
@@ -52,6 +56,23 @@ import {
    */
   const chipFor = (record) => {
     const chip = provenanceChip(record);
+    if (!chip) {
+      return '';
+    }
+
+    return `<span class="${chip.className}" title="${escapeHtml(chip.title)}">${escapeHtml(chip.text)}</span>`;
+  };
+
+  /**
+   * The claim chip for one record, already escaped. Empty for published reporting, which is the
+   * unremarkable case.
+   *
+   * Class names are interpolated without escaping because they come from this codebase, never from a
+   * payload — the same rule chipFor above follows. The title and the text do come from a payload's
+   * neighbourhood and are escaped.
+   */
+  const claimChipFor = (record) => {
+    const chip = claimChip(record);
     if (!chip) {
       return '';
     }
@@ -146,6 +167,8 @@ import {
     chokepointList: document.querySelector('#chokepointList'),
     coverageList: document.querySelector('#coverageList'),
     coverageGaps: document.querySelector('#coverageGaps'),
+    coverageBreadth: document.querySelector('#coverageBreadth'),
+    coverageSources: document.querySelector('#coverageSources'),
     chokepointCount: document.querySelector('#chokepointCount'),
     chokepointMethod: document.querySelector('#chokepointMethod'),
     basemapFilter: document.querySelector('#basemapFilter'),
@@ -677,7 +700,7 @@ import {
             ? `<span>${escapeHtml(observation.location.name)}</span>`
             : '<span class="muted">no coordinates</span>'}
           ${chipFor(observation)}
-          ${observation.kind === 'Manual' ? '<span class="manual-chip">USER-SUBMITTED · UNVERIFIED</span>' : ''}
+          ${claimChipFor(observation)}
         </div>
         ${observation.status === 'Duplicate'
           ? ''
@@ -687,6 +710,9 @@ import {
                : ''}</div>`}
         ${observation.status === 'Duplicate'
           ? '<div class="feed-note">Rejected as an exact re-delivery. Kept for audit.</div>'
+          : ''}
+        ${isHeldClaim(observation)
+          ? `<div class="feed-note claim-note">${escapeHtml(heldClaimNote())}</div>`
           : ''}
         ${observation.locationResolutionNote
           ? `<div class="feed-note">${escapeHtml(observation.locationResolutionNote)}</div>`
@@ -778,8 +804,9 @@ import {
         <ul class="evidence-list">
           ${observations.map((observation) => `
             <li>
-              <span class="evidence-source">${escapeHtml(observation.sourceName)}</span>
+              <span class="evidence-source">${escapeHtml(attributionLine(observation))}</span>
               <span class="pill pill-${escapeHtml(observation.status)}">${escapeHtml(observation.status)}</span>
+              ${claimChipFor(observation)}
               <div>${escapeHtml(observation.title ?? '')}</div>
               <div class="muted evidence-times">
                 ${statesOwnTime(observation)
@@ -1013,6 +1040,111 @@ import {
       paragraph.textContent = note;
       dom.coverageGaps.append(paragraph);
     });
+
+    renderBreadth(report);
+    renderCoverageSources(report);
+  }
+
+  /**
+   * The four breadth tables: country, language, tier, platform.
+   *
+   * Built as elements with textContent rather than as markup, so a category name arriving from a
+   * payload cannot be anything but text. Every table carries its note, because each of them reads as
+   * a claim about the world when it is only a claim about this system's reach.
+   */
+  function renderBreadth(report) {
+    dom.coverageBreadth.replaceChildren();
+
+    breadthSections(report).forEach((section) => {
+      const card = document.createElement('article');
+      card.className = 'coverage-breadth-card';
+
+      const heading = document.createElement('h4');
+      heading.textContent = section.title;
+      card.append(heading);
+
+      const note = document.createElement('p');
+      note.className = 'coverage-caveat';
+      note.textContent = section.note;
+      card.append(note);
+
+      const list = document.createElement('ul');
+      list.className = 'coverage-breadth-rows';
+
+      section.rows
+        .filter((row) => asCount(row?.count) > 0)
+        .forEach((row) => {
+          const entry = document.createElement('li');
+
+          const label = document.createElement('span');
+          label.textContent = row.category;
+
+          const count = document.createElement('span');
+          count.className = 'coverage-breadth-count';
+          count.textContent = asCount(row.count).toLocaleString('en-GB');
+
+          entry.append(label, count);
+          list.append(entry);
+        });
+
+      card.append(list);
+      dom.coverageBreadth.append(card);
+    });
+  }
+
+  /**
+   * What each source the last collection run asked actually gave.
+   *
+   * The entries that gave nothing are the reason this is on the page. Four different facts — refused,
+   * publishes nothing, read and nothing matched, emptied by the diversity caps — otherwise reduce to
+   * one absence, and an absence reads as "nothing happened there" rather than as "we did not see".
+   */
+  function renderCoverageSources(report) {
+    dom.coverageSources.replaceChildren();
+
+    const summary = sourceSummary(report);
+
+    if (!summary) {
+      return;
+    }
+
+    const heading = document.createElement('h4');
+    heading.textContent = 'What each source gave';
+    dom.coverageSources.append(heading);
+
+    const intro = document.createElement('p');
+    intro.className = 'coverage-caveat';
+    intro.textContent = summary;
+    dom.coverageSources.append(intro);
+
+    const list = document.createElement('ul');
+    list.className = 'coverage-source-rows';
+
+    sourceOutcomes(report).forEach((source) => {
+      const entry = document.createElement('li');
+      entry.className = source.empty ? 'coverage-source is-empty' : 'coverage-source';
+
+      const channel = document.createElement('span');
+      channel.className = 'coverage-source-channel';
+      channel.textContent = source.channel;
+
+      const outcome = document.createElement('span');
+      outcome.className = 'coverage-source-outcome';
+      outcome.textContent = source.text;
+
+      entry.append(channel, outcome);
+
+      if (source.detail) {
+        const detail = document.createElement('span');
+        detail.className = 'coverage-source-detail';
+        detail.textContent = source.detail;
+        entry.append(detail);
+      }
+
+      list.append(entry);
+    });
+
+    dom.coverageSources.append(list);
   }
 
   function renderChokepoints(analysis) {
