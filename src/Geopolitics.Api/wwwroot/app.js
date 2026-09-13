@@ -1088,6 +1088,17 @@ import {
         });
 
       card.append(list);
+
+      // The footnote is what separates a country this system did not look at from one where nothing
+      // was found. Only the region table has one, because it is the only table whose absent rows
+      // could be read as a claim about the world.
+      if (section.footnote) {
+        const footnote = document.createElement('p');
+        footnote.className = 'coverage-caveat';
+        footnote.textContent = section.footnote;
+        card.append(footnote);
+      }
+
       dom.coverageBreadth.append(card);
     });
   }

@@ -200,16 +200,23 @@ Three of the seven are Arabic, and all three are placed on the globe, which is o
 gazetteer gained native-script aliases at the same time. Collecting in twenty languages while
 resolving in one produces a dashboard that sees more of the world and plots less of it.
 
-**What is not read.** X answers an unauthenticated request with HTTP 402 and Weibo redirects to an
-authentication wall (both checked, 2026-09-12). Neither is scraped around, and no account is created
-to present an automated collector as a person — the gate exists to prevent exactly that. They are
-recorded as gaps, because an unrecorded gap reads as coverage the system does not have. A paid
-credential would move such a source into the ordinary authenticated-adapter pattern ACLED uses.
-Telegram public channel previews and Bluesky author feeds *are* publicly readable and are specified
-but not yet built: a single uncorroborated post must not be able to form an incident, and the
-corroboration gate that stops it does not exist yet.
+**What is not read.** X answers an unauthenticated request with HTTP 402, and its `robots.txt`
+separately disallows the profile path; Weibo redirects to an authentication wall (all checked,
+2026-09-13). Neither is scraped around, and no account is created to present an automated collector
+as a person — the gate exists to prevent exactly that. They are recorded as gaps, because an
+unrecorded gap reads as coverage the system does not have. A paid credential would move such a
+source into the ordinary authenticated-adapter pattern ACLED uses.
 
-Full reasoning: [ADR 025](docs/adr/025-agent-collected-osint.md).
+**What is read, and how carefully.** Telegram public channel previews, Bluesky author feeds and
+Mastodon public timelines are all publicly readable with no credential, and are collected by
+`tools/collect`. The access rules are code rather than a paragraph in a brief: robots.txt is
+honoured, every request identifies itself and waits its turn, and a gate is a refusal that is never
+retried. Two rules look identical at the call site and mean opposite things — a *missing* robots.txt
+permits everything and an *unreachable* one forbids everything — so both are asserted, along with
+forty-three others, in an offline self-test that CI runs on every push.
+
+Full reasoning: [ADR 025](docs/adr/025-agent-collected-osint.md) and
+[ADR 030](docs/adr/030-collection-access-policy.md).
 
 ## The AI stage
 
@@ -537,15 +544,49 @@ credential is ever read from a committed file.
 | `Providers:Ucdp:Resource` / `:Version` | `gedevents` / `26.0.7` | GED Candidate, the monthly series |
 | `Providers:Ucdp:Countries` | empty | Gleditsch and Ward numbers, not ISO codes. Empty means no filter. |
 
+### A post is not a report
+
+A wire item comes from an organisation with an editorial process, a correction policy, and a
+reputation it is unwilling to spend. A Telegram post comes from a handle. It may be the best account
+of an event that day, or an anonymous claim, or footage recycled from a different war, and nothing
+about the item alone distinguishes those.
+
+So a user-generated claim that matches no incident is **stored, classified, placed, and drawn on the
+map — with no incident.** What is withheld is not the record but the assertion: an incident is this
+system saying something happened, an observation is it saying a source said this, and one post
+supports only the second. The claim is released the moment a second independent source arrives,
+whether that is published reporting or another channel, because social breaks first and the wire
+follows.
+
+Holding rather than hiding is the load-bearing half. A hidden claim is a claim nobody can
+corroborate, and hiding them would also conceal how much of the picture rests on unsupported posts.
+The dashboard therefore says *Reported by* a publisher or *Claimed on* a channel, and chips a held
+claim distinctly from a corroborated one — a reader must never have to guess which they are looking
+at.
+
+The same rule governs `POST /api/observations`. It takes no credential, so a submission is the
+definitional user-generated claim: it can join an incident that exists on other grounds and can
+never bring one into being, because two anonymous strangers agreeing is one unverifiable assertion
+repeated.
+
+Full reasoning: [ADR 029](docs/adr/029-corroboration-gate.md).
+
 ### Coverage
 
 The dashboard has a **Coverage** tab that states, per theatre, how much has been placed and how
 precisely, which sources it came from, how many place names the lexicon holds, and what that
-theatre's numbers cannot tell you.
+theatre's numbers cannot tell you. Beside it are counts by country, language, source tier and
+platform, and the last collection run's account of what each source it asked actually gave.
 
 It exists because a map is silent about its own gaps. Three dots over Tigray look identical whether
 three things happened or three things were reported, and the tab makes that difference explicit —
 including saying plainly that Tigray coverage is sparser than its conflict, and why.
+
+The source list is the half that counting cannot supply. A channel that refused, a channel that
+publishes nothing, a channel read that had nothing relevant to say, and a channel the diversity caps
+emptied are four different statements that otherwise reduce to one absence — and an absence on a map
+reads as *nothing happened there* rather than as *we did not see*. The most recent run records all
+four, plus the countries absent from the table entirely, which were not looked at rather than quiet.
 
 ### Place names
 

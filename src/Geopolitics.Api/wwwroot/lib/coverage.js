@@ -128,6 +128,7 @@ export function breadthSections(report) {
       title: 'By country',
       note: 'Where placed records were placed. A country low here is one this system reads little '
         + 'about, which is not the same as one where little happened.',
+      footnote: notLookedAtNote(report),
       rows: report?.byRegion ?? [],
     },
     {
@@ -152,6 +153,32 @@ export function breadthSections(report) {
       rows: report?.byPlatform ?? [],
     },
   ].filter((section) => section.rows.some((row) => asCount(row?.count) > 0));
+}
+
+/**
+ * The sentence that separates *not looked at* from *nothing found*.
+ *
+ * The table above lists only countries where something was placed, so an absent country is invisible
+ * — and an invisible country reads as a quiet one. These are different statements and the difference
+ * is not decoration: one is a limit of this system and the other would be a claim about the world.
+ *
+ * The theatres are named because they are the exception. They are watched deliberately and are shown
+ * even when they are empty, which is what makes their emptiness mean "nothing reached us" rather
+ * than "nobody was looking".
+ */
+export function notLookedAtNote(report) {
+  const watched = (report?.theatres ?? []).map((theatre) => theatre?.theatre).filter(Boolean);
+  const listed = (report?.byRegion ?? []).filter((row) => asCount(row?.count) > 0).length;
+
+  const watchedPart = watched.length > 0
+    ? ` The ${plural(watched.length, 'theatre')} above — ${watched.join(', ')} — are watched `
+      + 'deliberately and are listed even when empty, so an empty one means nothing reached this '
+      + 'system rather than that nobody was looking.'
+    : '';
+
+  return `${listed} ${listed === 1 ? 'country appears' : 'countries appear'} here. A country absent `
+    + 'from this list was not looked at — no source this deployment runs is aimed at it — which is a '
+    + `different statement from one where nothing was found.${watchedPart}`;
 }
 
 /** Plain wording for each outcome a source can have, keyed by what the collection tool wrote. */

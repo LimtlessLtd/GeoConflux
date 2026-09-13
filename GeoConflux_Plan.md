@@ -2542,18 +2542,50 @@ The project is complete when all of the following are true:
 
 # 43. Start Here
 
-## Current state, as of 2026-09-12
+## Current state, as of 2026-09-13
 
-Sprints 1 to 7 are complete, along with the final architecture review, the security review and the
-dependency review. `main` is green and deploys to
+**Every sprint in this plan is now built.** Sprints 1 to 7 are complete, along with the final
+architecture review, the security review and the dependency review. `main` is green and deploys to
 <https://limtlessltd.github.io/GeoConflux/> on every push.
 
-**Sprint 8** (open social) remains specified and unbuilt, blocked on the corroboration gate.
-**Sprint 9** (theatre depth for Ukraine, Yemen and Tigray) is complete apart from two items recorded
-as declined: the territorial control layer, deferred whole because the DeepState licence question is
-unsettled, and the FIRMS cropland mask, which cannot be sourced from inside this repository.
+**Sprint 8** (open social and measured coverage) is complete. **Sprint 9** (theatre depth for
+Ukraine, Yemen and Tigray) is complete apart from two items recorded as declined: the territorial
+control layer, deferred whole because the DeepState licence question is unsettled, and the FIRMS
+cropland mask, which cannot be sourced from inside this repository.
 
-Read [docs/conflict-source-assessment.md](docs/conflict-source-assessment.md) before continuing it.
+All twenty entries in Section 42's final success criteria are met. The two that were outstanding —
+user-generated claims distinguished from published reporting and unable to form an incident
+uncorroborated, and coverage by region and language measured and published with unreachable sources
+recorded as gaps — were what Sprint 8 existed to close.
+
+Read [docs/conflict-source-assessment.md](docs/conflict-source-assessment.md) before extending any
+of it.
+
+Sprint 8 progress:
+
+1. **The corroboration gate.** Done, and it is the decision the rest of the sprint waited on. A
+   user-generated claim that matches no incident is stored, classified, placed, announced and drawn
+   on the map, with no incident. What is withheld is the assertion, not the record. Held claims are
+   released the moment a second source arrives, whether that is published reporting or an
+   independent channel, because social breaks first and the wire follows.
+   [ADR 029](docs/adr/029-corroboration-gate.md) records the reasoning, including why the open write
+   path turned out to be governed by the same rule.
+2. **Tier B collection.** Done. Telegram public channel previews, Bluesky author feeds and Mastodon
+   public timelines, all verified readable with no credential on 2026-09-13. The access policy —
+   robots.txt, request identification, rate limiting, and refusals respected rather than worked
+   around — is code with forty-five offline assertions gated in CI, not a paragraph in a brief.
+   [ADR 030](docs/adr/030-collection-access-policy.md) records it.
+3. **A real collection run is committed.** Six items on the Strait of Hormuz and Bab el-Mandeb, in
+   English and French, each cited to its post. The brief is at revision 2 with per-channel and
+   per-platform diversity caps, and its executable half — channels, query terms, caps — is committed
+   beside it so a run is reproducible.
+4. **Measured coverage.** Done. Items per region, language, tier and platform, plus the run's own
+   account of what each source it asked actually gave. Five outcomes, because a channel that
+   refused, one that publishes nothing, one read that matched nothing, one the caps emptied, and one
+   that contributed are five different facts that otherwise reduce to the same absence.
+5. **Dashboard treatment.** Done. *Reported by* a publisher against *claimed on* a channel, held and
+   corroborated claims chipped separately, and the coverage tab carrying all four breadth tables plus
+   the source list.
 
 Sprint 9 progress:
 
@@ -2581,6 +2613,21 @@ Sprint 9 progress:
 Items 1, 2 and 4 need credentials that cannot be obtained from inside this repository, so each ships
 pinned by recorded fixtures and disabled, in the pattern NASA FIRMS already follows. Item 3 is the
 only one that changes the published page without a credential.
+
+## What is left
+
+Nothing in this plan. What remains is the ordinary work of a system that is running: collection runs
+produce new bundles, the coverage panel says where the picture is thin, and the thin places are the
+argument for the next brief. Three things are recorded as declined rather than pending, and each
+would reopen only if the world changed:
+
+- **The FIRMS cropland mask** ([ADR 028](docs/adr/028-firms-conflict-filtering.md)) — needs a
+  land-cover raster that cannot be committed, fetched hermetically, or honestly approximated. Three
+  of the four filters exist; FIRMS stays disabled because three of four is not four.
+- **The territorial control layer** — deferred whole while the DeepState licence question is
+  unsettled.
+- **Troop movements** ([ADR 027](docs/adr/027-no-troop-movement-mapping.md)) — declined outright.
+  No open source supports the claim, and this is a hard "must not" rather than a backlog item.
 
 ## If starting from nothing
 

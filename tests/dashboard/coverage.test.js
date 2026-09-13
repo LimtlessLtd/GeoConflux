@@ -7,6 +7,7 @@ import {
   gapNotes,
   hasCoverage,
   lexiconNote,
+  notLookedAtNote,
   orderByPrecision,
   precisionLabel,
   sourceOutcomes,
@@ -225,4 +226,40 @@ test('the source summary counts only the sources that gave something', () => {
 
   assert.match(summary, /3 sources were asked/);
   assert.match(summary, /1 contributed/);
+});
+
+test('a country absent from the table is named as not looked at, not as quiet', () => {
+  // The table lists only countries where something was placed, so an absent country is invisible —
+  // and an invisible country reads as a quiet one. One of those is a limit of this system and the
+  // other would be a claim about the world.
+  const note = notLookedAtNote({
+    byRegion: [{ category: 'UA', count: 40 }, { category: 'YE', count: 6 }],
+    theatres: [{ theatre: 'Ukraine' }, { theatre: 'Yemen' }, { theatre: 'Tigray' }],
+  });
+
+  assert.match(note, /2 countries appear here/);
+  assert.match(note, /was not looked at/);
+  assert.match(note, /different statement/);
+
+  // The theatres are the exception and are named, because they are shown even when empty.
+  assert.match(note, /Ukraine, Yemen, Tigray/);
+  assert.match(note, /nobody was looking/);
+});
+
+test('the region table carries that note and the others do not', () => {
+  const sections = breadthSections({
+    byRegion: [{ category: 'UA', count: 1 }],
+    byLanguage: [{ category: 'en', count: 1 }],
+    theatres: [{ theatre: 'Ukraine' }],
+  });
+
+  assert.ok(sections.find((section) => section.key === 'region').footnote);
+  assert.equal(sections.find((section) => section.key === 'language').footnote, undefined);
+});
+
+test('with no theatres declared the note still separates the two cases', () => {
+  const note = notLookedAtNote({ byRegion: [] });
+
+  assert.match(note, /0 countries appear here/);
+  assert.match(note, /was not looked at/);
 });
