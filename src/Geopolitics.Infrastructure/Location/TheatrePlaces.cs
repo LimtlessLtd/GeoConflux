@@ -59,6 +59,14 @@ public static class TheatrePlaces
         Entries.GroupBy(entry => entry.Theatre, StringComparer.Ordinal)
             .ToDictionary(group => group.Key, group => group.Count(), StringComparer.Ordinal);
 
+    /// <summary>
+    /// How many places the extract holds per ISO country code, so the deep layer can be added to the
+    /// coarse one when the ceiling for a country is reported.
+    /// </summary>
+    public static IReadOnlyDictionary<string, int> CountsByCountry { get; } =
+        Entries.GroupBy(entry => entry.CountryCode, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.Count(), StringComparer.Ordinal);
+
     private static TheatrePlace[] Load()
     {
         using var stream = typeof(TheatrePlaces).Assembly.GetManifestResourceStream(ResourceName)

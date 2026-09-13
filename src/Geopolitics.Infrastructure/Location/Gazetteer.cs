@@ -37,6 +37,19 @@ public sealed record GazetteerEntry(
     PlacePrecision Precision = PlacePrecision.Settlement);
 
 /// <summary>
+/// What a report says about where it is, for resolving a name that means more than one place.
+/// <para>
+/// Both fields are evidence rather than instruction, and neither may produce a coordinate on its own.
+/// A report's stated country narrows a list of candidates the lexicon already holds; it never adds a
+/// candidate, moves one, or overrules a name that was not in doubt. That boundary is the same one
+/// [ADR 005](../../../docs/adr/005-location-resolution.md) draws around a model naming a place.
+/// </para>
+/// </summary>
+/// <param name="CountryCode">The ISO country code the report or its provider stated, when it stated one.</param>
+/// <param name="Text">The report's own words, read for the other places it names.</param>
+public sealed record PlaceContext(string? CountryCode = null, string? Text = null);
+
+/// <summary>
 /// The local place lexicon: chokepoints, seas, and cities that recur in geopolitical reporting.
 /// Coordinates are representative centroids, adequate for a globe view at these zoom levels.
 /// <para>
@@ -472,6 +485,23 @@ public static class Gazetteer
     /// at two hundred entries and is not at several thousand.
     /// </para>
     /// </summary>
+    /// <summary>
+    /// Names that denote more than one place, with the places they could denote.
+    /// <para>
+    /// Declared before <see cref="Names"/> because both of these are filled while it is being built,
+    /// and a static field initialiser runs in declaration order. Written once, during that build, and
+    /// read-only thereafter.
+    /// </para>
+    /// </summary>
+    private static readonly Dictionary<string, GazetteerEntry[]> Contested =
+        new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// The contested spellings worth hunting for in prose. Held apart from <see cref="Names"/>
+    /// because they resolve to no single entry, which is the whole of what makes them contested.
+    /// </summary>
+    private static readonly List<string> ContestedSpellings = [];
+
     private static readonly (string Name, GazetteerEntry Entry, bool Searchable)[] Names = BuildNames();
 
     /// <summary>
@@ -486,7 +516,28 @@ public static class Gazetteer
     /// Every searchable spelling with the entry it denotes, longest first so that "Strait of Hormuz"
     /// is preferred over the bare "Hormuz" it contains.
     /// </summary>
-    private static readonly (string Term, GazetteerEntry Entry)[] SearchTerms = BuildSearchTerms();
+    private static readonly (string Term, string Reported)[] SearchTerms = BuildSearchTerms();
+
+    /// <summary>
+    /// The index over those terms. Built once, at first touch, and then never rebuilt.
+    /// <para>
+    /// ADR 026 measured the linear scan it replaces and said what would end it: the scan is linear in
+    /// the size of the lexicon, so "a lexicon ten times this size would cost five milliseconds per
+    /// observation and the algorithm would need replacing". Sprint 10 made the lexicon twenty times
+    /// larger. See <see cref="PlaceNameAutomaton"/>.
+    /// </para>
+    /// </summary>
+    private static readonly PlaceNameAutomaton Automaton =
+        PlaceNameAutomaton.Build([.. SearchTerms.Select(pair => pair.Term)]);
+
+    /// <summary>
+    /// How many spellings the prose scan hunts for. Reported because it, rather than the number of
+    /// places, is what the scan's cost and its collision risk both scale with.
+    /// </summary>
+    public static int SearchTermCount => SearchTerms.Length;
+
+    /// <summary>How many states the index over those spellings holds, so its cost stays measurable.</summary>
+    public static int AutomatonStates => Automaton.States;
 
     public static bool TryResolve(string? name, out GazetteerEntry entry)
     {
@@ -497,6 +548,145 @@ public static class Gazetteer
         }
 
         return Lookup.TryGetValue(NormaliseKey(name), out entry!);
+    }
+
+    /// <summary>
+    /// How many place names a report is read for before its context is taken as established. A long
+    /// report naming two hundred places says no more about which Springfield is meant than its first
+    /// dozen do.
+    /// </summary>
+    private const int ContextMentionLimit = 12;
+
+    /// <summary>
+    /// Resolves a name using what the report says about where it is from.
+    /// <para>
+    /// This exists because global coverage broke an assumption the three-theatre lexicon could hold.
+    /// With 2,750 places, a name meaning two places was rare enough to drop; across 246 countries
+    /// there are dozens of Victorias and San Josés, and dropping all of them would mean the coarse
+    /// layer could not place the very reports it was added for.
+    /// </para>
+    /// <para>
+    /// So a contested name is answered from context or not at all. Nothing here lowers the bar for
+    /// asserting a coordinate: a name that no context settles still resolves to nothing, exactly as
+    /// it did before, and the context-free overload above is untouched. The evidence is ranked, and
+    /// the order is the order of how much it establishes — the country a report states about itself
+    /// outranks a country inferred from the other places it happens to mention.
+    /// </para>
+    /// </summary>
+    public static bool TryResolve(string? name, PlaceContext context, out GazetteerEntry entry)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        // A name that resolves without context resolves the same way with it. Context narrows a
+        // contested name; it may never overrule a settled one, because that would let a report's
+        // dateline move a place that was never in doubt.
+        if (TryResolve(name, out entry))
+        {
+            return true;
+        }
+
+        if (string.IsNullOrWhiteSpace(name)
+            || !Contested.TryGetValue(NormaliseKey(name), out var candidates))
+        {
+            return false;
+        }
+
+        if (Narrow(candidates, context.CountryCode) is { } declared)
+        {
+            entry = declared;
+            return true;
+        }
+
+        foreach (var country in CountriesNamedIn(context.Text))
+        {
+            if (Narrow(candidates, country) is { } mentioned)
+            {
+                entry = mentioned;
+                return true;
+            }
+        }
+
+        entry = null!;
+        return false;
+    }
+
+    /// <summary>
+    /// The one place in this country that this name denotes, or nothing.
+    /// <para>
+    /// Nothing rather than a choice, where a country holds two genuinely different places with the
+    /// name: that is exactly the case context cannot settle, and picking the larger would be the
+    /// confident misplacement the refusal exists to avoid. The dominant-population rule already ran
+    /// before the name was called contested at all.
+    /// </para>
+    /// <para>
+    /// Two records of the <em>same</em> place are not that case, and the two sourced layers make it
+    /// common: Oleksandriia arrives from the theatre extract and Oleksandriya from the global one,
+    /// same town, coordinates a few hundred metres apart. Reading those as a country that cannot make
+    /// up its mind would refuse a name nothing is actually ambiguous about — so the same tolerance
+    /// <see cref="Disambiguate"/> uses for duplicates applies here too.
+    /// </para>
+    /// </summary>
+    private static GazetteerEntry? Narrow(GazetteerEntry[] candidates, string? country)
+    {
+        if (string.IsNullOrWhiteSpace(country))
+        {
+            return null;
+        }
+
+        GazetteerEntry? only = null;
+
+        foreach (var candidate in candidates)
+        {
+            if (!string.Equals(candidate.CountryCode, country, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (only is not null && !IsSamePlace(only, candidate))
+            {
+                return null;
+            }
+
+            only ??= candidate;
+        }
+
+        return only;
+    }
+
+    /// <summary>
+    /// The countries of the places this text names, most-specific first.
+    /// <para>
+    /// Only settled names vote. A contested mention cannot establish a country, because which country
+    /// it is in is the question — letting one vouch for another would let two ambiguities agree with
+    /// each other and produce a confident answer out of nothing.
+    /// </para>
+    /// </summary>
+    private static IEnumerable<string> CountriesNamedIn(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            yield break;
+        }
+
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var mentions = new List<(PlacePrecision Precision, string Country)>();
+
+        foreach (var term in Automaton.FindAll(FoldForSearch(text), ContextMentionLimit))
+        {
+            if (Lookup.TryGetValue(NormaliseKey(SearchTerms[term].Reported), out var mentioned)
+                && mentioned.CountryCode is { } country
+                && seen.Add(country))
+            {
+                mentions.Add((mentioned.Precision, country));
+            }
+        }
+
+        // A settlement named in the same report is better evidence than a country named in it: "the
+        // strike near Kramatorsk" says more about where this is than a later mention of Russia does.
+        foreach (var (_, country) in mentions.OrderBy(mention => mention.Precision))
+        {
+            yield return country;
+        }
     }
 
     /// <summary>
@@ -516,30 +706,9 @@ public static class Gazetteer
 
         // Folded once, then compared ordinally: the terms were folded the same way when the table
         // was built, so an Arabic presentation form in the text meets the standard form stored here.
-        var haystack = FoldForSearch(text);
+        var term = Automaton.FindFirst(FoldForSearch(text));
 
-        var bestIndex = int.MaxValue;
-        string? bestName = null;
-
-        foreach (var (term, entry) in SearchTerms)
-        {
-            var index = haystack.IndexOf(term, StringComparison.Ordinal);
-
-            // Keep looking past a hit that landed inside a longer word. The first occurrence of
-            // "us" may be in "because" while the sentence goes on to name the United States.
-            while (index >= 0 && !IsWholeMention(haystack, index, term.Length))
-            {
-                index = haystack.IndexOf(term, index + 1, StringComparison.Ordinal);
-            }
-
-            if (index >= 0 && index < bestIndex)
-            {
-                bestIndex = index;
-                bestName = entry.CanonicalName;
-            }
-        }
-
-        return bestName;
+        return term < 0 ? null : SearchTerms[term].Reported;
     }
 
     /// <summary>Case- and punctuation-insensitive key, so "Bab el Mandeb" matches "Bab-el-Mandeb".</summary>
@@ -708,7 +877,8 @@ public static class Gazetteer
         GazetteerEntry Entry,
         int Rank,
         int Population,
-        bool Searchable);
+        bool Searchable,
+        bool Deep);
 
     /// <summary>
     /// At or below this length a sourced spelling is too short to hunt for in running prose unless
@@ -725,15 +895,252 @@ public static class Gazetteer
     /// </summary>
     private const int ShortNamePopulationFloor = 20_000;
 
+    /// <summary>
+    /// The shortest spelling worth hunting for in a script written without spaces between words.
+    /// <para>
+    /// This is the per-language decision the global coverage assessment asked for, and the measured
+    /// shape of the lexicon is what settles where the line falls. Of the coarse layer's spellings,
+    /// 2.6% of Latin ones are four characters or shorter, 6.3% of Cyrillic and 8.5% of Arabic — so
+    /// holding those scripts to the existing floor costs almost nothing. For Han it is 71% and for
+    /// Hangul 97%, because those scripts carry a word in two or three characters. One floor for both
+    /// groups is wrong whichever value it takes: it either admits ordinary words or excludes most of
+    /// two scripts.
+    /// </para>
+    /// <para>
+    /// The split follows a distinction the lexicon already draws for a related reason. A script
+    /// written without word breaks gets no word-edge check when it is matched, because there is no
+    /// edge to find — which is precisely why a short spelling in one is dangerous, and why the floor
+    /// here is three rather than two. 北京 and 서울 are two characters and are found regardless: they
+    /// are curated entries, chosen deliberately, and the curated layer is searchable unconditionally.
+    /// </para>
+    /// </summary>
+    private const int UnspacedShortNameLength = 3;
+
+    /// <summary>
+    /// A place from a sourced layer, in the one shape the merge understands.
+    /// <para>
+    /// Two extracts feed this now and they do not share a record type — one carries a theatre and a
+    /// Wikidata id, the other a country and nothing else. Mapping both onto this keeps one merge
+    /// rather than two that would drift.
+    /// </para>
+    /// </summary>
+    /// <param name="Deep">
+    /// Whether this place comes from a layer somebody tasked. It decides one thing: whether a short
+    /// Latin spelling of it may be hunted for in running prose. See <see cref="IsSearchable"/>.
+    /// </param>
+    private readonly record struct SourcedPlace(
+        string Name,
+        double Latitude,
+        double Longitude,
+        string? CountryCode,
+        PlacePrecision Precision,
+        int Rank,
+        int Population,
+        bool Deep,
+        IReadOnlyList<string> Aliases);
+
+    /// <summary>
+    /// How many countries a contested name may keep candidates for.
+    /// </summary>
+    private const int ContestedCountryLimit = 24;
+
+    /// <summary>
+    /// How many candidates a contested name keeps per country.
+    /// <para>
+    /// Two, and the second one is doing a job the first cannot. Context narrows by country, so one
+    /// candidate per country would be enough to answer — and would quietly turn "this country holds
+    /// two places with this name" into a confident choice between them. Keeping a second is what lets
+    /// that case still be recognised and refused.
+    /// </para>
+    /// </summary>
+    private const int ContestedCandidatesPerCountry = 2;
+
+    /// <summary>
+    /// The sourced layers, merged under the rules ADR 026 settles and ADR 033 tiers.
+    /// <para>
+    /// Every candidate for a name is collected before any of them is chosen, because ambiguity is
+    /// only visible once they have all been seen. Choosing as they arrive would leave whichever
+    /// extract was read first holding the name.
+    /// </para>
+    /// </summary>
     private static List<(string Name, GazetteerEntry Entry, bool Searchable)> SourcedNames(
         Dictionary<string, GazetteerEntry> curated)
     {
-        // Grouped by key first rather than added one at a time, because ambiguity is only visible
-        // once every candidate for a name has been seen. Adding as we go and removing later would
-        // leave whichever entry arrived first in the search terms.
         var candidates = new Dictionary<string, List<Candidate>>(StringComparer.Ordinal);
 
-        foreach (var place in TheatrePlaces.All)
+        Collect(
+            TheatrePlaces.All.Select(place => new SourcedPlace(
+                place.Name,
+                place.Latitude,
+                place.Longitude,
+                place.CountryCode,
+                place.Precision,
+                place.Rank,
+                place.Population ?? 0,
+                true,
+                place.Aliases)),
+            curated,
+            candidates);
+
+        Collect(
+            GlobalPlaces.All.Select(place => new SourcedPlace(
+                place.Name,
+                place.Latitude,
+                place.Longitude,
+                place.CountryCode,
+                place.Precision,
+                place.Rank,
+                place.Population ?? 0,
+                false,
+                place.Aliases)),
+            curated,
+            candidates);
+
+        var accepted = new List<(string Name, GazetteerEntry Entry, bool Searchable)>(candidates.Count);
+        var contested = 0;
+
+        foreach (var (key, forKey) in candidates)
+        {
+            var pool = Deciding(forKey);
+
+            if (Choose(pool) is { } chosen)
+            {
+                accepted.Add((chosen.Name, chosen.Entry, chosen.Searchable));
+                continue;
+            }
+
+            contested++;
+
+            Contested[key] = Bound(pool);
+
+            // The spelling still goes into the prose scan, so that a report naming a contested place
+            // is recognised as naming somewhere at all. What it resolves to is then a question for
+            // the context, and the answer may still be "not enough to say".
+            if (pool.Find(candidate => candidate.Searchable) is { Searchable: true } searchable)
+            {
+                ContestedSpellings.Add(searchable.Name);
+            }
+        }
+
+        AmbiguousSourcedNames = contested;
+        return accepted;
+    }
+
+    /// <summary>
+    /// The candidates a contested name keeps, bounded so that a name shared by five hundred villages
+    /// does not carry five hundred entries.
+    /// <para>
+    /// Bounded by country rather than by size, which is the correction to a first attempt that simply
+    /// kept the largest dozen. Context narrows by country, so keeping the largest dozen discards
+    /// precisely the candidate a report is most likely to need: there are more than twelve places
+    /// called Alexandria larger than Oleksandriia, so a Ukrainian report naming Alexandria could not
+    /// be resolved by the very mechanism built to resolve it.
+    /// </para>
+    /// </summary>
+    private static GazetteerEntry[] Bound(List<Candidate> candidates) =>
+        [.. candidates
+            .GroupBy(candidate => candidate.Entry.CountryCode ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+            .OrderByDescending(group => group.Max(candidate => candidate.Population))
+            .Take(ContestedCountryLimit)
+            .SelectMany(group => group
+                .OrderByDescending(candidate => candidate.Population)
+                .Take(ContestedCandidatesPerCountry))
+            .Select(candidate => candidate.Entry)];
+
+    /// <summary>
+    /// Which place this name denotes, or that it denotes none clearly enough to say.
+    /// <para>
+    /// The ordinary rules decide it wherever they can. What is left is the case the global layer
+    /// created: a name held by both a tasked theatre and some larger place in another country, where
+    /// no rule about duplicates, nesting or population applies because the two are simply different
+    /// places with the same name.
+    /// </para>
+    /// <para>
+    /// There the tasked layer wins, because somebody pointed this system at that theatre and a report
+    /// naming Pokrovsk is overwhelmingly likely to be about the Pokrovsk being fought over. It is an
+    /// editorial position and is stated as one rather than arrived at by accident.
+    /// </para>
+    /// <para>
+    /// It has a limit, and the limit is what stops it becoming the Victoria problem. A Ukrainian
+    /// hamlet of 1,042 people shares its name with Hong Kong's Victoria and with the Australian
+    /// state; letting the tasked layer hold that name would put reporting about either of them on a
+    /// hamlet. So the deep candidate is preferred only where nothing else dominates it, by the same
+    /// margin the population rule already uses everywhere else.
+    /// </para>
+    /// </summary>
+    private static Candidate? Choose(List<Candidate> candidates)
+    {
+        if (Disambiguate(candidates) is { } chosen)
+        {
+            return chosen;
+        }
+
+        var deep = candidates.FindAll(candidate => candidate.Deep);
+
+        // Collapsed by the ordinary rules first, because the tasked layer routinely holds one place
+        // several times over: Marib is a governorate, a district and a city, and asking whether there
+        // is exactly one deep candidate would answer "no" for the very places this is here to keep.
+        if (deep.Count == 0 || Disambiguate(deep) is not { } tasked)
+        {
+            return null;
+        }
+
+        var largest = candidates.Max(candidate => candidate.Population);
+
+        return largest >= DominantPopulationFloor
+            && largest >= tasked.Population * (long)DominantPopulationRatio
+                ? null
+                : tasked;
+    }
+
+    /// <summary>
+    /// Which candidates a name is actually decided between, once layer depth is taken into account.
+    /// <para>
+    /// The deep layer wins <em>inside its own country</em> and nowhere else, and both halves of that
+    /// are load-bearing.
+    /// </para>
+    /// <para>
+    /// Inside one country it must win, because the two layers describe the same place at different
+    /// scales: a Ukrainian town and the raion around it share a name 1,398 times over, and the nested
+    /// rule below would resolve every one of them to the raion centroid. That would quietly coarsen
+    /// the front-line towns the theatre layer was bought to place precisely.
+    /// </para>
+    /// <para>
+    /// Across countries it must not, and the first attempt at this sprint got it wrong by letting it.
+    /// The theatre extract holds a Ukrainian village called Niu-York with 9,917 inhabitants, a hamlet
+    /// called Victoria with 1,042, and Oleksandriia, which is spelled Alexandria. Giving the deep
+    /// layer those names outright meant "New York", "Victoria" and "Alexandria" resolved to them — a
+    /// marker placed in the wrong country at full confidence, which ADR 026 is explicit is worse than
+    /// no marker at all. Pooled instead, the dominant-population rule settles all three correctly, and
+    /// where nothing dominates the name becomes contested and the context decides.
+    /// </para>
+    /// </summary>
+    private static List<Candidate> Deciding(List<Candidate> candidates)
+    {
+        var country = candidates[0].Entry.CountryCode;
+
+        foreach (var candidate in candidates)
+        {
+            if (!string.Equals(candidate.Entry.CountryCode, country, StringComparison.OrdinalIgnoreCase))
+            {
+                return candidates;
+            }
+        }
+
+        var deep = candidates.FindAll(candidate => candidate.Deep);
+
+        return deep.Count > 0 ? deep : candidates;
+    }
+
+    /// <summary>
+    /// Reads one sourced layer into the shared candidate pool, skipping keys the curated table owns.
+    /// </summary>
+    private static void Collect(
+        IEnumerable<SourcedPlace> places,
+        Dictionary<string, GazetteerEntry> curated,
+        Dictionary<string, List<Candidate>> candidates)
+    {
+        foreach (var place in places)
         {
             var entry = new GazetteerEntry(
                 place.Name,
@@ -744,7 +1151,7 @@ public static class Gazetteer
 
             foreach (var name in place.Aliases.Prepend(place.Name))
             {
-                var isPreferredName = ReferenceEquals(name, place.Name) || name == place.Name;
+                var isPreferredName = name == place.Name;
                 var key = NormaliseKey(name);
 
                 // A name that normalises to nothing — punctuation or digits only — cannot be looked
@@ -759,35 +1166,90 @@ public static class Gazetteer
                     candidates[key] = forKey = [];
                 }
 
-                // Short names are kept for exact lookup and withheld from the prose scan unless the
-                // place is well known. The two entry points are asking different questions: a caller
-                // passing "Sad" to TryResolve has asserted it is a place name, while the scanner
-                // finding "sad" inside a sentence has guessed — and a bulk extract supplies far too
-                // many short, ordinary-looking names for that guess to be safe. It was not: adding
-                // them cost nine points of location-extraction precision before this rule existed.
-                var searchable = name.Length > ShortNameLength
-                    || (isPreferredName && (place.Population ?? 0) >= ShortNamePopulationFloor);
-
-                forKey.Add(new Candidate(name, entry, place.Rank, place.Population ?? 0, searchable));
+                forKey.Add(new Candidate(
+                    name,
+                    entry,
+                    place.Rank,
+                    place.Population,
+                    IsSearchable(name, isPreferredName, place.Population, place.Deep),
+                    place.Deep));
             }
         }
+    }
 
-        var accepted = new List<(string Name, GazetteerEntry Entry, bool Searchable)>(candidates.Count);
-        var ambiguous = 0;
+    /// <summary>
+    /// Whether a sourced spelling is worth hunting for in running prose, as opposed to merely worth
+    /// resolving when a caller names it.
+    /// <para>
+    /// The two entry points are asking different questions, and ADR 026 put the difference exactly: a
+    /// caller passing "Sad" to <see cref="TryResolve"/> has asserted that it is a place name, while
+    /// the scanner finding "sad" inside a sentence has guessed. Sprint 10 is where that distinction
+    /// stopped being a refinement and became the rule. <b>Only a layer somebody chose is hunted for
+    /// in prose.</b>
+    /// </para>
+    /// <para>
+    /// It was measured rather than argued. Running the scan over every committed corpus of realistic
+    /// prose in this repository — the evaluation fixtures, the severity corpus and the replay
+    /// observations — 38 coarse-layer names fired, and almost every one was an ordinary English word
+    /// that is also a real administrative unit somewhere: <c>Exchange</c>, <c>Police</c>, <c>Along</c>
+    /// (a town in Arunachal Pradesh), <c>Maritime</c> (a region of Togo), <c>Centre</c> (a region of
+    /// Cameroon), <c>Northern</c>, <c>Village</c>, <c>Union</c>, <c>Legal</c>, <c>Burns</c>, and a run
+    /// of American counties — Early, Power, Gates, Ferry, Cross, Sharp — leaking in through their
+    /// bare-word aliases. Two narrower rules were tried first: a length floor lets <c>Frontier</c> and
+    /// <c>University</c> through, and dropping alternate spellings only moved 38 to 24. The collision
+    /// is intrinsic to holding every administrative unit on earth, because a great many of them are
+    /// named after ordinary words.
+    /// </para>
+    /// <para>
+    /// Almost nothing is lost by this, which is why it is the right trade rather than a retreat. The
+    /// coarse layer exists to place reports whose location is <em>named</em> — by a coded dataset, by
+    /// an enrichment provider, or by a submission — and every one of those arrives through
+    /// <see cref="TryResolve"/>, which holds all 78,547 places and every spelling of them. What it no
+    /// longer does is let the offline provider guess a district out of raw prose, and the measurement
+    /// above is what that guess was actually worth.
+    /// </para>
+    /// <para>
+    /// Within the deep layers the floor is per script, which is the per-language decision the global
+    /// coverage assessment asked for. A four-character floor suits Latin and suits Arabic; it would
+    /// exclude 71% of Han spellings and 97% of Hangul ones, because those scripts carry a word in two
+    /// or three characters.
+    /// </para>
+    /// </summary>
+    private static bool IsSearchable(string name, bool isPreferredName, int population, bool deep) =>
+        deep
+        && (WritesWithoutWordBreaks(name)
+            ? name.Length >= UnspacedShortNameLength
+            : name.Length > ShortNameLength
+                || (isPreferredName && population >= ShortNamePopulationFloor));
 
-        foreach (var (_, forKey) in candidates)
+    /// <summary>
+    /// Whether every letter in this spelling belongs to a script written without word breaks.
+    /// <para>
+    /// Every letter rather than any, because a name mixing scripts — a Han name with a Latin
+    /// qualifier after it — has Latin word edges in it and is held to the Latin floor. The strict
+    /// reading is the safe one: it can only ever demand that a name be longer.
+    /// </para>
+    /// </summary>
+    private static bool WritesWithoutWordBreaks(string name)
+    {
+        var letters = false;
+
+        foreach (var character in name)
         {
-            if (Disambiguate(forKey) is { } chosen)
+            if (!char.IsLetter(character))
             {
-                accepted.Add((chosen.Name, chosen.Entry, chosen.Searchable));
                 continue;
             }
 
-            ambiguous++;
+            if (!PlaceNameAutomaton.WritesWithoutWordBreaks(character))
+            {
+                return false;
+            }
+
+            letters = true;
         }
 
-        AmbiguousSourcedNames = ambiguous;
-        return accepted;
+        return letters;
     }
 
     /// <summary>
@@ -877,11 +1339,100 @@ public static class Gazetteer
         return map.ToFrozenDictionary(StringComparer.Ordinal);
     }
 
-    private static (string Term, GazetteerEntry Entry)[] BuildSearchTerms() =>
-        [.. Names
-            .Where(pair => pair.Searchable)
-            .Select(pair => (Term: FoldForSearch(pair.Name), pair.Entry))
-            .OrderByDescending(item => item.Term.Length)];
+    /// <summary>
+    /// Every searchable spelling with the name a scan reports for it, longest first so that "Strait
+    /// of Hormuz" is preferred over the bare "Hormuz" it contains.
+    /// <para>
+    /// A settled name reports the canonical name of the place it denotes, which is what the resolver
+    /// then looks up. A contested spelling reports itself, because there is no single place to name
+    /// yet — deciding which one is what the context-scoped overload of <see cref="TryResolve"/> is
+    /// for, and it needs the spelling that was actually found to do it.
+    /// </para>
+    /// <para>
+    /// Settled names come first so that where a contested spelling folds onto a settled one, the
+    /// settled answer is the one kept.
+    /// </para>
+    /// </summary>
+    private static (string Term, string Reported)[] BuildSearchTerms()
+    {
+        var terms = new List<(string Term, string Reported)>(Names.Length + ContestedSpellings.Count);
+
+        foreach (var (name, entry, searchable) in Names)
+        {
+            if (searchable)
+            {
+                Add(name, entry.CanonicalName);
+            }
+        }
+
+        foreach (var spelling in ContestedSpellings)
+        {
+            Add(spelling, spelling);
+        }
+
+        // Longest first, so "Strait of Hormuz" is preferred over the bare "Hormuz" inside it, and so
+        // that where two spellings fold to one string the longer-named one is the survivor.
+        return [.. terms.OrderByDescending(item => item.Term.Length)];
+
+        void Add(string spelling, string reported)
+        {
+            var folded = FoldForSearch(spelling);
+            terms.Add((folded, reported));
+
+            // Reporting writes Ma'rib and Marib, Sana'a and Sanaa, Ta'izz and Taizz, and a lexicon
+            // holding one of them places half the reporting and drops the rest.
+            //
+            // The two entry points had drifted apart on exactly this. NormaliseKey strips punctuation,
+            // so a caller asking about either spelling resolves; the prose scan keeps punctuation,
+            // because word edges are what stop "us" matching inside "because" — and so it could only
+            // ever find the spelling the extract happened to record. Marib is the case that matters:
+            // ADR 026 notes it is what the fighting in that theatre is mostly about, and the extract
+            // spells it Ma'rib.
+            var plain = WithoutApostrophes(folded);
+
+            // Held to the same floor the spelling itself was, because taking a character out makes it
+            // shorter and the floor is about length. Luts'k is romanised Luc'k, which without its
+            // apostrophe is "luck" — an ordinary English word that would then outrank every real place
+            // name in any sentence wishing anybody any.
+            if (!string.Equals(plain, folded, StringComparison.Ordinal)
+                && IsSearchable(plain, isPreferredName: false, population: 0, deep: true))
+            {
+                terms.Add((plain, reported));
+            }
+        }
+    }
+
+    /// <summary>
+    /// The same spelling with the apostrophes taken out, in every form a source might write one.
+    /// <para>
+    /// Only apostrophes, and deliberately not the general punctuation stripping the lookup key uses.
+    /// Removing hyphens and spaces as well would make "Bab el Mandeb" searchable as "babelmandeb",
+    /// which no text contains, and would cost the word boundaries that keep short names safe.
+    /// </para>
+    /// </summary>
+    private static string WithoutApostrophes(string value)
+    {
+        if (value.AsSpan().IndexOfAny(Apostrophes) < 0)
+        {
+            return value;
+        }
+
+        Span<char> buffer = value.Length <= 128 ? stackalloc char[value.Length] : new char[value.Length];
+        var length = 0;
+
+        foreach (var character in value)
+        {
+            if (Apostrophes.IndexOf(character) < 0)
+            {
+                buffer[length++] = character;
+            }
+        }
+
+        return new string(buffer[..length]);
+    }
+
+    /// <summary>Straight, typographic and modifier-letter forms, all of which appear in real extracts.</summary>
+    private static ReadOnlySpan<char> Apostrophes => "'\u2018\u2019\u02bc\u02bb\u00b4`";
 
     /// <summary>
     /// Case- and compatibility-folded form used for searching prose, keeping punctuation and spacing
@@ -906,43 +1457,4 @@ public static class Gazetteer
         }
     }
 
-    /// <summary>
-    /// True when a match at this position is a mention rather than a fragment of a longer word.
-    /// <para>
-    /// Without this the two-letter aliases are catastrophic: <c>US</c> occurs inside "because",
-    /// "thus", and "Russia", and because the search takes the earliest match across every term, one
-    /// such hit outranks the real place name later in the sentence.
-    /// </para>
-    /// </summary>
-    private static bool IsWholeMention(string text, int index, int length) =>
-        !RunsIntoWord(text, index - 1, text[index])
-        && !RunsIntoWord(text, index + length, text[index + length - 1]);
-
-    private static bool RunsIntoWord(string text, int neighbourIndex, char termEdge)
-    {
-        if (neighbourIndex < 0 || neighbourIndex >= text.Length)
-        {
-            return false;
-        }
-
-        var neighbour = text[neighbourIndex];
-
-        if (!char.IsLetterOrDigit(neighbour))
-        {
-            return false;
-        }
-
-        // Scripts written without spaces have no word edge to find. Requiring one would mean never
-        // matching 美国 inside 在美国发生, or 서울 inside 서울에서 — which is to say, never matching
-        // them at all, since that is how those languages are written.
-        return !WritesWithoutWordBreaks(neighbour) && !WritesWithoutWordBreaks(termEdge);
-    }
-
-    private static bool WritesWithoutWordBreaks(char character) => character
-        is (>= '぀' and <= 'ヿ')      // Hiragana and Katakana
-        or (>= '㐀' and <= '䶿')      // CJK unified ideographs, extension A
-        or (>= '一' and <= '鿿')      // CJK unified ideographs
-        or (>= '가' and <= '힯')      // Hangul syllables, which take particles unspaced
-        or (>= '豈' and <= '﫿')      // CJK compatibility ideographs
-        or (>= '฀' and <= '๿');     // Thai
 }

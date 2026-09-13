@@ -43,6 +43,13 @@
          a published single-file build still has it. The build never fetches this: see
          docs/adr/026-gazetteer-sourcing.md. -->
     <EmbeddedResource Include="Location/Data/theatre-places.json" />
+
+    <!-- The global coarse layer: every first- and second-order administrative unit on earth and the
+         settlement that is the seat of each, extracted once from the GeoNames dumps by
+         tools/gazetteer/global.py and committed. One line per place rather than JSON because at this
+         size the encoding is most of the file: see docs/adr/033-tiered-gazetteer-artefact.md. The
+         GeoNames attribution this carries is discharged by NOTICE at the repository root. -->
+    <EmbeddedResource Include="Location/Data/global-places.tsv" />
   </ItemGroup>
 
   <ItemGroup>

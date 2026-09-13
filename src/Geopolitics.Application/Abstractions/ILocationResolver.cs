@@ -54,9 +54,17 @@ public interface ILocationResolver
 /// How precisely the provider says its coordinates describe the event. Null when it did not say, in
 /// which case the coordinates are taken as exact.
 /// </param>
+/// <param name="SourceText">
+/// The report's own words, where they are available. Read only for the other places it names, which
+/// are evidence about which of several identically-named places the location name means: there are
+/// dozens of Victorias and San Joses in a global lexicon and the surrounding text is often the only
+/// thing that distinguishes them. It can narrow a choice between candidates the gazetteer already
+/// holds; per ADR 005 it can no more produce a coordinate than a model naming a place can.
+/// </param>
 public sealed record LocationResolutionRequest(
     string? LocationName,
     double? DeclaredLatitude,
     double? DeclaredLongitude,
     string? DeclaredCountryCode,
-    LocationPrecision? DeclaredPrecision = null);
+    LocationPrecision? DeclaredPrecision = null,
+    string? SourceText = null);

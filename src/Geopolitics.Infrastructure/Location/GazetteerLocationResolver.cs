@@ -47,7 +47,12 @@ public sealed partial class GazetteerLocationResolver(ILogger<GazetteerLocationR
             return Task.FromResult(LocationResolution.Failed("The observation named no location."));
         }
 
-        if (Gazetteer.TryResolve(request.LocationName, out var entry))
+        // Context-scoped, because a global lexicon holds many places with the same name. The overload
+        // falls through to the plain lookup first, so a name that was never in doubt resolves exactly
+        // as it did before and nothing here can move it.
+        var context = new PlaceContext(request.DeclaredCountryCode, request.SourceText);
+
+        if (Gazetteer.TryResolve(request.LocationName, context, out var entry))
         {
             return Task.FromResult(new LocationResolution(
                 new GeoLocation(
