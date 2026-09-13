@@ -11,3 +11,8 @@ secrets.json
 dist/
 .claude/
 node_modules/
+
+# Python bytecode from the tooling under tools/. Generated on import, never reviewed, and
+# meaningless outside the machine that wrote it.
+__pycache__/
+*.pyc
