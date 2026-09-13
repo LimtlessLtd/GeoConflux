@@ -243,3 +243,57 @@ export function sourceSummary(report) {
     + `${contributing} contributed. The rest are listed with what came of asking, because a source `
     + 'that gave nothing and a source that was never asked are different things.';
 }
+
+/**
+ * How many countries to name in the ceiling table before it stops being read.
+ *
+ * The payload carries every country the lexicon holds, because the figure for any one of them is a
+ * fact a reader may want. A table of 246 rows is not how they want it.
+ */
+const CEILING_ROWS = 12;
+
+/**
+ * What the lexicon holds per country, beside what was actually drawn there.
+ *
+ * This is the ceiling made concrete. "We hold 105 place names for Myanmar" says something a map
+ * cannot: that a report from there naming anything other than a state, a district or a district town
+ * will be kept and will not be drawn. Without it, thin coverage and a quiet country look identical.
+ *
+ * Countries that produced observations come first because the ceiling matters most where reports are
+ * actually arriving. The rest follow thinnest first, since the thinnest is the largest limit.
+ */
+export function ceilingRows(report, limit = CEILING_ROWS) {
+  const rows = (report?.lexiconByCountry ?? []).filter((row) => row?.country);
+
+  return rows.slice(0, Math.max(0, limit)).map((row) => ({
+    country: row.country,
+    places: asCount(row.places),
+    placed: asCount(row.placed),
+    text: asCount(row.placed) > 0
+      ? `${plural(asCount(row.placed), 'record')} drawn, ${asCount(row.places).toLocaleString('en-GB')} place names held`
+      : `${asCount(row.places).toLocaleString('en-GB')} place names held, nothing drawn`,
+  }));
+}
+
+/**
+ * One sentence on how thin the thinnest coverage is.
+ *
+ * Returns null when the payload carries no ceilings at all, so a build without the global layer shows
+ * nothing rather than an empty claim. The thinnest countries are named rather than counted, because
+ * "48 names for South Sudan" is a limit a reader can weigh and "some countries are thin" is not.
+ */
+export function thinnestCoverage(report, named = 3) {
+  const rows = (report?.lexiconByCountry ?? []).filter((row) => row?.country);
+
+  if (rows.length === 0) {
+    return null;
+  }
+
+  const thinnest = [...rows]
+    .sort((a, b) => asCount(a.places) - asCount(b.places))
+    .slice(0, Math.max(1, named))
+    .map((row) => `${row.country} (${asCount(row.places).toLocaleString('en-GB')})`);
+
+  return `Thinnest of the ${rows.length} countries held: ${thinnest.join(', ')}. A report naming a `
+    + 'place outside what is held there is kept and is not drawn.';
+}

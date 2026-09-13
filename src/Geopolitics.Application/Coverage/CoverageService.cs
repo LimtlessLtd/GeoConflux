@@ -48,6 +48,52 @@ public sealed class CoverageService(
         + "not split by theatre because an observation without a coordinate cannot be attributed to "
         + "one; some of them belong to the three above.";
 
+    /// <summary>
+    /// Below this, a country's coverage is thin enough that the reader should be told the number
+    /// rather than left to infer it. Twenty places is a handful of provinces and no towns.
+    /// </summary>
+    private const int ThinCoverage = 20;
+
+    /// <summary>
+    /// What a per-country ceiling means, said once beside the table.
+    /// <para>
+    /// The figure is easy to misread as a measure of a country rather than of this system. It is the
+    /// second: a country held by forty names is not a country with forty places in it, it is a
+    /// country where this system can recognise forty names and will fail to place a report naming any
+    /// of the others.
+    /// </para>
+    /// </summary>
+    private static string LexiconNoteFor(int countries, int thin) =>
+        $"The lexicon holds places in {countries} countries, and {thin} of them are held by fewer than "
+        + $"{ThinCoverage} names each. This is a limit on this system, not a fact about those "
+        + "countries: a report naming a place the lexicon does not hold is kept and is not drawn. The "
+        + "global layer is administrative units and the towns that are their seats, so a report naming "
+        + "a village will be among them until that country is given a deeper layer.";
+
+    /// <summary>
+    /// The ceiling per country, ordered so the two ways it matters both surface: countries this
+    /// system has actually drawn something in come first, then the thinnest of the rest.
+    /// </summary>
+    private IReadOnlyList<CountryCeiling> Ceilings(IReadOnlyList<CategoryCount> byRegion)
+    {
+        var placed = byRegion.ToDictionary(
+            region => region.Category,
+            region => region.Count,
+            StringComparer.OrdinalIgnoreCase);
+
+        return
+        [
+            .. lexicon.PlacesByCountry
+                .Select(entry => new CountryCeiling(
+                    entry.Key,
+                    entry.Value,
+                    placed.GetValueOrDefault(entry.Key)))
+                .OrderByDescending(ceiling => ceiling.Placed)
+                .ThenBy(ceiling => ceiling.Places)
+                .ThenBy(ceiling => ceiling.Country, StringComparer.Ordinal),
+        ];
+    }
+
     public async Task<CoverageReport> BuildAsync(CancellationToken cancellationToken)
     {
         var theatres = new List<TheatreCoverage>(Theatres.All.Count);
@@ -76,6 +122,10 @@ public sealed class CoverageService(
             breadth.ByLanguage,
             breadth.ByTier,
             breadth.ByPlatform,
+            Ceilings(breadth.ByRegion),
+            LexiconNoteFor(
+                lexicon.PlacesByCountry.Count,
+                lexicon.PlacesByCountry.Count(entry => entry.Value < ThinCoverage)),
             collection.ReadOutcomes(),
             BreadthNote);
     }

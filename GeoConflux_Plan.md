@@ -2555,7 +2555,10 @@ cropland mask, which cannot be sourced from inside this repository.
 
 **Sprint 11** (the comprehensive layer) is complete. It is the first sprint from
 [the global coverage assessment](docs/global-coverage-plan.md), which extends this plan with Sprints
-10 to 15. Sprint 10 — global placement — is the larger piece of work and is not begun.
+10 to 15.
+
+**Sprint 10** (global placement) is complete, and it was the prerequisite the assessment said
+everything else was downstream of. The lexicon now spans **246 countries** rather than three.
 
 All twenty entries in Section 42's final success criteria are met. The two that were outstanding —
 user-generated claims distinguished from published reporting and unable to form an incident
@@ -2650,6 +2653,63 @@ The credentials themselves cannot be obtained from inside this repository. Until
 them, the adapters stay dormant exactly as before and the published page is unchanged — which is the
 point of the pattern, not a caveat on it.
 
+Sprint 10 progress:
+
+Global placement, and the sprint the assessment called "the prerequisite for everything else": an
+event this system cannot **place** is an event it cannot draw, whatever coded it.
+
+1. **ADR 026 revisited and reversed on its source.** Done. The global layer comes from GeoNames under
+   CC BY 4.0, with `NOTICE` at the repository root and a credit on the page discharging the
+   attribution. The obligation had been avoided as a tidiness preference; what actually decided it is
+   that Wikidata does not scale — Sprint 9 hit WDQS timeouts extracting *one country* and had to be
+   restructured into a two-phase query to finish at all. The theatre extract stays on Wikidata,
+   because re-sourcing something that works buys consistency nothing depends on.
+   [ADR 032](docs/adr/032-global-gazetteer-sourcing.md).
+2. **The artefact strategy, decided before the data was written.** Done, and the plan's own framing
+   turned out to be the thing to correct. §2.2 offered compression, download-at-first-run, or
+   tiering, and treated size and reviewability as opposed. Measured, most of the size was the
+   encoding: the same 78,547 places are 19.2 MB as indented JSON and **6.1 MB as one line per
+   place**, which is both smaller and more reviewable, since a changed place is one changed line
+   rather than twelve. [ADR 033](docs/adr/033-tiered-gazetteer-artefact.md).
+3. **The linear scan replaced by an automaton.** Done. `FindFirstMention` used to search the text
+   once per spelling; it is now a single Aho-Corasick pass. ADR 026 had measured the old scan at
+   0.732 ms and named the condition that would end it — "a lexicon ten times this size would cost
+   five milliseconds per observation". The scan now costs **0.024 ms**, thirty times faster against a
+   thirtyfold larger lexicon, and `GazetteerScaleTests` pins the property rather than the number:
+   scanning against 200,000 spellings costs 0.98× what scanning against 200 costs.
+4. **Resolution is context-scoped.** Done. A name denoting several places is no longer dropped; it is
+   held and settled by what the report says about itself — the country its provider stated, then the
+   other places it names. 8,673 names are contested. Context narrows; it never invents, moves, or
+   overrules a name that was not in doubt, which is the same boundary
+   [ADR 005](docs/adr/005-location-resolution.md) draws around a model naming a place.
+5. **The lexicon ceiling is reported per country.** Done. The Coverage tab states what the lexicon
+   holds per country beside what was drawn there, and names the thinnest. 52 of 246 countries are
+   held by fewer than twenty names each, which is a limit on this system rather than a fact about
+   those countries.
+
+The precision effect was measured rather than asserted, and measuring it is what found the two real
+defects in the sprint. The evaluation harness's location metric ends at **1.00 / 0.92 / 0.96**,
+identical to before the global layer existed.
+
+Both defects were the same shape and neither was theoretical. A global extract contains a great many
+places whose names are ordinary words, and hunting for them in prose finds the words. `Of` is a
+district of Trabzon with 31,951 inhabitants; it broke seven tests by outranking every real place name
+in the sentences containing it. `شحن` is a district of Al Mahrah and also the Arabic for *cargo*, and
+it captured a fixture about a cargo ship. Scanning this repository's own corpora showed 38 such names
+firing — *Along*, *Maritime*, *Centre*, *Police*, *Exchange*, *Village*, and a run of American
+counties. The rule that resolves it is the two-entry-point distinction ADR 026 already drew, applied
+at the tier boundary: **only a layer somebody chose is hunted for in prose**, while every layer
+resolves any name it is given.
+
+The third defect was in the merge rather than the scan. Letting the tasked layer hold a name outright
+meant a Ukrainian village of 9,917 held "New York" and a hamlet of 1,042 held "Victoria" — a marker
+in the wrong country at full confidence, which ADR 026 is explicit is worse than no marker. The deep
+layer now wins inside its own country and is compared with the world outside it.
+
+**Known limitation, stated rather than buried:** an English-language wire report naming only a
+district in a country with no theatre layer is stored, classified and left unplaced. Placing it would
+mean guessing.
+
 ## Where this runs
 
 Two deployments, and they are not the same thing.
@@ -2675,14 +2735,10 @@ world while switched off. Those are Sprints 17 and 18.
 
 ## What is left
 
-Nothing in the original plan. Sprints 10 and 12 to 19 of
+Nothing in the original plan. Sprints 12 to 19 of
 [the global coverage assessment](docs/global-coverage-plan.md) are outstanding, none begun. That
 document holds the definitions and the recommended order; the shape of it is:
 
-- **Sprint 10 — global placement.** Still the prerequisite for anything local. An event this system
-  cannot **place** is an event it cannot draw, whatever coded it, and the gazetteer holds 2,750
-  places across three theatres. Sprint 11 sharpened that argument rather than answering it: the last
-  published run placed observations into twenty-seven distinct regions.
 - **Sprint 16 — conflicts as first-class objects.** Conflicts discovered from UCDP and ACLED coding
   rather than hand-authored, membership as a predicate over actors as well as geography, AI assigning
   into that register but never defining it, tempo reported against a coverage denominator, and

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   breadthSections,
+  ceilingRows,
   coverageSummary,
   gapNotes,
   hasCoverage,
@@ -12,6 +13,7 @@ import {
   precisionLabel,
   sourceOutcomes,
   sourceSummary,
+  thinnestCoverage,
 } from '../../src/Geopolitics.Api/wwwroot/lib/coverage.js';
 
 /**
@@ -262,4 +264,75 @@ test('with no theatres declared the note still separates the two cases', () => {
 
   assert.match(note, /0 countries appear here/);
   assert.match(note, /was not looked at/);
+});
+
+/**
+ * The per-country ceiling. Sprint 10 made the lexicon global, and the honest consequence is that
+ * coverage is now wildly uneven between countries rather than between three theatres. These assert
+ * that the unevenness is stated, because a thin country and a quiet country draw the same empty map.
+ */
+
+const ceilingReport = (rows) => ({ lexiconByCountry: rows });
+
+test('a country with records drawn reports both what was drawn and what could have been', () => {
+  const [row] = ceilingRows(ceilingReport([{ country: 'UA', places: 2519, placed: 14 }]));
+
+  assert.equal(row.country, 'UA');
+  assert.match(row.text, /14 records drawn/);
+  assert.match(row.text, /2,519 place names held/);
+});
+
+test('a country with nothing drawn still states its ceiling', () => {
+  const [row] = ceilingRows(ceilingReport([{ country: 'MM', places: 105, placed: 0 }]));
+
+  // The point of the panel: 105 is a limit whether or not anything arrived to hit it.
+  assert.match(row.text, /105 place names held, nothing drawn/);
+});
+
+test('the ceiling table is capped so it stays readable', () => {
+  const many = Array.from({ length: 40 }, (unused, index) => ({
+    country: `C${index}`,
+    places: index,
+    placed: 0,
+  }));
+
+  assert.equal(ceilingRows(ceilingReport(many)).length, 12);
+  assert.equal(ceilingRows(ceilingReport(many), 3).length, 3);
+});
+
+test('the ceiling table keeps the order the report chose', () => {
+  const rows = ceilingRows(ceilingReport([
+    { country: 'UA', places: 2519, placed: 14 },
+    { country: 'SS', places: 48, placed: 0 },
+  ]));
+
+  assert.deepEqual(rows.map((row) => row.country), ['UA', 'SS']);
+});
+
+test('missing counts read as zero rather than as NaN', () => {
+  const [row] = ceilingRows(ceilingReport([{ country: 'XX' }]));
+
+  assert.equal(row.places, 0);
+  assert.equal(row.placed, 0);
+  assert.match(row.text, /0 place names held, nothing drawn/);
+});
+
+test('the thinnest countries are named rather than counted', () => {
+  const note = thinnestCoverage(ceilingReport([
+    { country: 'UA', places: 2519, placed: 14 },
+    { country: 'SS', places: 48, placed: 0 },
+    { country: 'MM', places: 105, placed: 0 },
+    { country: 'ET', places: 312, placed: 2 },
+  ]), 2);
+
+  // Naming them is the feature. "Some countries are thin" is not a limit anybody can weigh.
+  assert.match(note, /SS \(48\)/);
+  assert.match(note, /MM \(105\)/);
+  assert.match(note, /4 countries held/);
+});
+
+test('a report with no ceilings says nothing rather than claiming empty coverage', () => {
+  assert.equal(thinnestCoverage({}), null);
+  assert.equal(thinnestCoverage(ceilingReport([])), null);
+  assert.deepEqual(ceilingRows({}), []);
 });

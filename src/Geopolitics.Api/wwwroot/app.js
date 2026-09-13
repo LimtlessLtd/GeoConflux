@@ -39,8 +39,9 @@ import { canHideDemoNotice, provenanceChip, provenanceSummary } from './lib/prov
 import { selectVisibleIncidents } from './lib/incidents.js';
 import { resolveDataSource as resolveSourceOrder } from './lib/datasource.js';
 import {
-  breadthSections, coverageSummary, gapNotes, hasCoverage, lexiconNote, orderByPrecision,
+  breadthSections, ceilingRows, coverageSummary, gapNotes, hasCoverage, lexiconNote, orderByPrecision,
   precisionLabel, sourceOutcomes, sourceSummary,
+  thinnestCoverage,
 } from './lib/coverage.js';
 import {
   attributionLine, claimChip, claimSummary, heldClaimNote, isHeldClaim,
@@ -168,6 +169,7 @@ import {
     coverageList: document.querySelector('#coverageList'),
     coverageGaps: document.querySelector('#coverageGaps'),
     coverageBreadth: document.querySelector('#coverageBreadth'),
+    coverageCeiling: document.querySelector('#coverageCeiling'),
     coverageSources: document.querySelector('#coverageSources'),
     chokepointCount: document.querySelector('#chokepointCount'),
     chokepointMethod: document.querySelector('#chokepointMethod'),
@@ -1042,6 +1044,7 @@ import {
     });
 
     renderBreadth(report);
+    renderCeiling(report);
     renderCoverageSources(report);
   }
 
@@ -1101,6 +1104,68 @@ import {
 
       dom.coverageBreadth.append(card);
     });
+  }
+
+  /**
+   * How many place names the lexicon holds per country, beside what was drawn there.
+   *
+   * The figure that explains an empty region better than the map does. Sprint 10 made the lexicon
+   * global, and the honest consequence is that coverage is now uneven between 246 countries rather
+   * than between three theatres — thousands of names for some and a few dozen for others. A reader
+   * looking at a blank Myanmar is entitled to know whether that is quiet or unreadable.
+   *
+   * The wording is decided in lib/coverage.js and asserted there; this only builds elements.
+   */
+  function renderCeiling(report) {
+    dom.coverageCeiling.replaceChildren();
+
+    const rows = ceilingRows(report);
+
+    if (rows.length === 0) {
+      return;
+    }
+
+    const card = document.createElement('article');
+    card.className = 'coverage-breadth-card';
+
+    const heading = document.createElement('h4');
+    heading.textContent = 'What the lexicon can place, by country';
+    card.append(heading);
+
+    const note = document.createElement('p');
+    note.className = 'coverage-caveat';
+    note.textContent = report?.lexiconNote ?? '';
+    card.append(note);
+
+    const list = document.createElement('ul');
+    list.className = 'coverage-breadth-rows';
+
+    rows.forEach((row) => {
+      const entry = document.createElement('li');
+
+      const label = document.createElement('span');
+      label.textContent = row.country;
+
+      const detail = document.createElement('span');
+      detail.className = 'coverage-breadth-count';
+      detail.textContent = row.text;
+
+      entry.append(label, detail);
+      list.append(entry);
+    });
+
+    card.append(list);
+
+    const thinnest = thinnestCoverage(report);
+
+    if (thinnest) {
+      const footnote = document.createElement('p');
+      footnote.className = 'coverage-caveat';
+      footnote.textContent = thinnest;
+      card.append(footnote);
+    }
+
+    dom.coverageCeiling.append(card);
   }
 
   /**

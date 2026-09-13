@@ -615,17 +615,34 @@ four, plus the countries absent from the table entirely, which were not looked a
 
 ### Place names
 
-The gazetteer has two layers. A small curated core — chokepoints, seas, country centroids, and the
-alias judgements that make ordinary reporting language resolve — is hand-written in `Gazetteer.cs`.
-Beside it sit 2,750 places for Ukraine, Yemen and Tigray with 9,179 alternate spellings, extracted
-once from Wikidata (CC0) and committed as an embedded resource.
+The gazetteer has three layers, and the code says which is which because they have different
+provenance and different rules.
+
+| Layer | What it holds | Source | Size |
+| --- | --- | --- | --- |
+| Curated core | Chokepoints, seas, country centroids, and the alias judgements that make ordinary reporting language resolve | Hand-written in `Gazetteer.cs` | ~250 entries |
+| Global coarse | Every first- and second-order administrative unit on earth, and the town that is the seat of each | GeoNames, CC BY 4.0 | 78,547 places in 246 countries, 193,445 spellings |
+| Theatre deep | Settlements below district level, for theatres under active tasking | Wikidata, CC0 | 2,750 places, 9,179 spellings |
 
 Coordinates are sourced rather than typed. That is the point of the arrangement: a latitude written
 from recollection is indistinguishable in the file from a correct one, which is the same failure
 [ADR 005](docs/adr/005-location-resolution.md) refuses when a model proposes a coordinate.
 
-To refresh the extract, run `python tools/gazetteer/extract.py`. The build never fetches it.
-[ADR 026](docs/adr/026-gazetteer-sourcing.md) has the licence comparison and the collision rules.
+A place is held under the names its own country uses for it plus the ones the wire uses, because a
+conflict is reported in the language it happens in. Finding a name in prose uses an Aho-Corasick
+automaton rather than a scan per spelling: one pass over the text, 0.024 ms, and a cost that does not
+grow with the lexicon.
+
+The coarse layer answers when something *names* a place — a coded dataset, an enrichment provider, a
+submission. It is deliberately not hunted for in running prose, because holding every administrative
+unit on earth means holding thousands named after ordinary words, and *Along*, *Maritime*, *Centre*,
+*Police* and *Exchange* are all real places.
+[ADR 033](docs/adr/033-tiered-gazetteer-artefact.md) has the measurement.
+
+To refresh the extracts, run `python tools/gazetteer/global.py` and `python tools/gazetteer/extract.py`.
+The build never fetches either. [ADR 032](docs/adr/032-global-gazetteer-sourcing.md) has the licence
+comparison, [ADR 026](docs/adr/026-gazetteer-sourcing.md) the collision rules, and `NOTICE` the
+attribution GeoNames requires.
 | `Providers:*:PollInterval` | 15 min / 1 h / 6 h | Per-provider polling cadence |
 | `Providers:*:MaxItemsPerPoll` | 25 / 50 / 50 | Ceiling on envelopes emitted from one poll |
 | `Replay:Enabled` | true | Whether the recorded demo stream runs |
@@ -730,10 +747,12 @@ Five limitations worth stating plainly:
   you see there did come from live providers. Anything still untested is described as untested rather
   than as working.
 - **Coverage is global in capability, not yet in fact.** The two datasets that would make it global
-  are built and dormant, waiting on credentials nobody has requested. Even with them, an event that
-  cannot be **placed** cannot be drawn, and the gazetteer holds 2,750 places across three theatres.
-  See [the global coverage assessment](docs/global-coverage-plan.md) for what that actually takes and
-  in what order.
+  are built and dormant, waiting on credentials nobody has requested. Placement is no longer the
+  blocker it was — the lexicon spans 246 countries — but it is coarse outside the three deep
+  theatres: districts and district towns, not villages, and the Coverage tab states the ceiling per
+  country. Fifty-two countries are held by fewer than twenty names each. See
+  [the global coverage assessment](docs/global-coverage-plan.md) for what remains and in what
+  order.
 - **Correlation cannot corroborate across categories.** Candidates are pre-filtered by event type,
   so a satellite thermal detection is never linked to a piracy report however close it is. That is a
   deliberate trade, and it means cross-source corroboration works between sources that agree on a

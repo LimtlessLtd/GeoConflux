@@ -19,6 +19,14 @@ public sealed record TheatreCoverage(
     int GazetteerPlaces,
     string Caveat);
 
+/// <param name="Country">ISO 3166-1 alpha-2 code.</param>
+/// <param name="Places">
+/// How many place names the lexicon holds there. The ceiling on what any text report from that
+/// country can ever place, and the number that explains an empty region better than the map does.
+/// </param>
+/// <param name="Placed">Observations actually drawn there.</param>
+public sealed record CountryCeiling(string Country, int Places, int Placed);
+
 /// <param name="Theatres">One entry per theatre, in the order they are defined.</param>
 /// <param name="UnplacedCount">Observations that named a place the gazetteer could not resolve.</param>
 /// <param name="UnplacedNote">Why that number is not broken down by theatre.</param>
@@ -30,6 +38,11 @@ public sealed record TheatreCoverage(
 /// <param name="ByLanguage">Observations per language tag, including an explicit unknown.</param>
 /// <param name="ByTier">Published reporting against user-generated claims.</param>
 /// <param name="ByPlatform">Claims per open platform.</param>
+/// <param name="LexiconByCountry">
+/// What the lexicon holds per country, beside what was drawn there. Countries that produced
+/// observations come first, then the rest thinnest first, because the thinnest is the largest limit.
+/// </param>
+/// <param name="LexiconNote">What the ceiling figures do and do not mean.</param>
 /// <param name="Sources">
 /// What each source the last collection runs asked actually gave. The entries that gave nothing are
 /// the point: a source that refused, a source that publishes nothing, and a source read that had
@@ -46,5 +59,7 @@ public sealed record CoverageReport(
     IReadOnlyList<CategoryCount> ByLanguage,
     IReadOnlyList<CategoryCount> ByTier,
     IReadOnlyList<CategoryCount> ByPlatform,
+    IReadOnlyList<CountryCeiling> LexiconByCountry,
+    string LexiconNote,
     IReadOnlyList<SourceOutcome> Sources,
     string BreadthNote);

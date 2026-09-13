@@ -258,6 +258,17 @@ public sealed class CoverageReportingTests
 
         public IReadOnlyDictionary<string, int> PlacesByTheatre => Places;
 
+        public Dictionary<string, int> Countries { get; init; } = new(StringComparer.Ordinal)
+        {
+            ["UA"] = 2519,
+            ["YE"] = 1129,
+            ["ET"] = 312,
+            ["MM"] = 105,
+            ["SS"] = 48,
+        };
+
+        public IReadOnlyDictionary<string, int> PlacesByCountry => Countries;
+
         public int Ambiguous { get; init; }
 
         public int AmbiguousNameCount => Ambiguous;

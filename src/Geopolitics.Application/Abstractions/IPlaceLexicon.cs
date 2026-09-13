@@ -19,6 +19,18 @@ public interface IPlaceLexicon
     IReadOnlyDictionary<string, int> PlacesByTheatre { get; }
 
     /// <summary>
+    /// How many places are held per ISO country code, across every layer of the lexicon.
+    /// <para>
+    /// The per-theatre figure above answers "how well can this system see the places it was pointed
+    /// at". This answers the harder question the global layer raises: how well can it see anywhere
+    /// else. The numbers are wildly uneven — thousands for some countries and a few dozen for others
+    /// — and that unevenness is the single most useful thing a reader can know about an empty region
+    /// of the map.
+    /// </para>
+    /// </summary>
+    IReadOnlyDictionary<string, int> PlacesByCountry { get; }
+
+    /// <summary>
     /// Names dropped because they denote more than one place. A countable, honest limit: every one
     /// of these is a name a report could use and this system would fail to place.
     /// </summary>

@@ -15,5 +15,23 @@ public sealed class GazetteerPlaceLexicon : IPlaceLexicon
 {
     public IReadOnlyDictionary<string, int> PlacesByTheatre => TheatrePlaces.CountsByTheatre;
 
+    /// <summary>
+    /// Both sourced layers added together, because the ceiling for a country is everything the
+    /// lexicon holds there and a reader has no reason to care which extract supplied it.
+    /// </summary>
+    public IReadOnlyDictionary<string, int> PlacesByCountry { get; } = Combine();
+
     public int AmbiguousNameCount => Gazetteer.AmbiguousSourcedNames;
+
+    private static Dictionary<string, int> Combine()
+    {
+        var counts = new Dictionary<string, int>(GlobalPlaces.CountsByCountry, StringComparer.Ordinal);
+
+        foreach (var (country, places) in TheatrePlaces.CountsByCountry)
+        {
+            counts[country] = counts.GetValueOrDefault(country) + places;
+        }
+
+        return counts;
+    }
 }

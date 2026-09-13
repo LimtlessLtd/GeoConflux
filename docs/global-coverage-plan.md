@@ -158,9 +158,21 @@ continuously as a live system rather than rebuild as a snapshot, and what of an 
 honestly within reach. They are kept here because they are the same series, and because the ordering
 in section 5 has to cover all of them at once.
 
-### Sprint 10 — Global placement
+### Sprint 10 — Global placement *(complete, 2026-09-13)*
 
-The prerequisite for everything else.
+The prerequisite for everything else. Delivered as described. Two things the sprint turned up that
+the plan above did not anticipate:
+
+- **The artefact trade was mostly an encoding artefact.** §2.2 framed the choice as size against
+  reviewability. The same 78,547 places are 19.2 MB as indented JSON and 6.1 MB as one line per
+  place — smaller *and* more reviewable, since a changed place becomes one changed line rather than
+  twelve. Compression was not needed and would have cost the diff.
+- **The coarse layer cannot be hunted for in running prose.** Holding every administrative unit on
+  earth means holding thousands named after ordinary words. Measured against this repository's own
+  corpora, 38 coarse names fired on English text — *Along* (Arunachal Pradesh), *Maritime* (Togo),
+  *Centre* (Cameroon), *Police*, *Exchange*, *Village*, and a run of American counties. It resolves
+  names it is given and does not guess them out of text.
+  [ADR 033](adr/033-tiered-gazetteer-artefact.md) records both.
 
 - Revisit ADR 026 and record the outcome: GeoNames under CC BY with a `NOTICE`, or a scaled
   Wikidata extraction, with the evidence for whichever is chosen.

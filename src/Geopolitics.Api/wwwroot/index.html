@@ -157,6 +157,7 @@
         <div id="coverageList" class="coverage-list"></div>
         <div id="coverageGaps" class="coverage-gaps"></div>
         <div id="coverageBreadth" class="coverage-breadth"></div>
+        <div id="coverageCeiling" class="coverage-breadth"></div>
         <div id="coverageSources" class="coverage-sources"></div>
       </div>
 
@@ -318,6 +319,24 @@
           Clicking an incident frames it regionally rather than zooming to street level. Most
           incidents sit at a gazetteer centroid for a named area, so a closer camera would imply a
           precision the data does not have. Zoom in yourself if you want it.
+        </p>
+
+        <h3>Place names</h3>
+        <p>
+          Nothing here writes a coordinate. A report is drawn exactly as precisely as the place
+          lexicon can place it, and that lexicon is extracted from published databases rather than
+          typed from anybody's recollection — which is the only reason its coordinates can be
+          trusted.
+        </p>
+        <p>
+          Administrative units worldwide and the towns that are their seats come from
+          <a href="https://www.geonames.org" rel="noopener">GeoNames</a>, used under
+          <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a> and
+          filtered to the languages that actually report conflict. Settlement-level names inside the
+          theatres under active tasking come from
+          <a href="https://www.wikidata.org" rel="noopener">Wikidata</a>, which is CC0. The
+          <strong>Coverage</strong> tab states how many names the lexicon holds per country, because
+          that figure is the ceiling on what any text report from there can ever place.
         </p>
 
         <h3 id="aboutModeHeading">Data</h3>
