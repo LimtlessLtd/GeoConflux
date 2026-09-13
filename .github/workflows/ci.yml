@@ -72,5 +72,17 @@ jobs:
             }
           done < <(grep -E '^\| (Structured output success rate|Language accuracy|Location name|Entities) ' README.md)
 
+      # The collection tooling is Python and is in neither suite, like the gazetteer extractor before
+      # it. What it decides, though, is the access policy — whether a path is allowed, whether a
+      # status is a refusal, how long to wait — and those are exactly the rules that get stated in a
+      # document, believed, and are quietly untrue a year later. Both self-tests run offline.
+      # See docs/adr/030-collection-access-policy.md.
+      - name: Test the collection tooling
+        run: |
+          set -euo pipefail
+          python3 --version
+          python3 tools/collect/access.py --self-test
+          python3 tools/collect/collect.py --self-test
+
       - run: dotnet format GeopoliticsDashboard.sln --verify-no-changes --no-restore
       - run: docker build -t geopolitics-dashboard .
