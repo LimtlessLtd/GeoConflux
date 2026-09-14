@@ -25,6 +25,16 @@ if (args.Contains("--health-probe", StringComparer.Ordinal))
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Lets this host be started by the Windows service control manager, which is what makes it survive a
+// reboot without anybody logging in. It does three things and the third is the one that bites: it
+// reports the service as started rather than letting Windows time out at error 1053, it routes
+// lifetime events to stop and shutdown, and it sets the content root to the binary's directory —
+// because a service starts in C:\Windows\System32, and without that a relative path resolves there.
+//
+// A no-op on any other platform and when started from a terminal, so the same build serves a
+// container, a developer, and a service. See docs/operations/running-continuously.md.
+builder.Host.UseWindowsService(options => options.ServiceName = "GeoConflux");
+
 // Two orders of magnitude below the 30 MB default and far above any legitimate submission. The
 // observation content cap is enforced during validation, but that runs after the body has been read,
 // so this is what stops an oversized payload from being parsed before it is refused. It is set on the

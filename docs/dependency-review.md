@@ -132,3 +132,24 @@ dotnet list GeopoliticsDashboard.sln package --outdated
 
 The first of these is the one that should be run routinely. The other two produce advice; that one
 produces facts.
+
+## Added since this review
+
+*One entry, and this section exists so a package can be added without either rewriting a dated review
+or slipping in unrecorded.*
+
+| Package | Version | Project | Date | Why |
+| --- | --- | --- | --- | --- |
+| `Microsoft.Extensions.Hosting.WindowsServices` | 10.0.12 | `Geopolitics.Api` | 2026-09-14 | Lets the API host run under the Windows service control manager, which is how the live deployment survives a reboot |
+
+It is a Microsoft package, which keeps the property this review recorded: every direct reference here
+comes from Microsoft, the .NET Foundation, the OpenTelemetry project, or `coverlet`. It reports no
+advisory.
+
+The alternative considered was no package at all — a scheduled task running the executable. That was
+rejected on behaviour rather than on dependency count: a task at logon does not run until somebody
+signs in, and a process started outside the service control manager cannot answer it, so Windows
+fails the start at error 1053 and the content root is left pointing at `C:\Windows\System32`. The
+reasoning is in [running-continuously.md](operations/running-continuously.md).
+
+`--vulnerable --include-transitive` reports no advisory against any project as of 2026-09-14.

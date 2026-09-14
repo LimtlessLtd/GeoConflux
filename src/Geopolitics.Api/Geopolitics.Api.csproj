@@ -14,6 +14,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
+
+    <!-- Lets this host run under the Windows service control manager, which is how it survives a
+         reboot. On any other platform the call it enables is a no-op, so this costs a Linux
+         container nothing but the reference. See docs/operations/running-continuously.md. -->
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.12" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>

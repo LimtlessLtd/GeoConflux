@@ -221,3 +221,81 @@ The detection runs in `StartAsync` rather than in a background loop, and it is r
 ingestion pump. A background service returns to the host at its first await, so the pump would start
 and poll while the ledger was still reading — and the first poll overwrites the very timestamp the
 gap is measured from.
+
+## Surviving a reboot
+
+`dotnet run` in a terminal dies with the terminal, and a machine that reboots overnight comes back
+collecting nothing. The plan offered two ways out — a Windows service or a scheduled task at logon —
+and the decision is **a Windows service**.
+
+**A scheduled task at logon fails the requirement it was proposed for.** It does not run until
+somebody signs in, so a server that rebooted at 03:00 and is not logged into is a server that is not
+collecting, indefinitely, with nothing to show it. (A task triggered *at startup* rather than at logon
+does survive a reboot, and it is a reasonable fallback — but it gains nothing over a service and
+loses the service control interface.)
+
+**What the service buys, beyond starting at boot:**
+
+- Windows can restart it after a failure. Configured here as three attempts a minute apart, with the
+  counter resetting daily. A host that crashes repeatedly should keep trying: the alternative is a
+  machine that looks fine and is collecting nothing, which is the failure this whole area exists to
+  make visible.
+- Shutdown is a lifetime event rather than a kill, so the ingestion queue drains and the processor
+  finishes what it had.
+- `UseWindowsService()` sets the content root to the binary's directory. Without it a service starts
+  in `C:\Windows\System32` and a relative database path resolves there — see *Where the database
+  lives* above. It also reports the service as started, which is what stops Windows failing the start
+  with error 1053 after thirty seconds.
+
+The call is a no-op on any other platform and when the host is started from a terminal, so one build
+serves a container, a developer and a service.
+
+### Installing it
+
+```powershell
+# from an elevated PowerShell, in a clone of the repository
+.\tools\service\install.ps1 -Path 'C:\GeoConflux'
+```
+
+It publishes, registers, configures restart-on-failure, and starts. Re-running it against an existing
+service republishes and restarts — that is the upgrade path, and it never touches the database: the
+service is stopped, the files are replaced, and it is started again against whatever was there.
+
+`-Path` must be outside the repository. The database lives beside the binaries, and a publish
+directory under source control does not survive a `git clean`. The script refuses rather than warns.
+
+`.\tools\service\install.ps1 -Uninstall` stops and removes the service, leaving the published files
+and the database alone.
+
+### Credentials for a service
+
+The service account has its own profile, so `dotnet user-secrets` — which writes into the profile of
+whoever typed it — is not readable from there. Configuration for a service goes in its environment
+block:
+
+```powershell
+$key = 'HKLM:\SYSTEM\CurrentControlSet\Services\GeoConflux'
+$existing = (Get-ItemProperty $key -Name Environment).Environment
+Set-ItemProperty $key -Name Environment -Type MultiString -Value ($existing + @(
+  'Providers__Acled__Username=<email>',
+  'Providers__Acled__Password=<password>',
+  'Providers__Ucdp__AccessToken=<token>'
+))
+Restart-Service GeoConflux
+```
+
+The install script sets `ASPNETCORE_ENVIRONMENT` and `ASPNETCORE_URLS` and preserves everything else
+in that block, so re-running it does not remove credentials added this way. It never writes one.
+
+### Confirming it came back
+
+After a reboot:
+
+```powershell
+Get-Service GeoConflux
+Invoke-RestMethod http://localhost:5266/health/live
+Invoke-RestMethod http://localhost:5266/api/operations | ConvertTo-Json -Depth 5
+```
+
+The third is the interesting one. If the machine was off for a fortnight, the downtime ledger will
+have recorded the gap at startup and the operations report will name it.
