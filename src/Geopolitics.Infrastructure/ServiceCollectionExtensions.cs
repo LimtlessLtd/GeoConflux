@@ -46,10 +46,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAiInferenceRepository, EfAiInferenceRepository>();
         services.AddScoped<IAnalyticsRepository, EfAnalyticsRepository>();
         services.AddScoped<ICoverageRepository, EfCoverageRepository>();
+        services.AddScoped<IConflictActivityRepository, EfConflictActivityRepository>();
         services.AddScoped<IIncidentQueryService, IncidentQueryService>();
         services.AddScoped<ISpatialQueryService, SpatialQueryService>();
         services.AddScoped<IAnalyticsService, AnalyticsService>();
         services.AddScoped<ICoverageService, CoverageService>();
+        services.AddScoped<IConflictActivityService, ConflictActivityService>();
 
         // Singleton because it reports on tables built once at startup and holds no per-request
         // state. It is the one component that answers "how much could this system place at all",
@@ -74,6 +76,8 @@ public static class ServiceCollectionExtensions
         // the enrichment service rather than inside it: the question depends on where the report was
         // placed, and placement depends on what enrichment already answered.
         services.AddScoped<IConflictClassifier, ChatClientConflictClassifier>();
+        services.AddScoped<IConflictNarrator, ChatClientConflictNarrator>();
+        services.AddScoped<IConflictNarrativeService, ConflictNarrativeService>();
         services.AddScoped<IObservationQueryService, ObservationQueryService>();
         services.AddScoped<DemoDataSeeder>();
         services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();

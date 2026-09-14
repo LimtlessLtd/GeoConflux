@@ -46,7 +46,9 @@ public sealed class DeterministicMockChatClient(IEventClassifier classifier) : I
         cancellationToken.ThrowIfCancellationRequested();
 
         var report = ExtractReport(messages);
-        var json = IsConflictAssignment(messages) ? DeclineToAssign() : BuildPayload(report);
+        var json = IsConflictAssignment(messages) ? DeclineToAssign()
+            : IsConflictNarrative(messages) ? DeclineToNarrate()
+            : BuildPayload(report);
 
         return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, json))
         {
@@ -114,6 +116,29 @@ public sealed class DeterministicMockChatClient(IEventClassifier classifier) : I
         conflictKey = ConflictChoiceContract.None,
         confidence = 0.0,
         rationale = "The offline stand-in cannot read a report well enough to choose between conflicts.",
+    });
+
+    /// <summary>Whether this is the per-conflict summary question.</summary>
+    private static bool IsConflictNarrative(IEnumerable<ChatMessage> messages) =>
+        messages.Any(message =>
+            message.Role == ChatRole.System
+            && message.Text?.Contains("summarise what a set of reports", StringComparison.OrdinalIgnoreCase) == true);
+
+    /// <summary>
+    /// A stand-in that cannot read must not write the paragraph.
+    /// <para>
+    /// Everything else this client produces is a fact it can establish — the script of the text, the
+    /// category the keyword classifier assigns, the place the gazetteer recognises — and is labelled
+    /// mock so nothing mistakes it for a model. A narrative has no such floor: any sentence it
+    /// assembled would be prose about a war, and prose about a war reads as analysis whatever label
+    /// sits beside it. So it answers at zero confidence and the service declines on its behalf.
+    /// </para>
+    /// </summary>
+    private static string DeclineToNarrate() => JsonSerializer.Serialize(new
+    {
+        schemaVersion = ConflictNarrativeContract.SchemaVersion,
+        summary = "The offline stand-in does not write summaries of conflicts.",
+        confidence = 0.0,
     });
 
     /// <summary>
