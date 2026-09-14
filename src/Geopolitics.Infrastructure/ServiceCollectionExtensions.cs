@@ -155,6 +155,11 @@ public static class ServiceCollectionExtensions
         // configuration turns it on, so this call adds capability without adding any network traffic.
         services.AddOsintProviders();
 
+        // First, so the lexicon is built before anything can ask it a question. Hosted services start
+        // in registration order, and leaving this to the first observation put a second and a half
+        // inside a request rather than inside startup.
+        services.AddHostedService<LexiconWarmUpService>();
+
         services.AddHostedService<EventSourcePumpService>();
         services.AddHostedService<ObservationProcessorService>();
 

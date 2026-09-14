@@ -1125,6 +1125,11 @@ public static class Gazetteer
     /// </summary>
     private static List<Candidate> Deciding(List<Candidate> candidates)
     {
+        if (candidates.Count == 1)
+        {
+            return candidates;
+        }
+
         var country = candidates[0].Entry.CountryCode;
 
         foreach (var candidate in candidates)
@@ -1284,6 +1289,14 @@ public static class Gazetteer
     /// </summary>
     private static Candidate? Disambiguate(List<Candidate> candidates)
     {
+        // The overwhelming majority of names denote one place, and the grouping below allocates
+        // several collections to discover that. Saying so first is worth about a second of startup
+        // across a lexicon of this size.
+        if (candidates.Count == 1)
+        {
+            return candidates[0];
+        }
+
         var groups = Collapse(candidates);
 
         if (groups.Count == 1)
@@ -1373,13 +1386,25 @@ public static class Gazetteer
         {
             // Smallest rank is the containing unit. Where several records sit at that rank — two
             // duplicate rows of one town — the larger is kept, which is the same tie-break the
-            // duplicate rule would have applied.
-            var representative = group
-                .OrderBy(candidate => candidate.Rank)
-                .ThenByDescending(candidate => candidate.Population)
-                .First();
+            // duplicate rule would have applied. Written as a loop rather than as a sort because this
+            // runs once per name in the lexicon.
+            var representative = group[0];
+            var population = group[0].Population;
 
-            groups.Add(new PlaceGroup(representative, group.Max(candidate => candidate.Population)));
+            for (var index = 1; index < group.Count; index++)
+            {
+                var candidate = group[index];
+                population = Math.Max(population, candidate.Population);
+
+                if (candidate.Rank < representative.Rank
+                    || (candidate.Rank == representative.Rank
+                        && candidate.Population > representative.Population))
+                {
+                    representative = candidate;
+                }
+            }
+
+            groups.Add(new PlaceGroup(representative, population));
         }
 
         return groups;
