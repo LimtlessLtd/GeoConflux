@@ -1566,7 +1566,10 @@ import {
         },
         label: {
           show: true,
-          text: place.contested ? `${place.place} — contested` : `${place.place} — ${place.actor}`,
+          text: [
+          place.contested ? `${place.place} — contested` : `${place.place} — ${place.actor}`,
+          place.demo ? ' (demo)' : '',
+        ].join(''),
           font: '600 11px system-ui, sans-serif',
           fillColor: Cesium.Color.WHITE,
           showBackground: true,

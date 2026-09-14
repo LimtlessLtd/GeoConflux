@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Geopolitics.Application.Abstractions;
 using Geopolitics.Application.Conflicts;
 using Geopolitics.Application.Contracts;
+using Geopolitics.Application.Control;
 using Geopolitics.Application.Enrichment;
 using Geopolitics.Domain;
 using Microsoft.Extensions.Logging;
@@ -635,20 +636,34 @@ public sealed partial class ObservationProcessor(
     /// </summary>
     private static void RecordControlSignal(ObservationEnvelope envelope, RawObservation observation)
     {
-        if (envelope.DeclaredControlSignal is not { } signal || signal == Domain.ControlSignal.None)
+        // The coded path first, and it wins outright. A conflict-coding project's own field beats
+        // anything read out of prose about the same record, for the same reason a declared conflict
+        // key beats an inferred one.
+        if (envelope.DeclaredControlSignal is { } declared
+            && declared != Domain.ControlSignal.None
+            && !string.IsNullOrWhiteSpace(envelope.DeclaredControlActor))
         {
+            observation.RecordControlSignal(declared, envelope.DeclaredControlActor, ControlEvidenceBasis.Coded);
             return;
         }
 
-        // An unattributed transfer is evidence of control by nobody. The adapter already drops one,
-        // and this is the second guard, because the cost of storing one is a row in the assessment
-        // that can never support an assertion and can never be checked.
-        if (string.IsNullOrWhiteSpace(envelope.DeclaredControlActor))
-        {
-            return;
-        }
+        // Then ordinary prose, deterministically. A wire report saying a town was captured is the
+        // commonest control evidence there is and the only kind available without a dataset
+        // credential, so it is read here rather than handed straight to a classifier.
+        //
+        // Read from the observation rather than from the envelope, and that matters: the place is
+        // the one the deterministic resolver accepted rather than the one the source claimed, so a
+        // claim about a place this system could not place produces nothing — which is correct,
+        // because there would be nowhere to assess it.
+        var (signal, actor) = ControlClaimDetector.Detect(
+            $"{observation.Title} {observation.Content}",
+            observation.Location?.Name ?? observation.LocationName,
+            observation.Entities);
 
-        observation.RecordControlSignal(signal, envelope.DeclaredControlActor, ControlEvidenceBasis.Coded);
+        if (signal != Domain.ControlSignal.None && !string.IsNullOrWhiteSpace(actor))
+        {
+            observation.RecordControlSignal(signal, actor, ControlEvidenceBasis.Claimed);
+        }
     }
 
     /// <summary>

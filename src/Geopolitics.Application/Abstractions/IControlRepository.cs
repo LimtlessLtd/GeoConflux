@@ -20,6 +20,13 @@ namespace Geopolitics.Application.Abstractions;
 /// <param name="Latitude">Drawn only at the precision below.</param>
 /// <param name="Longitude">Drawn only at the precision below.</param>
 /// <param name="Precision">How precisely the place is known, carried so the map cannot overstate it.</param>
+/// <param name="IsDemo">
+/// Whether this record came from the recorded demo stream rather than from a real source. Carried
+/// all the way to the assessment because an assessment is a stronger artefact than an incident: a
+/// reader may take "assessed to hold" at face value in a way they would not take a single report,
+/// and an assessment resting entirely on synthetic evidence has to say so in its own sentence rather
+/// than rely on a notice elsewhere on the page.
+/// </param>
 public sealed record ControlObservation(
     Guid ObservationId,
     string SourceName,
@@ -31,7 +38,8 @@ public sealed record ControlObservation(
     string? CountryCode,
     double? Latitude,
     double? Longitude,
-    LocationPrecision Precision);
+    LocationPrecision Precision,
+    bool IsDemo);
 
 /// <summary>
 /// Reads the reports that carry control evidence, which is a small minority of the table.

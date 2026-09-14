@@ -48,6 +48,11 @@ public sealed record ControlEvidence(
 /// <param name="AgeDays">How old that is, so staleness is a number rather than an impression.</param>
 /// <param name="Evidence">Every record behind this, newest first.</param>
 /// <param name="SourceCount">How many distinct sources contributed.</param>
+/// <param name="EvidenceIsDemo">
+/// True when every record behind this came from the recorded demo stream. Said in the statement as
+/// well as carried as a flag, because an assessment is a stronger artefact than an incident and a
+/// reader may take "assessed to hold" at face value in a way they would not take a single report.
+/// </param>
 /// <param name="Statement">The assessment in a sentence, including when it is a refusal.</param>
 public sealed record PlaceControl(
     string Place,
@@ -61,6 +66,7 @@ public sealed record PlaceControl(
     int AgeDays,
     IReadOnlyList<ControlEvidence> Evidence,
     int SourceCount,
+    bool EvidenceIsDemo,
     string Statement);
 
 /// <param name="Places">One entry per place with any control evidence, most recently evidenced first.</param>
@@ -122,6 +128,8 @@ public sealed class ControlAssessmentService(
             .ThenBy(place => place.Place, StringComparer.Ordinal)
             .ToList();
 
+        places = [.. places.Select(Label)];
+
         var assessed = places.Count(place => place.Verdict is ControlVerdict.Assessed or ControlVerdict.Contested);
 
         return new ControlReport(
@@ -131,6 +139,23 @@ public sealed class ControlAssessmentService(
             MethodStatement,
             Note(places.Count, assessed));
     }
+
+    /// <summary>
+    /// Adds the synthetic-evidence sentence where it applies.
+    /// <para>
+    /// Appended after the assessment rather than woven into it, so that every branch above — assert,
+    /// contest, stale, decline — gets it without each one having to remember. A statement is the only
+    /// part of this a reader is certain to read, and the demo notice elsewhere on the page is about
+    /// the page rather than about this claim.
+    /// </para>
+    /// </summary>
+    private static PlaceControl Label(PlaceControl place) => place.EvidenceIsDemo
+        ? place with
+        {
+            Statement = $"{place.Statement} Every record behind this is synthetic replay data, so "
+                + "this assessment demonstrates the method and describes nothing real.",
+        }
+        : place;
 
     /// <summary>
     /// Grouped on the resolved place and its country rather than on the name alone, because the
@@ -171,6 +196,7 @@ public sealed class ControlAssessmentService(
             Age(first.OccurredAt, now),
             records,
             sources,
+            evidence.All(signal => signal.IsDemo),
             string.Empty);
 
         if (asserting.Count == 0)

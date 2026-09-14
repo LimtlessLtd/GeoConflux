@@ -50,6 +50,7 @@ public sealed class EfControlRepository(GeopoliticsDbContext dbContext) : IContr
                 observation.Location.Latitude,
                 observation.Location.Longitude,
                 observation.Location.Precision,
+                observation.Provenance,
             })
             .ToListAsync(cancellationToken);
 
@@ -66,7 +67,8 @@ public sealed class EfControlRepository(GeopoliticsDbContext dbContext) : IContr
                 row.CountryCode,
                 row.Latitude,
                 row.Longitude,
-                row.Precision)),
+                row.Precision,
+                row.Provenance == ObservationProvenance.Recorded)),
         ];
     }
 }

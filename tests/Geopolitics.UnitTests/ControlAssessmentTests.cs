@@ -179,6 +179,35 @@ public sealed class ControlAssessmentTests
         Assert.Contains("not a front line", report.Method, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task AnAssessmentRestingEntirelyOnSyntheticEvidenceSaysSoInItsOwnSentence()
+    {
+        // An assessment is a stronger artefact than an incident: a reader may take "assessed to
+        // hold" at face value in a way they would not take a single report. The demo notice
+        // elsewhere on the page is about the page; this has to be about the claim.
+        var report = await Assess(Coded("Invented State Forces", Now.AddDays(-2)) with { IsDemo = true });
+
+        var place = Assert.Single(report.Places);
+        Assert.True(place.EvidenceIsDemo);
+        Assert.Contains("synthetic replay data", place.Statement, StringComparison.Ordinal);
+        Assert.Contains("describes nothing real", place.Statement, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task OneRealRecordIsEnoughForAnAssessmentToStopCallingItselfSynthetic()
+    {
+        // "Every record behind this is synthetic" has to mean every one. A mixed assessment is a
+        // real one carrying some demo evidence, and labelling it synthetic would understate it just
+        // as badly as the reverse overstates.
+        var report = await Assess(
+            Coded("Invented State Forces", Now.AddDays(-2)) with { IsDemo = true },
+            Coded("Invented State Forces", Now.AddDays(-3)) with { IsDemo = false });
+
+        var place = Assert.Single(report.Places);
+        Assert.False(place.EvidenceIsDemo);
+        Assert.DoesNotContain("synthetic replay data", place.Statement, StringComparison.Ordinal);
+    }
+
     private static ControlObservation Coded(string actor, DateTimeOffset at) =>
         Signal(actor, at, ControlSignal.TerritoryTransferred, ControlEvidenceBasis.Coded, "acled");
 
@@ -191,7 +220,8 @@ public sealed class ControlAssessmentTests
         ControlSignal signal,
         ControlEvidenceBasis basis,
         string source) =>
-        new(Guid.NewGuid(), source, at, signal, basis, actor, "Invented Town", "UA", 49.0, 36.0, LocationPrecision.Settlement);
+        new(Guid.NewGuid(), source, at, signal, basis, actor, "Invented Town", "UA", 49.0, 36.0,
+            LocationPrecision.Settlement, IsDemo: false);
 
     private static async Task<ControlReport> Assess(params ControlObservation[] signals)
     {

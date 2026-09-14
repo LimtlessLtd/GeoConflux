@@ -118,6 +118,18 @@ test('the method and the note are passed through rather than rewritten', () => {
   assert.match(controlSummary(report()), /reached an assertion/);
 });
 
+test('an assessment resting on synthetic evidence is flagged in the list and on the marker', () => {
+  // A globe shows no statement, so a synthetic assessment drawn identically to a real one is the
+  // misreading the statement exists to prevent.
+  const synthetic = report([place({ evidenceIsDemo: true })]);
+
+  assert.equal(controlRows(synthetic)[0].demo, true);
+  assert.equal(drawablePlaces(synthetic)[0].demo, true);
+
+  assert.equal(controlRows(report())[0].demo, false);
+  assert.equal(drawablePlaces(report())[0].demo, false);
+});
+
 test('the not-a-front-line caveat says whose inference joining the markers would be', () => {
   // A reader looking at scattered markers will try to join them up. This is the sentence that says
   // the joining is theirs.

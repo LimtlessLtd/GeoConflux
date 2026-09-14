@@ -52,6 +52,7 @@ export function controlRows(report) {
     sourceCount: asCount(place?.sourceCount),
     statement: String(place?.statement ?? ''),
     asserting: ASSERTING.has(String(place?.verdict ?? '')),
+    demo: place?.evidenceIsDemo === true,
   }));
 }
 
@@ -65,6 +66,7 @@ export function controlRows(report) {
 export function drawablePlaces(report) {
   return (report?.places ?? [])
     .filter((place) => ASSERTING.has(String(place?.verdict ?? '')))
+    .map((place) => ({ ...place, demo: place?.evidenceIsDemo === true }))
     .filter((place) => Number.isFinite(place?.latitude) && Number.isFinite(place?.longitude))
     .map((place) => ({
       place: String(place.place ?? ''),
@@ -75,6 +77,11 @@ export function drawablePlaces(report) {
       precision: String(place.precision ?? 'Country'),
       ageDays: asCount(place.ageDays),
       contested: String(place.verdict) === 'Contested',
+
+      // Carried onto the marker as well as into the list. A globe shows no statement, so a
+      // synthetic assessment drawn identically to a real one is exactly the misreading the
+      // statement exists to prevent.
+      demo: place.demo === true,
     }));
 }
 
