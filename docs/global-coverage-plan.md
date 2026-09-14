@@ -270,7 +270,7 @@ coarse. At global scope the dashboard should state, per country: whether any sou
 which ones, and what they returned. That turns the coverage panel from a count into a map of this
 system's own reach — which is the only thing that makes the phrase "global dashboard" defensible.
 
-### Sprint 16 — Conflicts as first-class objects
+### Sprint 16 — Conflicts as first-class objects *(complete, 2026-09-14)*
 
 Today a "theatre" is a hard-coded country code and an optional bounding box, and there are three of
 them. That cannot express "every regional and local conflict", and hand-authoring sixty of them is
@@ -321,6 +321,23 @@ is already parsing the field that names them.
 
 **Done when** conflicts are discovered rather than hand-authored, a thin one says so instead of
 showing a number, and every AI assignment is auditable.
+
+**Built, 2026-09-14.** All of it, with two substitutions recorded in
+[ADR 035](adr/035-conflicts-as-first-class-objects.md): bounds became place identity, because a
+conflict's own coded place names are a better instrument than a rectangle and need no maintaining;
+and narratives are served per conflict on request rather than exported into the snapshot, because a
+refusal computed at build time and served for days would read as a statement about the conflict
+rather than about one run.
+
+Measuring it found two defects. A country backed by one of a conflict's place names is a spelling
+collision every time, and a single word shared by several conflicts identifies none of them — reports
+about a vessel struck near Qeshm Island were being assigned to four Iranian conflicts at once because
+UCDP writes its state parties as "Government of Iran". Both rules are measured from the register
+rather than kept by hand.
+
+What a credential-free run actually shows is stated rather than dressed up: of 24 reports, two
+conflicts identified, nine reports undecided with their candidates named, ten reaching no conflict at
+all. A provider moves the nine and a dataset credential moves the ten.
 
 ### Sprint 17 — The system that keeps running
 

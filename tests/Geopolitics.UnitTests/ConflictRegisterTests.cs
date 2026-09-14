@@ -288,6 +288,58 @@ public sealed class ConflictAssignmentTests
     }
 
     [Fact]
+    public void AcountryNameSharedByEveryConflictInItIdentifiesNoneOfThem()
+    {
+        // Found by running the real pipeline rather than by reasoning about it. Reports about a
+        // vessel struck off Qeshm Island were assigned to four Iranian conflicts at once — Iran
+        // against Israel, Iran against Islamic State, and two more — because UCDP writes its state
+        // parties as "Government of Iran" and every one of those lists therefore contains the word
+        // "Iran". That word is the name of the country, not of anybody fighting.
+        var conflicts = new[]
+        {
+            Conflict.Coded("ucdp:14609", "Iran - Israel", "Government of Iran", "Government of Israel"),
+            Conflict.Coded("ucdp:338", "Iran: Government", "Government of Iran", "Jaish al-Adl"),
+            Conflict.Coded("ucdp:14268", "Iran: Islamic State", "Government of Iran", "IS"),
+            Conflict.Coded("ucdp:709", "Government of Iran - Civilians", "Government of Iran", "Civilians"),
+        };
+
+        foreach (var conflict in conflicts)
+        {
+            conflict.RecordCoded("Tehran city", "IR", events: 20);
+        }
+
+        var assigner = new ConflictAssigner(new FixedRegister(conflicts));
+
+        var assignment = assigner.Assign(new ConflictCandidate(
+            ActorNames: ["Iran", "Iranian navy"],
+            EventType: EventType.MaritimeIncident));
+
+        Assert.False(assignment.IsAssigned);
+        Assert.Equal(4, assignment.Candidates.Count);
+        Assert.Contains("nothing that separates them", assignment.Note, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TwoWordsSharedWithSeveralConflictsIsStillAnIdentification()
+    {
+        // The other half of the rule, and the case it must not break. One movement that is a party
+        // to two wars is exactly the multi-membership this design exists to express, and it is told
+        // apart from the case above by how much of the name the report actually used.
+        var yemen = Conflict.Coded("fixture:yemen", "Yemen", "Government of Yemen", "Houthi movement");
+        yemen.RecordCoded("Sanaa city", "YE", events: 500);
+
+        var wider = Conflict.Coded("fixture:wider", "Israel - Iran", "Government of Israel", "Houthi movement");
+        wider.RecordCoded("Red Sea", null, events: 40);
+
+        var assignment = new ConflictAssigner(new FixedRegister([yemen, wider]))
+            .Assign(new ConflictCandidate(
+                ActorNames: ["Houthi movement"],
+                EventType: EventType.MaritimeIncident));
+
+        Assert.Equal(2, assignment.Memberships.Count);
+    }
+
+    [Fact]
     public void AplaceNameMatchesOnlyWhereTheCountryAgrees()
     {
         var lebanon = Conflict.Coded("ucdp:426", "Israel: Southern Lebanon", "Government of Israel", "Hezbollah");

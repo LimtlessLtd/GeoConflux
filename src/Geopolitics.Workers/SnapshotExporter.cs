@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Geopolitics.Application;
 using Geopolitics.Application.Abstractions;
 using Geopolitics.Application.Analytics;
+using Geopolitics.Application.Conflicts;
 using Geopolitics.Application.Coverage;
 using Geopolitics.Application.Contracts;
 using Microsoft.Extensions.DependencyInjection;
@@ -228,6 +229,22 @@ public static partial class SnapshotExporter
             .BuildAsync(cancellationToken);
 
         await WriteJsonAsync(Path.Combine(outputDirectory, "coverage.json"), coverage, cancellationToken);
+
+        // What this run saw about each conflict, per window, for the same reason analytics are
+        // exported per window: the published page has no backend to ask. Narratives are deliberately
+        // not exported. They cost a model call each, most of them would be a refusal because the
+        // snapshot's evidence is thin, and a refusal computed at build time and served for days
+        // would read as a statement about the conflict rather than about one run.
+        var conflictsDirectory = Path.Combine(outputDirectory, "conflicts");
+        Directory.CreateDirectory(conflictsDirectory);
+
+        var conflictActivity = scope.ServiceProvider.GetRequiredService<IConflictActivityService>();
+
+        foreach (var window in AnalyticsWindow.All)
+        {
+            var report = await conflictActivity.BuildAsync(window, cancellationToken);
+            await WriteJsonAsync(Path.Combine(conflictsDirectory, $"{window.Token}.json"), report, cancellationToken);
+        }
 
         // Counted, never assumed. This exporter used to hard-code IsDemoData: true because the only
         // source it could read was the recorded stream. Now that live adapters can feed it, a fixed

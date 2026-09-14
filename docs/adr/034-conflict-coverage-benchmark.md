@@ -35,7 +35,7 @@ The Uppsala Conflict Data Program codes organised violence worldwide into named 
 parties, on published criteria, and is the standard the field uses. Its Georeferenced Event Dataset
 recorded **28,816 events across 319 distinct conflicts in 2024**, each with the place it happened at.
 
-That register is the denominator. `tools/conflicts/extract.py` derives it once and commits it, and
+That register is the denominator. `tools/conflicts/extract.py` derives it once and commits it to `data/conflicts/`, and
 `Geopolitics.ConflictBenchmark` asks, per conflict, how many of its places this system could resolve.
 
 **It is obtainable without a credential.** The UCDP API requires an access token; the flat dataset

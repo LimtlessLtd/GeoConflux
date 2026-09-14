@@ -109,6 +109,26 @@ shares one word with every cartel conflict in the register and five with the one
 that genuinely says nothing more specific than "cartel" ties across twenty and is reported as the
 ambiguity it is, rather than assigned to the first eight.
 
+### One word shared with several conflicts is a category, not a name
+
+Running the real pipeline found what reasoning about it had not. Reports about a commercial vessel
+struck off Qeshm Island were being assigned to **four Iranian conflicts at once** — including Iran's
+conflict with Islamic State — on the strength of the word "Iran". UCDP writes its state parties as
+"Government of Iran", so every one of those party lists contains it, and it is the name of the
+country rather than of anybody fighting.
+
+The rule that fixes it is the frequency argument above applied at match time with a threshold of one
+instead of a third: **a single word shared by more than one conflict does not identify any of them.**
+Two words still do, which is what keeps genuine multi-membership working — a report naming the
+"Houthi movement" shares two words with each conflict that movement is a party to and belongs to
+both, while a report naming only a country shares one with all of them and belongs to none of them
+yet.
+
+The two cases are structurally identical and cannot be told apart by any rule about strings, only by
+how much of a name the report actually used. Where that is not enough, the report is stored with its
+candidates listed and the choice is left to coded data or to a model — which is the same failure
+direction geography already takes.
+
 ## Consequences
 
 - **The register holds 319 conflicts rather than 3**, and none of them was chosen here.
@@ -133,3 +153,25 @@ ambiguity it is, rather than assigned to the first eight.
   to establish and they stay; what it stops being is the answer to "what does this system watch".
 - **The extract is as current as the file.** A conflict coded since it was taken is absent rather than
   rejected, and a record naming one says so in as many words instead of being silently dropped.
+- **The published page now shows very few assigned conflicts, and that is the honest figure.**
+  Measured on a real credential-free run of 24 reports: **2 of 319 conflicts identified, 9 reports
+  left undecided with their candidates named, 10 reaching no conflict at all.** Nothing is being
+  hidden by that. The deterministic pass assigns only what a source coded, what named a party
+  distinctively, or what geography left no choice about; the rest is a question for a model, and the
+  offline stand-in declines to answer it. Turning on a provider is what moves those nine, and a
+  credential is what moves the ten — which is the same arrangement FIRMS, ACLED and UCDP already
+  ship under.
+
+## Where this differs from the sprint definition
+
+Two substitutions, recorded so they are decisions rather than drift.
+
+**Bounds became place identity**, as set out above. The sprint listed "country codes, bounds, actor
+keys, event types"; what was built is country codes, the conflict's own coded place names, actor
+words, and event types. A rectangle is a worse instrument than the list of places the coding already
+supplies, and it needs maintaining.
+
+**Narratives are not exported into the snapshot.** They cost a model call each, most would be a
+refusal because a build's evidence is thin, and a refusal computed at build time and served for days
+would read as a statement about the conflict rather than about one run. They are served per conflict,
+on request, from the live host.

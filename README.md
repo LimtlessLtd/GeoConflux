@@ -596,6 +596,35 @@ repeated.
 
 Full reasoning: [ADR 029](docs/adr/029-corroboration-gate.md).
 
+### Conflicts
+
+The dashboard has a **Conflicts** tab, and the register behind it is not one this project wrote. It
+is the Uppsala Conflict Data Program's coding of organised violence — **319 conflicts** recorded
+worldwide in 2024, with named parties, on published criteria. `Theatres.cs` used to name three, by
+hand; its caveats survive as research findings, and it is no longer the answer to what this system
+watches.
+
+A conflict's geography is derived rather than declared. Its places are the ones the coding says its
+events happened at, resolved through the same gazetteer the pipeline uses, and its countries are
+wherever those turned out to be. No box is drawn — which is why the Russia–Ukraine coding resolves
+into Russia as well, as the incursion into Kursk is in the data and a box round Ukraine would have
+excluded it.
+
+Membership follows one rule: **identity assigns, geography only narrows.** A source that coded its
+own conflict settles it. A report naming a party identifies it. Geography assigns only where it
+leaves exactly one answer, and where several remain the report is stored with its candidates named
+and no membership, because asserting a quarter share in each would be arithmetic wearing the costume
+of analysis. One report can belong to two conflicts, so the counts do not sum and the panel says so.
+
+Every tempo figure carries the number of sources that produced it, and a change is decomposed into
+*more events reported* against *more sources reporting*. When both fall together the output is
+**coverage changed; tempo cannot be stated** — the failure this project already had a documented
+instance of, where dedicated coverage of Tigray thinned about six months before the fighting resumed,
+and a naive line would draw a de-escalation at the moment of escalation. Baselines are each
+conflict's own previous window, never another conflict's.
+
+Full reasoning: [ADR 035](docs/adr/035-conflicts-as-first-class-objects.md).
+
 ### Coverage
 
 The dashboard has a **Coverage** tab that states, per theatre, how much has been placed and how
@@ -746,13 +775,22 @@ Five limitations worth stating plainly:
   position: the published dashboard is built by polling four public feeds on every deploy, so what
   you see there did come from live providers. Anything still untested is described as untested rather
   than as working.
-- **The system watches three conflicts and the world has hundreds.** Measured against UCDP's
-  register rather than this project's own list, it can place 78% of the 319 conflicts recorded
-  worldwide in 2024 and 69% of the least-reported ones — but `Theatres.cs` names three, by hand. An
-  empty map outside them is a statement about a source list, not about the world. The benchmark is
-  [tests/data/conflict-benchmark/RESULTS.md](tests/data/conflict-benchmark/RESULTS.md) and it runs in
+- **The register holds 319 conflicts; a credential-free run identifies a handful of them.** The
+  list is no longer the limit — it is UCDP's rather than this project's — but assignment is. On a
+  real run of 24 reports, two conflicts were identified, nine reports were left undecided with their
+  candidate conflicts named, and ten reached no conflict at all. The deterministic pass assigns only
+  what a source coded, what named a party distinctively, or what geography left no choice about; the
+  rest is a question for a model, and the offline stand-in declines to answer it. A provider moves
+  the nine and a dataset credential moves the ten. The placement benchmark behind all of this is
+  [tests/data/conflict-benchmark/RESULTS.md](tests/data/conflict-benchmark/RESULTS.md), which runs in
   CI; [ADR 034](docs/adr/034-conflict-coverage-benchmark.md) records why it is scored against a
   register nobody here wrote.
+- **UCDP's names for parties are not reporting's names for them.** The 2024 coding contains no
+  occurrence of "Houthi": it codes that administration as the Government of Yemen and the
+  internationally recognised side as the Presidential Leadership Council. Actor matching therefore
+  does less work on wire text than it appears to, and closing that gap is a job for model assignment
+  rather than for a hand-written alias table — which would be this project writing the register again
+  through a side door.
 - **Coverage is global in capability, not yet in fact.** The two datasets that would make it global
   are built and dormant, waiting on credentials nobody has requested. Placement is no longer the
   blocker it was — the lexicon spans 246 countries — but it is coarse outside the three deep

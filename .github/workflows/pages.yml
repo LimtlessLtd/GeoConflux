@@ -134,7 +134,8 @@ jobs:
                       dist/data/meta.json dist/data/incidents.json dist/data/observations.json \
                       dist/data/coverage.json \
                       dist/data/analytics/24h.json dist/data/analytics/7d.json \
-                      dist/data/analytics/30d.json dist/data/analytics/90d.json; do
+                      dist/data/analytics/30d.json dist/data/analytics/90d.json \
+                      dist/data/conflicts/30d.json; do
             test -s "$file" || { echo "::error::Missing or empty: $file"; exit 1; }
           done
           # app.js imports its logic from ./lib, so a module that failed to copy breaks the page

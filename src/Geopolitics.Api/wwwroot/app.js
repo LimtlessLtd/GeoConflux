@@ -36,6 +36,9 @@ import {
 } from './lib/time.js';
 import { confidenceChip, modelOpinion } from './lib/classification.js';
 import { canHideDemoNotice, provenanceChip, provenanceSummary } from './lib/provenance.js';
+import {
+  baselineLine, coverageLine, orderConflicts, statesDirection, unassignedLine, verdictOf, volumeLine,
+} from './lib/conflicts.js';
 import { selectVisibleIncidents } from './lib/incidents.js';
 import { resolveDataSource as resolveSourceOrder } from './lib/datasource.js';
 import {
@@ -82,6 +85,16 @@ import {
   };
 
   const POLL_INTERVAL_MS = 15000;
+
+  /**
+   * The window the conflicts panel reports over.
+   *
+   * Fixed rather than following the analytics selector, and deliberately the longer of the two
+   * plausible choices. Tempo here is a comparison against the previous window of the same length, so
+   * a 24-hour view would compare yesterday against the day before — a difference that is almost
+   * entirely which feeds published overnight.
+   */
+  const CONFLICT_WINDOW = '30d';
   const MAX_FEED_ITEMS = 60;
   const REPLAY_STEP_MS = 900;
   const SIGNALR_CLIENT_URL = 'https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js';
@@ -171,6 +184,11 @@ import {
     coverageBreadth: document.querySelector('#coverageBreadth'),
     coverageCeiling: document.querySelector('#coverageCeiling'),
     coverageSources: document.querySelector('#coverageSources'),
+    conflictList: document.querySelector('#conflictList'),
+    conflictCoverage: document.querySelector('#conflictCoverage'),
+    conflictUnassigned: document.querySelector('#conflictUnassigned'),
+    conflictNote: document.querySelector('#conflictNote'),
+    conflictProvenance: document.querySelector('#conflictProvenance'),
     chokepointCount: document.querySelector('#chokepointCount'),
     chokepointMethod: document.querySelector('#chokepointMethod'),
     basemapFilter: document.querySelector('#basemapFilter'),
@@ -264,6 +282,13 @@ import {
       const response = await fetch('./api/analytics/coverage', { headers: { Accept: 'application/json' } });
       return response.ok ? response.json() : null;
     },
+    async loadConflicts(token) {
+      const response = await fetch(
+        `./api/analytics/conflicts?window=${encodeURIComponent(token)}`,
+        { headers: { Accept: 'application/json' } },
+      );
+      return response.ok ? response.json() : null;
+    },
   };
 
   /** Reads the snapshot a real pipeline run exported at build time. */
@@ -307,6 +332,15 @@ import {
       // A snapshot published before this panel existed has no such file, which leaves the panel
       // empty rather than failing the load.
       const response = await fetch('./data/coverage.json', { headers: { Accept: 'application/json' } });
+      return response.ok ? response.json() : null;
+    },
+    async loadConflicts(token) {
+      // One file per window, as analytics are, and absent from an older snapshot for the same
+      // reason. An empty panel is the right outcome; a failed load is not.
+      const response = await fetch(
+        `./data/conflicts/${encodeURIComponent(token)}.json`,
+        { headers: { Accept: 'application/json' } },
+      );
       return response.ok ? response.json() : null;
     },
   };
@@ -982,6 +1016,83 @@ import {
    * because a caveat that only appears on the bad news reads as an excuse rather than as a
    * description of the data.
    */
+  /**
+   * The conflicts panel.
+   *
+   * Every row states its volume beside the number of sources that produced it, and an arrow appears
+   * only where a direction is actually being claimed. The rest of the vocabulary — "coverage
+   * changed", "too thin to say" — is deliberately not a direction, and giving those an arrow would
+   * let the picture assert what the sentence declines to.
+   */
+  function renderConflicts(report) {
+    dom.conflictList.replaceChildren();
+    dom.conflictCoverage.textContent = '';
+    dom.conflictUnassigned.textContent = '';
+    dom.conflictNote.textContent = '';
+    dom.conflictProvenance.textContent = '';
+
+    if (!report) {
+      const empty = document.createElement('p');
+      empty.className = 'feed-hint';
+      empty.textContent = 'No conflict report is available from this data source.';
+      dom.conflictList.append(empty);
+      return;
+    }
+
+    dom.conflictCoverage.textContent = coverageLine(report);
+    dom.conflictUnassigned.textContent = unassignedLine(report);
+    dom.conflictNote.textContent = report.note ?? '';
+    dom.conflictProvenance.textContent = report.provenance ?? '';
+
+    const conflicts = orderConflicts(report.conflicts);
+
+    if (conflicts.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'feed-hint';
+      empty.textContent = 'Nothing in this window was assigned to a conflict in the register.';
+      dom.conflictList.append(empty);
+      return;
+    }
+
+    conflicts.forEach((tempo) => {
+      const verdict = verdictOf(tempo.verdict);
+      const card = document.createElement('article');
+      card.className = `coverage coverage-${verdict.tone}`;
+
+      const heading = document.createElement('h3');
+      heading.textContent = tempo.name ?? tempo.conflict;
+      card.append(heading);
+
+      const volume = document.createElement('p');
+      volume.className = 'coverage-summary';
+      volume.textContent = volumeLine(tempo.current);
+      card.append(volume);
+
+      const meta = document.createElement('div');
+      meta.className = 'coverage-meta';
+
+      const chip = document.createElement('span');
+      chip.className = `coverage-chip coverage-${verdict.tone}`;
+      chip.textContent = statesDirection(tempo.verdict)
+        ? `${verdict.arrow} ${verdict.label}`
+        : verdict.label;
+      meta.append(chip);
+      card.append(meta);
+
+      const baseline = document.createElement('p');
+      baseline.className = 'coverage-lexicon';
+      baseline.textContent = baselineLine(tempo);
+      card.append(baseline);
+
+      const statement = document.createElement('p');
+      statement.className = 'coverage-caveat';
+      statement.textContent = tempo.statement ?? '';
+      card.append(statement);
+
+      dom.conflictList.append(card);
+    });
+  }
+
   function renderCoverage(report) {
     dom.coverageList.replaceChildren();
     dom.coverageGaps.replaceChildren();
@@ -1655,7 +1766,7 @@ import {
   }
 
   async function loadSnapshotState() {
-    const [loadedIncidents, loadedObservations, chokepoints, coverage] = await Promise.all([
+    const [loadedIncidents, loadedObservations, chokepoints, coverage, conflicts] = await Promise.all([
       dataSource.loadIncidents(),
       dataSource.loadObservations(),
 
@@ -1666,6 +1777,10 @@ import {
 
       // Same treatment, and for the same reason.
       dataSource.loadCoverage?.().catch(() => null) ?? null,
+
+      // And again. The conflicts panel is the newest of the three, so an older snapshot is the
+      // expected case rather than an error.
+      dataSource.loadConflicts?.(CONFLICT_WINDOW).catch(() => null) ?? null,
     ]);
 
     incidents.clear();
@@ -1683,6 +1798,7 @@ import {
     renderFeed();
     renderChokepoints(chokepoints);
     renderCoverage(coverage);
+    renderConflicts(conflicts);
   }
 
   function startPolling(reason) {

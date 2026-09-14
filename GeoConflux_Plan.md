@@ -2555,7 +2555,11 @@ cropland mask, which cannot be sourced from inside this repository.
 
 **Sprint 11** (the comprehensive layer) is complete. It is the first sprint from
 [the global coverage assessment](docs/global-coverage-plan.md), which extends this plan with Sprints
-10 to 15.
+10 to 19.
+
+**Sprint 16** (conflicts as first-class objects) is complete, and it retires `Theatres.cs` as the
+register of what this system watches. The register is now UCDP's 319 conflicts rather than three
+somebody typed.
 
 **Sprint 10** (global placement) is complete, and it was the prerequisite the assessment said
 everything else was downstream of. The lexicon now spans **246 countries** rather than three.
@@ -2710,6 +2714,59 @@ layer now wins inside its own country and is compared with the world outside it.
 district in a country with no theatre layer is stored, classified and left unplaced. Placing it would
 mean guessing.
 
+Sprint 16 progress:
+
+Conflicts as first-class objects, and the sprint [ADR 034](docs/adr/034-conflict-coverage-benchmark.md)
+identified as the highest-value item left: placement had stopped being the binding constraint, and
+the register of what to watch had become it.
+
+1. **The register is discovered, not invented.** Done. It is UCDP's coding — 319 conflicts recorded
+   in 2024, with named parties, on published criteria — and it is the *same file* that is the
+   coverage benchmark's ground truth, moved to `data/conflicts/` and read by both. A benchmark scored
+   against a different register from the one the system watches would measure nothing.
+2. **Membership is a predicate, and geography is derived.** Done. A conflict's places are the ones
+   the coding says its events happened at, resolved through the gazetteer; its countries are wherever
+   those turned out to be. No box is drawn. The Ukraine coding resolves into Russia as well, which is
+   in the data and which a box round Ukraine would have excluded. Bounds were specified and place
+   identity was built instead — [ADR 035](docs/adr/035-conflicts-as-first-class-objects.md) records
+   why.
+3. **AI assigns; it does not define.** Done. The model is offered only the conflicts the
+   deterministic pass could not choose between, the permitted keys are enumerated in the request, and
+   the validator rejects an unoffered key on the way back — twice over, because only some providers
+   support constrained decoding and the guarantee must not depend on which is configured. Every
+   assignment is recorded in `AiInference` with its prompt version and confidence.
+4. **A model may propose a conflict nothing codes yet**, and it is recorded as a claim in as many
+   words. It does not enter the register: a register shaped by what a model has read about fails on
+   the under-reported conflicts, and a missing category reads exactly like peace.
+5. **Tempo carries a denominator.** Done. Every count is stated beside the number of sources that
+   produced it, and a change is decomposed into more events reported against more sources reporting.
+   When both fall together the output is "coverage changed; tempo cannot be stated" — the Tigray case
+   this plan already names, where a naive line draws a de-escalation at the moment of escalation.
+6. **Baselines are per-conflict and rolling.** Done. Each conflict is compared only against its own
+   previous window, and the panel says that the rows do not sum, because one report can belong to two
+   wars.
+7. **Narrative with an evidence floor.** Done. Five reports and two sources, checked from the
+   evidence before any model is asked, and the refusal is written by this system rather than left to
+   the model's judgement of its own output. A summary the model says it is unsure of is withheld
+   rather than qualified: a reader takes in the prose and not the decimal.
+
+Measuring it found two defects, and neither was theoretical. A country backed by one of a conflict's
+place names is a spelling collision every time — Turkey, China, Romania and the Philippines all
+entered the Russia–Ukraine conflict that way, and every report from them would have matched a
+European war on geographic grounds. And a single word shared by several conflicts identifies none of
+them: reports about a vessel struck off Qeshm Island were assigned to four Iranian conflicts at once,
+including Iran's conflict with Islamic State, because UCDP writes its state parties as "Government of
+Iran" and that word is the name of the country rather than of anybody fighting. Both rules are now
+measured from the register rather than guarded by a hand-kept list.
+
+**What the published page shows, stated rather than dressed up.** On a real credential-free run of 24
+reports: **2 of the 319 conflicts identified, 9 reports left undecided with their candidates named,
+10 reaching no conflict at all.** The deterministic pass assigns only what a source coded, what named
+a party distinctively, or what geography left no choice about. The rest is a question for a model,
+and the offline stand-in declines to answer it — so turning on a provider is what moves those nine,
+and a credential is what moves the ten. That is the same arrangement FIRMS, ACLED and UCDP already
+ship under, and it is the point of the pattern rather than a caveat on it.
+
 ## Where this runs
 
 Two deployments, and they are not the same thing.
@@ -2735,19 +2792,10 @@ world while switched off. Those are Sprints 17 and 18.
 
 ## What is left
 
-Nothing in the original plan. Sprints 12 to 19 of
+Nothing in the original plan. Sprints 12 to 15 and 17 to 19 of
 [the global coverage assessment](docs/global-coverage-plan.md) are outstanding, none begun. That
 document holds the definitions and the recommended order; the shape of it is:
 
-- **Sprint 16 — conflicts as first-class objects.** Now the highest-value item, and the
-  [conflict-coverage benchmark](tests/data/conflict-benchmark/RESULTS.md) is why. Scored against
-  UCDP's register rather than this project's own, the system can place 78% of the 319 conflicts
-  recorded worldwide in 2024 — but watches three, named in `Theatres.cs` by hand. Placement is no
-  longer the binding constraint; the register of what to watch is.
-  [ADR 034](docs/adr/034-conflict-coverage-benchmark.md). Conflicts discovered from UCDP and ACLED coding
-  rather than hand-authored, membership as a predicate over actors as well as geography, AI assigning
-  into that register but never defining it, tempo reported against a coverage denominator, and
-  per-conflict narrative with an evidence floor.
 - **Sprints 17 and 18 — running continuously, and closing the gaps when it has not been.** Retention,
   credentials, reboots, a downtime ledger; then recovery from the datasets, which are archives and
   still hold what was missed, and a labelled summary for the flows, which are rolling windows and do

@@ -93,13 +93,39 @@ public sealed class ConflictAssigner(IConflictRegister register) : IConflictAssi
         var best = scored.Where(entry => entry.Words == most).Select(entry => entry.match).ToArray();
         var rest = scored.Where(entry => entry.Words != most).Select(entry => entry.match).ToArray();
 
-        // Multi-membership is expected: a Houthi strike on shipping belongs to the war in Yemen and
-        // to the wider confrontation at once. What is not expected is dozens, and truncating dozens
-        // to the first few would present an arbitrary slice as an answer.
+        // One word shared with several conflicts is a category, not a name.
+        //
+        // This is the same argument that removes "government" and "civilians" from the register,
+        // applied at match time and at a threshold of one instead of a third. It is here because the
+        // first real run found it: reports about a vessel struck off Qeshm Island were being assigned
+        // to four Iranian conflicts at once — including Iran's conflict with Islamic State — on the
+        // strength of the word "Iran", which appears in all four party lists because it is the name
+        // of the country rather than of anybody fighting.
+        //
+        // Multi-membership survives, because it never depended on this: a report naming the "Houthi
+        // movement" shares two words with each conflict that movement is a party to, and belongs to
+        // both. What is refused is asserting membership from a single word several conflicts share.
+        if (best.Length > 1 && most < MinimumSharedWords)
+        {
+            return new ConflictAssignment([], Memberships([.. best, .. rest, .. weaker]), NamedNobody(best.Length));
+        }
+
+        // And a name several conflicts share every word of is still not an answer past a handful.
+        // Truncating dozens to the first few would present an arbitrary slice as a finding.
         return best.Length > ConflictAssignment.MaxMemberships
             ? new ConflictAssignment([], Memberships(best), TooManyNamed(best.Length, most))
             : new ConflictAssignment(Memberships(best), Memberships([.. rest, .. weaker]), null);
     }
+
+    /// <summary>
+    /// How many words a report must share with a party name before that name may be read as
+    /// identifying more than one conflict at once. One word is a category; two is a name.
+    /// </summary>
+    private const int MinimumSharedWords = 2;
+
+    private static string NamedNobody(int count) =>
+        $"This names one thing {count} conflicts have in common and nothing that separates them, "
+        + "which is a word about where rather than the name of a party.";
 
     /// <summary>
     /// Geography, and only geography. One answer settles it; several do not, and the honest output of

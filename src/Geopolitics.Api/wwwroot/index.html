@@ -120,6 +120,7 @@
         <button class="tab" role="tab" data-tab="chokepoints" aria-selected="false">
           Chokepoints <span id="chokepointCount" class="count">0</span>
         </button>
+        <button class="tab" role="tab" data-tab="conflicts" aria-selected="false">Conflicts</button>
         <button class="tab" role="tab" data-tab="coverage" aria-selected="false">Coverage</button>
         <button class="tab" role="tab" data-tab="analytics" aria-selected="false">Analytics</button>
         <button class="tab" role="tab" data-tab="submit" aria-selected="false" id="submitTabButton">Submit</button>
@@ -146,6 +147,20 @@
         </p>
         <p class="feed-hint" id="chokepointMethod"></p>
         <div id="chokepointList" class="chokepoint-list"></div>
+      </div>
+
+      <div id="conflictsTab" class="tab-panel" role="tabpanel" hidden>
+        <p class="feed-hint">
+          The conflicts this system watches are not a list it wrote. They come from the Uppsala
+          Conflict Data Program's coding of organised violence worldwide, and what is shown below is
+          how much reporting reached this system about each of them &mdash;
+          <strong>not how much happened</strong>.
+        </p>
+        <p class="feed-hint" id="conflictCoverage"></p>
+        <p class="feed-hint" id="conflictUnassigned"></p>
+        <div id="conflictList" class="coverage-list"></div>
+        <p class="feed-hint" id="conflictNote"></p>
+        <p class="feed-hint" id="conflictProvenance"></p>
       </div>
 
       <div id="coverageTab" class="tab-panel" role="tabpanel" hidden>
