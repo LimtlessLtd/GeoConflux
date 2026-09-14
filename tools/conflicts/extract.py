@@ -41,9 +41,12 @@ ARCHIVE = "ged251-csv.zip"
 BASE = "https://ucdp.uu.se/downloads/ged/"
 USER_AGENT = "GeoConflux/1.0 (https://github.com/LimitlessLtd/GeoConflux) conflict benchmark"
 
+# One file, two consumers. The register is the benchmark's ground truth and it is also the seed the
+# running system starts from, and those must be the same list: a benchmark that scored coverage
+# against a different register from the one the system watches would measure nothing.
 OUTPUT = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
-    "..", "..", "tests", "data", "conflict-benchmark", "conflicts.tsv",
+    "..", "..", "data", "conflicts", "ucdp-%d.tsv" % YEAR,
 )
 
 FIELD = "\t"

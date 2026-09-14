@@ -1,11 +1,13 @@
 using Geopolitics.Application;
 using Geopolitics.Application.Abstractions;
 using Geopolitics.Application.Analytics;
+using Geopolitics.Application.Conflicts;
 using Geopolitics.Application.Coverage;
 using Geopolitics.Application.Enrichment;
 using Geopolitics.Application.Pipeline;
 using Geopolitics.Application.Spatial;
 using Geopolitics.Infrastructure.Ai;
+using Geopolitics.Infrastructure.Conflicts;
 using Geopolitics.Infrastructure.Hosting;
 using Geopolitics.Infrastructure.Location;
 using Geopolitics.Infrastructure.Ml;
@@ -60,6 +62,13 @@ public static class ServiceCollectionExtensions
 
         // Reference data, immutable and shared.
         services.AddSingleton<IChokepointCatalogue, MaritimeChokepointCatalogue>();
+
+        // The register of conflicts, and the deterministic assignment of reports into it. Singleton
+        // because the register is a committed extract resolved once through the gazetteer, and
+        // because rebuilding it per request would repeat thirteen thousand place lookups for an
+        // answer that cannot have changed.
+        services.AddSingleton<IConflictRegister, CodedConflictRegister>();
+        services.AddSingleton<IConflictAssigner, ConflictAssigner>();
         services.AddScoped<IObservationQueryService, ObservationQueryService>();
         services.AddScoped<DemoDataSeeder>();
         services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();

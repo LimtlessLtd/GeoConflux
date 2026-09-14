@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Geopolitics.Application.Abstractions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -21,7 +22,9 @@ namespace Geopolitics.Infrastructure.Location;
 /// cost is visible rather than mysterious.
 /// </para>
 /// </summary>
-public sealed partial class LexiconWarmUpService(ILogger<LexiconWarmUpService> logger) : IHostedService
+public sealed partial class LexiconWarmUpService(
+    ILogger<LexiconWarmUpService> logger,
+    IConflictRegister conflicts) : IHostedService
 {
     public Task StartAsync(CancellationToken cancellationToken)
     {
@@ -31,6 +34,12 @@ public sealed partial class LexiconWarmUpService(ILogger<LexiconWarmUpService> l
         // asserts that the merge produced something usable, rather than only that it did not throw.
         var ready = Gazetteer.TryResolve("Kyiv", out _);
 
+        // The conflict register is built on the lexicon, so it is warmed here rather than separately:
+        // it resolves eight thousand coded place names through the gazetteer that has just finished
+        // loading, and doing that inside whichever request arrives first would move a second of work
+        // somewhere no log would explain it.
+        var registered = conflicts.All.Count;
+
         stopwatch.Stop();
 
         LogWarmedUp(
@@ -39,7 +48,8 @@ public sealed partial class LexiconWarmUpService(ILogger<LexiconWarmUpService> l
             GlobalPlaces.All.Count,
             TheatrePlaces.All.Count,
             Gazetteer.SearchTermCount,
-            Gazetteer.AmbiguousSourcedNames);
+            Gazetteer.AmbiguousSourcedNames,
+            registered);
 
         if (!ready)
         {
@@ -58,12 +68,13 @@ public sealed partial class LexiconWarmUpService(ILogger<LexiconWarmUpService> l
         Level = LogLevel.Information,
         Message = "Place lexicon ready in {ElapsedMilliseconds} ms: {GlobalPlaces} global places, "
             + "{TheatrePlaces} theatre places, {SearchTerms} spellings searched for in prose, "
-            + "{ContestedNames} names held for context to settle.")]
+            + "{ContestedNames} names held for context to settle, {Conflicts} conflicts registered.")]
     private static partial void LogWarmedUp(
         ILogger logger,
         long elapsedMilliseconds,
         int globalPlaces,
         int theatrePlaces,
         int searchTerms,
-        int contestedNames);
+        int contestedNames,
+        int conflicts);
 }

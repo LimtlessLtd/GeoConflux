@@ -50,6 +50,14 @@
          size the encoding is most of the file: see docs/adr/033-tiered-gazetteer-artefact.md. The
          GeoNames attribution this carries is discharged by NOTICE at the repository root. -->
     <EmbeddedResource Include="Location/Data/global-places.tsv" />
+
+    <!-- The register of the world's armed conflicts: every conflict UCDP recorded an event for in
+         2024, with the places those events happened at, extracted once by tools/conflicts/extract.py
+         and committed. The same file is the conflict-coverage benchmark's ground truth, and it has to
+         be the same file: a benchmark scored against a different register from the one the system
+         watches would measure nothing. See docs/adr/035-conflicts-as-first-class-objects.md. -->
+    <EmbeddedResource Include="..\..\data\conflicts\ucdp-2024.tsv"
+                      LogicalName="Geopolitics.Infrastructure.Conflicts.Data.ucdp-conflicts.tsv" />
   </ItemGroup>
 
   <ItemGroup>

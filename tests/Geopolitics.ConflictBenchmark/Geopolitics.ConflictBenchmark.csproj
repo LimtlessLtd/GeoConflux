@@ -21,7 +21,7 @@
   <ItemGroup>
     <!-- The register travels with the test assembly, so the benchmark can never silently score
          itself against zero conflicts and report that it covers all of them. -->
-    <Content Include="..\data\conflict-benchmark\conflicts.tsv" Link="conflict-benchmark\conflicts.tsv">
+    <Content Include="..\..\data\conflicts\ucdp-2024.tsv" Link="conflict-benchmark\conflicts.tsv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
