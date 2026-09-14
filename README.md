@@ -389,6 +389,13 @@ Full per-class tables, every case where the two disagreed, the labelling rubric,
   a published incident. Backups use SQLite's online backup API rather than a file copy, because in
   write-ahead mode a file copy is silently missing whatever the log still holds
   ([ADR 036](docs/adr/036-running-continuously.md)).
+- **Collection runs on a schedule; what to collect does not.** A committed brief is executed daily
+  against the channels it already names, because collected bundles expire after a fortnight and a
+  repository left alone silently stops showing any. Writing or widening a brief stays an act somebody
+  makes in a diff. The distinction the schedule has to draw is the one a person drew implicitly: a
+  round that read every channel and matched nothing found a quiet week and commits nothing, while a
+  round that could read no channel at all found a broken collector and fails loudly
+  ([ADR 038](docs/adr/038-collection-without-being-asked.md)).
 - **Similarity is lexical, and says so.** The default measure compares the words two reports share
   and reports its method as `lexical-overlap`. It is not an embedding model and is not described as
   one; `ITextSimilarity` is the seam for a real one.

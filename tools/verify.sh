@@ -96,6 +96,15 @@ stage_tooling() {
     "$python" --version
     "$python" tools/collect/access.py --self-test
     "$python" tools/collect/collect.py --self-test
+
+    # What an unattended round does with what it collected, which is a third set of rules of the
+    # same kind: an empty bundle from a quiet week and an empty bundle from a collector that reached
+    # nothing are the same file and opposite facts. See docs/adr/038-collection-without-being-asked.md.
+    "$python" tools/collect/schedule.py --self-test
+
+    # The round itself, syntax-checked. It runs unattended on a schedule, so the first time anyone
+    # reads its output is after it has already decided what to commit.
+    bash -n tools/collect.sh
 }
 
 stage_format() {

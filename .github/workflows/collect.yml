@@ -1,0 +1,145 @@
+name: Collect OSINT bundles
+
+# Collection runs on a schedule; tasking does not.
+#
+# What gets collected is decided in data/osint/briefs — committed channels, committed terms,
+# committed caps — and changing that is an editorial act a person makes in a diff. Running an
+# already-committed brief against the channels it already names is not: it is the same act every
+# day, and leaving it to be remembered is how a dashboard quietly becomes a museum. Bundles expire
+# after fourteen days (AgentBriefOptions.MaxBundleAge), so an unattended repository was always going
+# to stop showing collected material a fortnight after the last time somebody thought to run it.
+#
+# See docs/adr/038-collection-without-being-asked.md.
+
+on:
+  schedule:
+    # Daily, well off the hour. The brief's recency window is seven days and bundles expire at
+    # fourteen, so daily keeps every bundle comfortably inside both with room for several
+    # consecutive failed runs before anything published goes stale.
+    - cron: '41 6 * * *'
+  workflow_dispatch:
+    inputs:
+      brief:
+        description: 'One brief id to collect, or blank for every committed brief'
+        required: false
+        default: ''
+
+# contents: write to commit the bundle; actions: write to ask the Pages workflow to publish it.
+# Nothing here needs any other scope.
+permissions:
+  contents: write
+  actions: write
+
+# Never two collection rounds at once. They would write the same dated filenames and race each
+# other to push, and the second would have nothing to add.
+concurrency:
+  group: collect
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      # No setup-python step. The collection tooling is standard library only — that is a property
+      # worth keeping rather than a limitation — so the interpreter the runner already ships is
+      # enough, and one less pinned action is one less thing to keep current.
+      - name: Collect every committed brief
+        # tools/collect.sh is what a developer runs locally, unchanged. A scheduled job whose logic
+        # lives only inside a workflow can only be debugged by pushing and waiting, which is the
+        # same argument that put the CI checks in tools/verify.sh.
+        #
+        # It self-tests the access policy before it reaches the network, collects each brief into a
+        # staging directory, and moves a bundle into data/osint only if it found something. A brief
+        # that read its channels and matched nothing is reported and costs nothing. A brief that
+        # could not read anything at all fails this step, because an empty bundle from a silent
+        # world and an empty bundle from a broken collector are the same file and opposite facts.
+        #
+        # The input goes through the environment rather than into the command line. A workflow that
+        # interpolates ${{ }} straight into a shell is the standard Actions injection, and "only
+        # someone with write access can dispatch it" is a reason to not care that has been wrong
+        # often enough to be worth the extra line.
+        env:
+          BRIEF: ${{ inputs.brief }}
+        run: bash tools/collect.sh $BRIEF
+
+      - name: Note what changed
+        id: changes
+        run: |
+          set -euo pipefail
+          if [ -z "$(git status --porcelain data/osint)" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Every brief was read and none of them found anything new. Nothing to commit."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git status --short data/osint
+          fi
+
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+        if: steps.changes.outputs.changed == 'true'
+        with:
+          dotnet-version: 10.0.x
+          global-json-file: global.json
+
+      - name: Lint the collected bundles before they reach main
+        if: steps.changes.outputs.changed == 'true'
+        # The same lint that runs in the full suite, run here as well and deliberately so. Once this
+        # commits unattended, "a malformed bundle fails the build" stops being sufficient on its
+        # own: the build it would fail is the next one, after the bad file is already on main and
+        # the published page has stopped updating. Catching it here costs two minutes a day and
+        # means the automation cannot break the branch it is committing to.
+        #
+        # The bundles reach the test output through a glob in the test project, so a file collected
+        # ten seconds ago is linted with no wiring at all.
+        run: >
+          dotnet test tests/Geopolitics.UnitTests --configuration Release
+          --filter "FullyQualifiedName~CommittedBundleLintTests"
+
+      - name: Commit and push
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+
+          # The repository owner, because this repository's rule is that its commits carry its
+          # owner's name and never a tool identity or a noreply vendor address. The automation is
+          # the owner's, configured in the owner's repository, and the commit message says plainly
+          # that a scheduled run produced it — so how it was made is on the record without
+          # inventing a second contributor to carry the blame.
+          git config user.name 'LimitlessLtd'
+          git config user.email 'fab_fabz@hotmail.co.uk'
+
+          git add data/osint
+
+          summary=$(git diff --cached --name-status data/osint | sed 's/^/  /')
+          git commit -m "data: collect OSINT bundles for $(date -u +%Y-%m-%d)" -m "Scheduled collection round.
+
+          $summary"
+
+          # A human push between our checkout and here is ordinary, not an error. Rebase onto it and
+          # try once more; never force, because the thing on the other end is somebody's work.
+          for attempt in 1 2; do
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+
+            echo "::notice::Push rejected on attempt $attempt; rebasing onto origin/main."
+            git pull --rebase origin main
+          done
+
+          echo "::error::Could not push the collected bundles after two attempts."
+          exit 1
+
+      - name: Publish what was collected
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # A push made with GITHUB_TOKEN deliberately does not trigger other workflows, so the commit
+        # above will not start the Pages deploy on its own. Asking for it explicitly is both the fix
+        # and the clearer statement: this round collected something, so publish it.
+        #
+        # If this ever stops working the step fails and the run goes red. That matters more than the
+        # dispatch itself — a collection pipeline whose last mile fails silently would keep
+        # committing bundles nobody ever sees, which is the exact failure this workflow exists to
+        # prevent, one stage further along.
+        run: gh workflow run pages.yml --ref main
