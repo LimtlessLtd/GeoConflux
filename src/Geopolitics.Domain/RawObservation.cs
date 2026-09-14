@@ -14,7 +14,16 @@ public sealed class RawObservation
     /// </summary>
     public const int MaxEntities = 12;
 
+    /// <summary>
+    /// How many conflicts one report may be recorded against, on either list. Multi-membership is
+    /// real — a strike on shipping belongs to the war it is part of and to the wider confrontation —
+    /// and this is a bound on it rather than a denial of it.
+    /// </summary>
+    public const int MaxConflicts = 8;
+
     private readonly List<ExtractedEntity> entities = [];
+    private readonly List<string> conflictKeys = [];
+    private readonly List<string> conflictCandidateKeys = [];
 
     private RawObservation()
     {
@@ -200,6 +209,38 @@ public sealed class RawObservation
     public IReadOnlyList<ExtractedEntity> Entities => entities.AsReadOnly();
 
     /// <summary>
+    /// Conflicts this report was held to belong to. Usually none or one; more than one is expected
+    /// and correct, which is why counts per conflict do not sum to the number of observations.
+    /// </summary>
+    public IReadOnlyList<string> ConflictKeys => conflictKeys.AsReadOnly();
+
+    /// <summary>
+    /// Conflicts whose geography contains this report but which nothing in it identifies. Kept
+    /// because "inside the area of four wars, and no way to tell which" is a fact worth storing, and
+    /// discarding it would make an unassigned report indistinguishable from one nothing covers.
+    /// </summary>
+    public IReadOnlyList<string> ConflictCandidateKeys => conflictCandidateKeys.AsReadOnly();
+
+    /// <summary>
+    /// Why this report belongs where it does. One value rather than one per conflict, because the
+    /// assignment only ever takes the conflicts that matched at the strongest available basis — a
+    /// report is not assigned to one conflict because its source coded it and to another because it
+    /// happened nearby.
+    /// </summary>
+    public ConflictMatchBasis? ConflictBasis { get; private set; }
+
+    /// <summary>
+    /// Why this report belongs to no conflict, when it belongs to none. Stored rather than derived,
+    /// because the reasons differ in what they say about this system: never placed, placed somewhere
+    /// no coded conflict reaches, and placed somewhere four of them overlap are three different
+    /// facts and only one of them is a gap in coverage.
+    /// </summary>
+    public string? ConflictNote { get; private set; }
+
+    /// <summary>Whether this report was placed in a conflict at all.</summary>
+    public bool IsAssignedToConflict => conflictKeys.Count > 0;
+
+    /// <summary>
     /// What the trained severity model thought, or <see langword="null"/> when it was disabled,
     /// unavailable, or not reached.
     /// <para>
@@ -368,6 +409,56 @@ public sealed class RawObservation
                 entities.Add(entity);
             }
         }
+    }
+
+    /// <summary>
+    /// Records which conflicts this report belongs to, which ones it might belong to, and — when it
+    /// belongs to none — why not.
+    /// <para>
+    /// All three go on together because they are one answer. Storing the memberships without the
+    /// candidates would turn "four wars overlap here and nothing says which" into silence, and
+    /// silence is the one reading of an unassigned report that is definitely wrong.
+    /// </para>
+    /// </summary>
+    public void AssignConflicts(
+        IEnumerable<string> keys,
+        ConflictMatchBasis? basis,
+        IEnumerable<string> candidates,
+        string? note)
+    {
+        ArgumentNullException.ThrowIfNull(keys);
+        ArgumentNullException.ThrowIfNull(candidates);
+
+        conflictKeys.Clear();
+        conflictCandidateKeys.Clear();
+
+        foreach (var key in keys)
+        {
+            if (!string.IsNullOrWhiteSpace(key)
+                && conflictKeys.Count < MaxConflicts
+                && !conflictKeys.Contains(key.Trim(), StringComparer.Ordinal))
+            {
+                conflictKeys.Add(key.Trim());
+            }
+        }
+
+        foreach (var key in candidates)
+        {
+            if (!string.IsNullOrWhiteSpace(key)
+                && conflictCandidateKeys.Count < MaxConflicts
+                && !conflictCandidateKeys.Contains(key.Trim(), StringComparer.Ordinal))
+            {
+                conflictCandidateKeys.Add(key.Trim());
+            }
+        }
+
+        if (conflictKeys.Count > 0 && basis is null or ConflictMatchBasis.None)
+        {
+            throw new DomainException("A conflict assignment must record what it rests on.");
+        }
+
+        ConflictBasis = conflictKeys.Count == 0 ? null : basis;
+        ConflictNote = Cap(note, 500);
     }
 
     /// <summary>

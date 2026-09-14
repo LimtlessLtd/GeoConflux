@@ -58,6 +58,17 @@ public sealed record ObservationEnvelope
 
     public string? DeclaredCountryCode { get; init; }
 
+    /// <summary>
+    /// The conflict the source's own coding assigned this to, in register form — <c>ucdp:13243</c>.
+    /// <para>
+    /// Set only by the adapters that read a conflict-coding project, which is where this field is the
+    /// strongest statement available: cataloguing organised violence into named conflicts is that
+    /// project's whole job, and nothing this system infers from the same record improves on it. Every
+    /// other source leaves it null and is assigned by predicate or by model instead.
+    /// </para>
+    /// </summary>
+    public string? DeclaredConflictKey { get; init; }
+
     public EventType? DeclaredEventType { get; init; }
 
     public Severity? DeclaredSeverity { get; init; }

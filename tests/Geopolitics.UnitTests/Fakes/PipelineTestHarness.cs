@@ -1,4 +1,5 @@
 using Geopolitics.Application.Abstractions;
+using Geopolitics.Application.Conflicts;
 using Geopolitics.Application.Contracts;
 using Geopolitics.Application.Enrichment;
 using Geopolitics.Application.Pipeline;
@@ -212,6 +213,12 @@ public sealed class PipelineTestHarness
     /// </summary>
     public ISeverityModel SeverityModel { get; set; } = new SilentSeverityModel();
 
+    /// <summary>
+    /// Empty by default, so an unrelated pipeline test assigns nothing and asserts nothing about the
+    /// register. A test about membership replaces it with the entries it means to reason about.
+    /// </summary>
+    public IConflictRegister Conflicts { get; set; } = new FixedConflictRegister();
+
     public ObservationProcessor BuildProcessor() => new(
         Normaliser,
         Observations,
@@ -221,6 +228,7 @@ public sealed class PipelineTestHarness
         Microsoft.Extensions.Options.Options.Create(Enrichment),
         SeverityModel,
         LocationResolver,
+        new ConflictAssigner(Conflicts),
         Correlator,
         CorrelationLock,
         Corroboration,
@@ -246,6 +254,8 @@ public sealed class PipelineTestHarness
         Severity? severity = null,
         DateTimeOffset? occurredAt = null,
         string? locationName = null,
+        string? conflictKey = null,
+        string? countryCode = null,
         SourceAttribution? attribution = null) => new()
         {
             SourceName = sourceName,
@@ -257,6 +267,8 @@ public sealed class PipelineTestHarness
             DeclaredSeverity = severity,
             OccurredAt = occurredAt,
             DeclaredLocationName = locationName,
+            DeclaredConflictKey = conflictKey,
+            DeclaredCountryCode = countryCode,
             Attribution = attribution ?? SourceAttribution.Published,
         };
 

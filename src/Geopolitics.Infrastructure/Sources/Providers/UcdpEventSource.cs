@@ -162,6 +162,10 @@ internal sealed partial class UcdpEventSource(
         DeclaredPrecision = record.Latitude is null ? null : record.Precision,
         DeclaredCountryCode = CountryCode(record.CountryName),
 
+        // The register key, in the form the register uses. Prefixed with the project rather than
+        // passed bare, so two coding projects numbering their conflicts from one cannot collide.
+        DeclaredConflictKey = record.ConflictId is null ? null : $"ucdp:{record.ConflictId}",
+
         // Coded by hand at Uppsala, so stated rather than inferred, exactly as for ACLED.
         DeclaredEventType = record.EventType,
         DeclaredSeverity = record.Severity,

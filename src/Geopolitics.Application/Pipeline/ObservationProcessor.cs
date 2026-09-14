@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Geopolitics.Application.Abstractions;
+using Geopolitics.Application.Conflicts;
 using Geopolitics.Application.Contracts;
 using Geopolitics.Application.Enrichment;
 using Geopolitics.Domain;
@@ -22,6 +23,7 @@ public sealed partial class ObservationProcessor(
     IOptions<EnrichmentOptions> enrichmentOptions,
     ISeverityModel severityModel,
     ILocationResolver locationResolver,
+    IConflictAssigner conflictAssigner,
     IIncidentCorrelator correlator,
     CorrelationLock correlationLock,
     CorroborationGate corroborationGate,
@@ -128,6 +130,17 @@ public sealed partial class ObservationProcessor(
         {
             await ResolveLocationAsync(envelope, observation, cancellationToken);
             stage.Tag("location.resolved", observation.Location is not null);
+        }
+
+        // After placement, because where a report was placed is half of what decides which conflict
+        // it belongs to, and before correlation, so the answer is recorded against the observation
+        // whether or not it goes on to join an incident. Nothing downstream depends on it, which is
+        // the point: membership is a description of the evidence, not a gate on it.
+        using (var stage = diagnostics.StartStage(PipelineDiagnostics.Stages.AssignConflict))
+        {
+            AssignConflicts(envelope, observation);
+            stage.Tag("conflict.assigned", observation.IsAssignedToConflict);
+            stage.Tag("conflict.basis", observation.ConflictBasis?.ToString() ?? "none");
         }
 
         var incidentCreated = false;
@@ -552,6 +565,32 @@ public sealed partial class ObservationProcessor(
     /// Attempts coordinate resolution. Failure is expected and non-fatal: the observation stays in
     /// the system without a map position rather than being dropped or given invented coordinates.
     /// </summary>
+    /// <summary>
+    /// Records which conflicts this report belongs to, from what it now knows about itself.
+    /// <para>
+    /// Everything the predicate reads was settled by an earlier stage, and reading it from the
+    /// observation rather than from the envelope matters: the place is the one the deterministic
+    /// resolver accepted rather than the one the source claimed, and the actors are the ones
+    /// extraction found. Where the observation knows nothing, the envelope's declaration is used, so
+    /// a coded record that could not be placed is still assigned by the country its provider stated.
+    /// </para>
+    /// </summary>
+    private void AssignConflicts(ObservationEnvelope envelope, RawObservation observation)
+    {
+        var assignment = conflictAssigner.Assign(new ConflictCandidate(
+            CodedConflictKey: envelope.DeclaredConflictKey,
+            CountryCode: observation.Location?.CountryCode ?? envelope.DeclaredCountryCode,
+            PlaceName: observation.Location?.Name ?? observation.LocationName,
+            ActorNames: [.. observation.Entities.Select(entity => entity.Name)],
+            EventType: observation.EventType));
+
+        observation.AssignConflicts(
+            assignment.Memberships.Select(membership => membership.ConflictKey),
+            assignment.Memberships.Count > 0 ? assignment.Memberships[0].Basis : null,
+            assignment.Candidates.Select(membership => membership.ConflictKey),
+            assignment.Note);
+    }
+
     private async Task ResolveLocationAsync(
         ObservationEnvelope envelope,
         RawObservation observation,

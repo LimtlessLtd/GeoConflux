@@ -232,6 +232,23 @@ public sealed class GeopoliticsDbContext(DbContextOptions<GeopoliticsDbContext> 
             });
         observation.Navigation(value => value.Entities).UsePropertyAccessMode(PropertyAccessMode.Field);
 
+        // Conflict membership, stored as JSON arrays for the same reason the entity keys on an
+        // incident are: they are read with their row and never joined against. What they are not is
+        // optional — an unmapped collection comes back empty after a reload, and a report that
+        // belonged to a war would quietly stop belonging to it the moment it left memory.
+        observation.PrimitiveCollection(value => value.ConflictKeys)
+            .HasColumnName("conflict_keys")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+        observation.PrimitiveCollection(value => value.ConflictCandidateKeys)
+            .HasColumnName("conflict_candidate_keys")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+        observation.Property(value => value.ConflictBasis)
+            .HasColumnName("conflict_basis")
+            .HasConversion<string>()
+            .HasMaxLength(20);
+        observation.Property(value => value.ConflictNote).HasColumnName("conflict_note").HasMaxLength(500);
+        observation.Ignore(value => value.IsAssignedToConflict);
+
         // Deduplication depends on this constraint rather than on the read-then-insert check alone,
         // because concurrent processors can both pass that check for the same payload.
         observation.HasIndex(value => value.Fingerprint)

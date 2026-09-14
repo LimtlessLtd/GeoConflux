@@ -31,7 +31,8 @@ public sealed record ObservationResponse(
     string? DetectedLanguage,
     string? SeverityRationale,
     IReadOnlyList<EntityResponse> Entities,
-    SeverityOpinion? ModelSeverity)
+    SeverityOpinion? ModelSeverity,
+    ConflictMembershipResponse Conflicts)
 {
     public static ObservationResponse FromDomain(RawObservation observation)
     {
@@ -78,12 +79,37 @@ public sealed record ObservationResponse(
                     observation.ModelSeverityConfidence ?? 0,
                     observation.ModelVersion ?? "unknown",
                     observation.ModelDisagrees)
-                : null);
+                : null,
+            new ConflictMembershipResponse(
+                observation.ConflictKeys,
+                observation.ConflictBasis,
+                observation.ConflictCandidateKeys,
+                observation.ConflictNote));
     }
 }
 
 /// <summary>A named actor the enrichment step reported. A claim about the text, not a verified fact.</summary>
 public sealed record EntityResponse(string Name, EntityType Type);
+
+/// <summary>
+/// Which conflicts a report belongs to, which ones it might belong to, and why it belongs to none
+/// when it does not.
+/// <para>
+/// One object rather than four loose fields, so nothing can read the memberships without also having
+/// the candidates and the note in front of it. An empty list on its own reads as "nothing here",
+/// which is exactly the wrong conclusion when the truth is that four wars overlap where this report
+/// was placed and no coding says which one it is.
+/// </para>
+/// </summary>
+/// <param name="Keys">Register keys this report belongs to. More than one is expected, so counts across conflicts do not sum.</param>
+/// <param name="Basis">What the membership rests on, from the source coding it to it merely happening in the right country.</param>
+/// <param name="Candidates">Conflicts whose geography contains it but which nothing in it identifies.</param>
+/// <param name="Note">Why there is no membership, when there is none.</param>
+public sealed record ConflictMembershipResponse(
+    IReadOnlyList<string> Keys,
+    ConflictMatchBasis? Basis,
+    IReadOnlyList<string> Candidates,
+    string? Note);
 
 /// <summary>
 /// What the trained severity model would have said about this observation.

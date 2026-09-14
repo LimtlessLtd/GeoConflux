@@ -9,6 +9,12 @@ namespace Geopolitics.Infrastructure.Sources.Providers;
 /// <param name="Precision">What UCDP says its coordinates describe, from <c>where_prec</c>.</param>
 /// <param name="CountryName">The country as UCDP names it. The schema carries no alpha-2 code.</param>
 /// <param name="Deaths">The <c>best</c> estimate of deaths, which drives the severity mapping.</param>
+/// <param name="ConflictId">
+/// UCDP's own identifier for the conflict this event belongs to, from <c>conflict_new_id</c>. Read
+/// rather than discarded because it is the strongest statement about membership this system will ever
+/// see: assigning events to named conflicts on published criteria is what the project does, and every
+/// other path here is an inference by comparison.
+/// </param>
 public sealed record UcdpEvent(
     string Identifier,
     string Headline,
@@ -21,7 +27,8 @@ public sealed record UcdpEvent(
     string? CountryName,
     string? LocationName,
     DateTimeOffset? OccurredAt,
-    int Deaths);
+    int Deaths,
+    string? ConflictId = null);
 
 /// <param name="Events">The rows this parser could make sense of.</param>
 /// <param name="Truncated">Whether UCDP's own envelope says a further page exists.</param>
@@ -183,7 +190,8 @@ public static class UcdpResponseParser
             country,
             place,
             ParseDate(Text(element, "date_start") ?? Text(element, "date_end")),
-            deaths);
+            deaths,
+            Text(element, "conflict_new_id") ?? Text(element, "conflict_id"));
     }
 
     /// <summary>
