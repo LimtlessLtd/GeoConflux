@@ -1,0 +1,173 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-09-14T2052Z-maritime-chokepoints",
+  "collectedAt": "2026-09-14T20:52:01Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "8cdb0d44"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/395374",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-09-14T18:00:15Z",
+      "retrievedAt": "2026-09-14T20:52:01Z",
+      "contentHash": "sha256:144b2e062edc54c552e0f349137262bf7a447e5a9d0c04f7f95b43147705c20b",
+      "excerpt": "Главные новости к этому часу: ▪️ВС РФ ударными дронами поразили в порту Одесса сухогруз. ▪️Трамп заявил о согласии Украины не бить по энергообъектам России. ▪️РФ не рассматривает Швейцарию как площадку для переговоров по Украине, заявил ТАСС Грушко. ▪️ЕС согласовал продление санкций против РФ на семь дней, сообщает EUobserver. ▪️Российский рынок акций ускорил рост после заявления Трампа о договоренности с Украиной. ▪️Зеленский отстранил Кравченко от должности генпрокурора без согласования с Радой. ▪️В Карелии в ДТП с семью пострадавшими столкнулись четыре автомобиля. ▪️Мощи Спиридона Тримифунтского принесли в Храм Христа Спасителя. ▪️США заявили, что обладают орбитальным оружием для контроля над космосом. ✔️ Подпишись на ТАСС в \"Максе\"",
+      "placeNames": [
+        "Одесса"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mvhmrtmcsz2y",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-09-14T07:50:20Z",
+      "retrievedAt": "2026-09-14T20:52:01Z",
+      "contentHash": "sha256:064df08d65d5e31baeda5b18c09adaa22e899da9a666c51d469d75be9868b305",
+      "excerpt": "Yemen’s Houthi rebels captured more strategic islands in the southern Red Sea, officials said, strengthening their control of a major maritime shipping route.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mvgihbx2d72e",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-09-13T21:00:12Z",
+      "retrievedAt": "2026-09-14T20:52:01Z",
+      "contentHash": "sha256:3c36ed4fe26f7bd4f85d7ed7868cee0eaf232d4e4076a0c018a05bc239a3d61e",
+      "excerpt": "Somali businesses are seeking alternative shipping routes due to disruptions and security concerns around the Bab al-Mandab Strait and the Strait of Hormuz after Iran-backed Houthis captured a key port city and an island, sending thousands of Yemenis fleeing to neighboring Djibouti.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mvi2qhe7ce2s",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-14T12:00:06Z",
+      "retrievedAt": "2026-09-14T20:52:01Z",
+      "contentHash": "sha256:1be0d479a87f9cb202dd5c8bb3d7670425b4fe9b75ea0594821a26f9d1fec605",
+      "excerpt": "US says it’s clearing Hormuz traffic: Why are oil futures beyond $100? https://aje.news/vn5a1t",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mvhz2rtmz72s",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-14T11:30:05Z",
+      "retrievedAt": "2026-09-14T20:52:01Z",
+      "contentHash": "sha256:0325041fcb240cb37d8172e0bb5a45e62b74fd567e12e4469018380f8303c333",
+      "excerpt": "Strait of Hormuz talks postponed due to Yemen events, says Iran https://aje.news/x99slm",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mvgu6mdnv32b",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-14T00:30:05Z",
+      "retrievedAt": "2026-09-14T20:52:01Z",
+      "contentHash": "sha256:78cc69fc40908cc0492543813c885afb5e635387af7e0146b8086695f020fab8",
+      "excerpt": "Oman says Hormuz talks with Iran and Gulf states are postponed 'in the interests of consensus'.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3mvcg6kwbxq2h",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-09-12T06:08:53Z",
+      "retrievedAt": "2026-09-14T20:52:01Z",
+      "contentHash": "sha256:317716bdaeee231989af44c25d7d7a50eb3ab11f377d117fac1b1cae73744c3c",
+      "excerpt": "Iranian-backed Houthi rebels in Yemen have captured a strategic island in the Bab el-Mandeb Strait. The move threatens Saudi oil exports through a key commercial lane. And Saudi Arabia said it shut down a major oil pipeline as a precaution after it came under attack. n.pr/4hp1T7a",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 3,
+        "collected": 3
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 1
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}

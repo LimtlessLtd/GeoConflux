@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-09-14T2054Z-armed-conflict",
+  "collectedAt": "2026-09-14T20:54:19Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 1
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "a65f1cd0"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-09-14T20:54:19Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-09-14T20:54:19Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mvhmrtmcsz2y",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-09-14T07:50:20Z",
+      "retrievedAt": "2026-09-14T20:54:19Z",
+      "contentHash": "sha256:064df08d65d5e31baeda5b18c09adaa22e899da9a666c51d469d75be9868b305",
+      "excerpt": "Yemen’s Houthi rebels captured more strategic islands in the southern Red Sea, officials said, strengthening their control of a major maritime shipping route.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3mvhyqvvlhn2l",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-09-14T11:24:34Z",
+      "retrievedAt": "2026-09-14T20:54:19Z",
+      "contentHash": "sha256:d60da175416c3a7733a764f30ffd9077e8bc62221ffd215476e4a47da48fa106",
+      "excerpt": "🇹🇷 La police turque a procédé tôt dimanche à des dizaines d'arrestations dans des bars gay et aux domiciles de militants LGBT+, une vaste opération mise en lumière par le pouvoir islamo-conservateur, qui dit agir au nom de la protection de la famille traditionnelle.➡️ u.afp.com/Sjec",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mviliuizu62q",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-14T17:00:05Z",
+      "retrievedAt": "2026-09-14T20:54:19Z",
+      "contentHash": "sha256:6adb60b2e630f3341b8b8b4b6c31f74b44aed0316905c70d779287ab36300b30",
+      "excerpt": "B’Tselem says settlement expansion, displacement and curbs are not isolated abuses, but decades-old, coordinated system.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mvhse76c6p2n",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-14T09:30:05Z",
+      "retrievedAt": "2026-09-14T20:54:19Z",
+      "contentHash": "sha256:3803e445a35d9eebccdc563fab9a0c58dd120561a702c67ed5a39a4f9229afe1",
+      "excerpt": "Yemeni government forces have advanced in western Taiz after successfully repelling a Houthi offensive.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3mvcg6kwbxq2h",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-09-12T06:08:53Z",
+      "retrievedAt": "2026-09-14T20:54:19Z",
+      "contentHash": "sha256:317716bdaeee231989af44c25d7d7a50eb3ab11f377d117fac1b1cae73744c3c",
+      "excerpt": "Iranian-backed Houthi rebels in Yemen have captured a strategic island in the Bab el-Mandeb Strait. The move threatens Saudi oil exports through a key commercial lane. And Saudi Arabia said it shut down a major oil pipeline as a precaution after it came under attack. n.pr/4hp1T7a",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}

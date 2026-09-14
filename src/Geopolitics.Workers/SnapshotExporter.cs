@@ -187,8 +187,18 @@ public static partial class SnapshotExporter
         var spatialQueries = scope.ServiceProvider.GetRequiredService<ISpatialQueryService>();
         var analyticsQueries = scope.ServiceProvider.GetRequiredService<IAnalyticsService>();
 
-        var incidents = await incidentQueries.ListAsync(new IncidentSearch(250), cancellationToken);
-        var observations = await observationQueries.ListRecentAsync(200, cancellationToken);
+        // Raised from 250 and 200 on 2026-09-14, when the deploy went from four English feeds to ten
+        // across five languages. A run now produces around two hundred observations, and the old
+        // ceiling would have quietly dropped the tail — publishing a sample of what the pipeline
+        // collected while every count beside it described the whole. A truncating export is the same
+        // defect as a truncating spatial search: not wrong output, but output that says less than it
+        // appears to and does not admit it.
+        //
+        // This is a ceiling rather than a target. When a run genuinely approaches it the answer is
+        // spatial tiling, which the global coverage assessment records as Sprint 14's problem, not a
+        // larger number here.
+        var incidents = await incidentQueries.ListAsync(new IncidentSearch(400), cancellationToken);
+        var observations = await observationQueries.ListRecentAsync(400, cancellationToken);
 
         Directory.CreateDirectory(outputDirectory);
         var evidenceDirectory = Path.Combine(outputDirectory, "evidence");

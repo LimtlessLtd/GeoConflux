@@ -1,0 +1,136 @@
+{
+  "$comment": "The executable half of armed-conflict.md beside it. Committed so a run is reproducible and so a reader can see exactly which channels the dashboard was and was not looking at. Run with: python tools/collect/collect.py --run data/osint/briefs/armed-conflict.run.json --out data/osint/<date>-armed-conflict.json",
+  "brief": "armed-conflict",
+  "revision": 1,
+  "caps": {
+    "$comment": "Looser than the maritime brief's, because the scope is wider rather than because the restraint matters less. A conflict brief that capped at three per channel would take three headlines from a wire service publishing forty relevant ones and call that a picture. Per-platform still binds hardest: one busy platform must not stand in for the world.",
+    "perChannel": 5,
+    "perPlatform": 15,
+    "total": 60
+  },
+  "termsNote": "Each concept is carried in every language the brief covers, because searching in English finds what English publishes and a conflict is reported in the language it happens in. Terms are matched as substrings, which is why the obvious words are absent: 'attack' matches a heart attack and a panic attack, 'killed' matches a road accident, and 'strike' matches industrial action. A term list that over-collects makes the bundle misrepresent what was looked for, which is the one thing a committed brief must not do.",
+  "terms": [
+    "armed clash",
+    "armed clashes",
+    "armed group",
+    "armed groups",
+    "shelling",
+    "airstrike",
+    "air strike",
+    "air strikes",
+    "artillery",
+    "drone strike",
+    "offensive",
+    "counteroffensive",
+    "ceasefire",
+    "cease-fire",
+    "insurgents",
+    "militants",
+    "rebels",
+    "gunmen",
+    "ambush",
+    "military operation",
+    "ground operation",
+    "front line",
+    "frontline",
+    "besieged",
+    "siege",
+    "displaced",
+    "displacement",
+    "civilian casualties",
+    "peacekeepers",
+    "paramilitary",
+    "captured the town",
+    "captured the city",
+    "seized control",
+    "recaptured",
+    "اشتباكات",
+    "قصف",
+    "غارة",
+    "غارات",
+    "مسلحين",
+    "مسلحون",
+    "نزوح",
+    "وقف إطلاق النار",
+    "الجيش",
+    "المتمردين",
+    "عملية عسكرية",
+    "جبهة",
+    "обстріл",
+    "обстрел",
+    "наступ",
+    "наступление",
+    "бойовики",
+    "боевики",
+    "авіаудар",
+    "авиаудар",
+    "перемир'я",
+    "перемирие",
+    "лінія фронту",
+    "линия фронта",
+    "бойові дії",
+    "боевые действия",
+    "affrontements",
+    "jihadistes",
+    "djihadistes",
+    "groupe armé",
+    "cessez-le-feu",
+    "déplacés",
+    "opération militaire",
+    "rebelles",
+    "enfrentamientos",
+    "grupo armado",
+    "desplazados",
+    "disidencias",
+    "alto el fuego",
+    "درگیری",
+    "حمله هوایی",
+    "آتش‌بس"
+  ],
+  "sources": [
+    {
+      "$comment": "The same channels the maritime brief verified on 2026-09-13 as serving public content with no credential and no JavaScript. They are reused rather than re-chosen because their public-readability is the property that took work to establish, and because a conflict brief and a maritime one reading the same channels makes the two bundles directly comparable.",
+      "platform": "telegram",
+      "channel": "bbcbreaking"
+    },
+    {
+      "platform": "telegram",
+      "channel": "ukrainenowenglish"
+    },
+    {
+      "$comment": "State media, read as what it is: a government's account of events, valuable precisely because it states a position and never mistaken for an independent one. The run's main source of Russian-script text.",
+      "platform": "telegram",
+      "channel": "tass_agency"
+    },
+    {
+      "platform": "bluesky",
+      "channel": "reuters.com"
+    },
+    {
+      "platform": "bluesky",
+      "channel": "apnews.com"
+    },
+    {
+      "platform": "bluesky",
+      "channel": "afp.com"
+    },
+    {
+      "platform": "bluesky",
+      "channel": "aljazeera.com"
+    },
+    {
+      "platform": "bluesky",
+      "channel": "npr.org"
+    },
+    {
+      "$comment": "Kept even when it publishes nothing matching. A source that is listed and produces nothing is a stated gap; a source quietly dropped is an unstated one, and the difference is the whole of why coverage here is measured rather than asserted.",
+      "platform": "bluesky",
+      "channel": "bbcnews.bsky.social"
+    },
+    {
+      "platform": "mastodon",
+      "channel": "theguardian",
+      "instance": "mastodon.social"
+    }
+  ]
+}

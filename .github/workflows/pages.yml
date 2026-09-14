@@ -91,6 +91,31 @@ jobs:
           Providers__Rss__Feeds__3__Name: al-jazeera
           Providers__Rss__Feeds__3__Url: https://www.aljazeera.com/xml/rss/all.xml
 
+          # Added 2026-09-14, and every one of them for the same measured reason: the published
+          # snapshot was 95 English observations out of 99. A conflict is reported in the language it
+          # happens in, so an English-only feed list finds what English publishes and calls the rest
+          # quiet -- which is precisely the failure the coverage panel exists to make visible rather
+          # than to commit. These six take the page from one language to five.
+          #
+          # Each was fetched once on 2026-09-14 and answered 200 with real items before being listed
+          # here; Al Jazeera Arabic answered 301 and was dropped rather than have its redirect
+          # guessed at. Adding a feed that serves nothing would be claiming reach this does not have.
+          Providers__Rss__Feeds__4__Name: un-news-ar
+          Providers__Rss__Feeds__4__Url: https://news.un.org/feed/subscribe/ar/news/all/rss.xml
+          Providers__Rss__Feeds__5__Name: un-news-fr
+          Providers__Rss__Feeds__5__Url: https://news.un.org/feed/subscribe/fr/news/all/rss.xml
+          Providers__Rss__Feeds__6__Name: un-news-es
+          Providers__Rss__Feeds__6__Url: https://news.un.org/feed/subscribe/es/news/all/rss.xml
+          Providers__Rss__Feeds__7__Name: bbc-arabic
+          Providers__Rss__Feeds__7__Url: https://feeds.bbci.co.uk/arabic/rss.xml
+
+          # The Sahel is the region the global coverage assessment names as thinnest, and RFI is the
+          # wire that covers it in the language most of it is reported in.
+          Providers__Rss__Feeds__8__Name: rfi-afrique
+          Providers__Rss__Feeds__8__Url: https://www.rfi.fr/fr/afrique/rss
+          Providers__Rss__Feeds__9__Name: ukrinform
+          Providers__Rss__Feeds__9__Url: https://www.ukrinform.net/rss/block-lastnews
+
           # ACLED and UCDP are the two sources that make coverage global rather than deep in a few
           # theatres: human-coded conflict events, with their own coordinates and their own stated
           # precision, for every populated continent. Both are credentialed, both are free to
