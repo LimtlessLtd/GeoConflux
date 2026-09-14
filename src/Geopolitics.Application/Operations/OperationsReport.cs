@@ -77,6 +77,27 @@ public sealed record BackupStanding(
     string Note);
 
 /// <summary>
+/// What this host is deleting, and what it is deliberately not.
+/// </summary>
+/// <param name="Enabled">Whether anything is deleted at all.</param>
+/// <param name="Keep">How long a prunable row is kept.</param>
+/// <param name="PrunableNow">How many rows the policy would remove if it ran now.</param>
+/// <param name="RowsRemoved">How many it has removed since this host started.</param>
+/// <param name="ReclaimedBytes">How much disk that gave back.</param>
+/// <param name="LastRunAt">When it last ran, or null if it has not run on this host.</param>
+/// <param name="Boundary">What retention will never delete, and why.</param>
+/// <param name="Note">What the figures beside it mean.</param>
+public sealed record RetentionStanding(
+    bool Enabled,
+    TimeSpan Keep,
+    long PrunableNow,
+    long RowsRemoved,
+    long ReclaimedBytes,
+    DateTimeOffset? LastRunAt,
+    string Boundary,
+    string Note);
+
+/// <summary>
 /// What a host that has been left running can say about itself.
 /// <para>
 /// Separate from the coverage report, which answers a different question. Coverage is about the
@@ -88,10 +109,12 @@ public sealed record BackupStanding(
 /// </summary>
 /// <param name="Holdings">Rows and bytes, measured rather than estimated.</param>
 /// <param name="Backups">Whether any of it would survive the disk it is on.</param>
+/// <param name="Retention">What it is throwing away, and what it will not.</param>
 /// <param name="MeasuredAt">When these figures were taken.</param>
 public sealed record OperationsReport(
     HoldingsReport Holdings,
     BackupStanding Backups,
+    RetentionStanding Retention,
     DateTimeOffset MeasuredAt);
 
 /// <summary>States what this host holds and how it has been running.</summary>
@@ -166,7 +189,40 @@ public sealed class OperationsService(IOperationsRepository repository, TimeProv
                 "Rows and bytes this host is holding now. A retention policy is a decision about "
                 + "these numbers, and until they existed there was nothing to decide it against."),
             Standing(measurement.Backups, now),
+            Standing(measurement.Retention),
             now);
+    }
+
+    /// <summary>
+    /// States the policy, what it would take, and what it will not take whatever the numbers say.
+    /// <para>
+    /// The boundary is repeated in the payload rather than left in an ADR, because this is the one
+    /// figure on the page that describes deletion. A reader looking at a count of rows removed is
+    /// entitled to know, in the same breath, that no incident lost its evidence to it.
+    /// </para>
+    /// </summary>
+    private static RetentionStanding Standing(RetentionState retention)
+    {
+        var note = retention.Enabled
+            ? retention.LastRunAt is null
+                ? "Retention is on and has not yet run on this host; the first pass is one interval "
+                    + "after start-up, so a restart during a diagnosis does not delete what is being read."
+                : $"{retention.RowsRemoved} row(s) removed since this host started. {RetentionPolicy.Cost}"
+            : "Retention is off, so nothing is deleted. The prunable figure beside it is what a "
+                + "policy would take today, and it is the number the decision to turn one on is made "
+                + "against.";
+
+        return new RetentionStanding(
+            retention.Enabled,
+            retention.Keep,
+            retention.PrunableNow,
+            retention.RowsRemoved,
+            retention.ReclaimedBytes,
+            retention.LastRunAt,
+            "Only duplicate and failed observations are ever deleted, and only once nothing links "
+                + "them to an incident. Evidence behind a published incident is never touched. "
+                + RetentionPolicy.HeldClaimsExcluded,
+            note);
     }
 
     /// <summary>

@@ -135,6 +135,38 @@ export function backupLine(report) {
 }
 
 /**
+ * What this host is deleting, with the figure that decides whether it should be.
+ *
+ * The prunable count is stated in both cases. Retention off with nothing prunable and retention off
+ * while sitting on a hundred thousand prunable rows read identically from a flag, and the number is
+ * the only thing that separates them.
+ */
+export function retentionLine(report) {
+  const retention = report?.retention;
+  if (!retention) return '';
+
+  const prunable = `${plural(asCount(retention.prunableNow), 'row')} prunable today`;
+
+  return retention.enabled
+    ? `Retention is on: ${plural(asCount(retention.rowsRemoved), 'row')} removed since this host `
+      + `started, ${prunable}.`
+    : `Retention is off, so nothing is deleted. ${prunable[0].toUpperCase()}${prunable.slice(1)}.`;
+}
+
+/**
+ * What retention will never delete, shown beside a count of what it has.
+ *
+ * Only when it is actually running. A boundary is a reassurance about an action, and printing it
+ * where no action happens is the kind of standing notice readers learn to skip — which is precisely
+ * the day it would have mattered.
+ */
+export function retentionBoundary(report) {
+  const retention = report?.retention;
+
+  return retention?.enabled ? String(retention.boundary ?? '') : '';
+}
+
+/**
  * What a year at the current rate would cost, or why that was not answered.
  *
  * The refusal is passed through rather than replaced with a zero. A projection declined for want of

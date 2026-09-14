@@ -130,3 +130,53 @@ up constantly.
 **What the panel reports is the directory, not the scheduler.** A service that has been failing for a
 fortnight reports a fortnight of attempts; the directory reports a fortnight-old copy. The second is
 the fact that matters, and a status flag would have hidden it.
+
+## Retention
+
+Nothing is deleted unless you say so:
+
+```jsonc
+"Retention": {
+  "Enabled": false,            // shipped off
+  "Interval": "24:00:00",
+  "Keep": "90.00:00:00"        // measured from when this host received the row
+}
+```
+
+Off is not caution for its own sake. The rule for this work was *measure before deciding*, and the
+holdings panel is the measurement — it reports how many rows a policy would remove today whether or
+not one is running, because that count is what the decision is made against. Turning retention on
+before reading it would be choosing a policy from a guess about volume.
+
+**What can be deleted, and nothing else:**
+
+| | |
+| --- | --- |
+| Duplicate observations | A repeat delivery, kept so a redelivery stays auditable. `MarkDuplicate` clears its incident link as part of recording it, so it is behind nothing by construction. |
+| Failed observations | Kept so somebody can work out why. Their incident was rolled back with the save that failed. Past the horizon nobody is going to diagnose them. |
+| Orphaned inference rows | The audit trail of a model call whose observation no longer exists. [ADR 023](../adr/023-failure-boundary-and-evidence-retention.md) gives these no foreign key so they outlive a *failed save* — which is not the same as outliving the horizon. |
+
+**What is never deleted:** anything an incident rests on. That is ADR 023's line approached from the
+other side, and crossing it would leave an incident asserting something with no evidence behind it —
+the one artefact this repository refuses to publish. `RetentionBoundaryTests` asserts it against a
+real database: it ages every stored row past the horizon, prunes, and then checks that every
+incident's evidence still resolves.
+
+**Held claims are also left alone**, and that is a deliberate narrowing of "unlinked". A claim held
+for corroboration has no incident, so the plain reading of the rule would allow deleting it. It is
+nonetheless drawn on the map and counted in the coverage panel's split of published reporting against
+user-generated claims, so removing it would change what the page says about its own composition —
+silently. Duplicates and failures are neither shown nor counted there.
+
+**The vacuum matters more than it sounds.** Deleting rows in SQLite moves their pages onto a free
+list for reuse and returns nothing to the disk. Without a vacuum the holdings panel would show a
+database that never shrinks however much was pruned, and the obvious conclusion — that retention is
+not working — would be wrong and unfalsifiable. It runs only when freed pages exceed a tenth of the
+database, because a vacuum rewrites the whole file and holds a write lock for the length of it.
+
+The first pass happens one interval after start-up rather than at start-up, so a host restarted while
+somebody is reading a failure does not delete that failure as its first act.
+
+**What the panel reports is what this host has done since it started**, not a lifetime total. That is
+deliberate: a row per run would outlive a restart and would itself be a second thing to prune, and
+the question the figure answers — is the policy actually running — is about the host running now.

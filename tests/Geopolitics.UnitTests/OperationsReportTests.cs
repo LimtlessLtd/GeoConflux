@@ -174,6 +174,49 @@ public sealed class OperationsReportTests
         Assert.Contains("not running", report.Backups.Note, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task RetentionStatesWhatItWillNeverDeleteBesideWhatItHas()
+    {
+        var report = await BuildAsync(Measurement() with
+        {
+            Retention = new RetentionState(Enabled: true, TimeSpan.FromDays(90), 12, 400, 1_048_576, Now.AddHours(-6)),
+        });
+
+        // The boundary travels with the numbers rather than living only in an ADR. A reader looking
+        // at four hundred deleted rows is entitled to know in the same breath that no incident lost
+        // its evidence to them.
+        Assert.Contains("never touched", report.Retention.Boundary, StringComparison.Ordinal);
+        Assert.Contains("held for corroboration", report.Retention.Boundary, StringComparison.Ordinal);
+        Assert.Equal(400, report.Retention.RowsRemoved);
+        Assert.Equal(12, report.Retention.PrunableNow);
+    }
+
+    [Fact]
+    public async Task ThePrunableCountIsReportedEvenWithRetentionOff()
+    {
+        // Off with nothing prunable and off while sitting on a hundred thousand prunable rows are
+        // different situations, and the count is the only thing that separates them.
+        var report = await BuildAsync(Measurement() with
+        {
+            Retention = new RetentionState(Enabled: false, TimeSpan.FromDays(90), 100_000, 0, 0, null),
+        });
+
+        Assert.False(report.Retention.Enabled);
+        Assert.Equal(100_000, report.Retention.PrunableNow);
+        Assert.Contains("nothing is deleted", report.Retention.Note, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task RetentionTurnedOnButNotYetRunSaysSoRatherThanReadingAsZeroDeleted()
+    {
+        var report = await BuildAsync(Measurement() with
+        {
+            Retention = new RetentionState(Enabled: true, TimeSpan.FromDays(90), 12, 0, 0, null),
+        });
+
+        Assert.Contains("has not yet run", report.Retention.Note, StringComparison.Ordinal);
+    }
+
     private static DatabaseMeasurement Measurement() => new(
         [new TableRowCount("observations", 24)],
         DatabaseBytes: 409_600,
@@ -183,6 +226,7 @@ public sealed class OperationsReportTests
         OldestReceivedAt: Now.AddDays(-1),
         NewestReceivedAt: Now,
         Backups: new BackupState(Configured: false, 0, null, 0, SameVolumeAsDatabase: false),
+        Retention: new RetentionState(Enabled: false, TimeSpan.FromDays(90), 0, 0, 0, null),
         ObservationsLastWeek: 24);
 
     private static async Task<OperationsReport> BuildAsync(DatabaseMeasurement measurement)

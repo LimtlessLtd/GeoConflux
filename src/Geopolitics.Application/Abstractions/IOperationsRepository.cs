@@ -29,6 +29,7 @@ public sealed record TableRowCount(string Table, long Rows);
 /// <param name="OldestReceivedAt">When the earliest surviving observation arrived, or null if there are none.</param>
 /// <param name="NewestReceivedAt">When the latest one arrived.</param>
 /// <param name="Backups">What copies of this database exist, if any.</param>
+/// <param name="Retention">What the host is deleting, if anything.</param>
 /// <param name="ObservationsLastWeek">
 /// How many arrived in the last seven days. The only honest basis for projecting growth, because it
 /// is a measurement of this deployment rather than an assumption about a different one.
@@ -42,7 +43,28 @@ public sealed record DatabaseMeasurement(
     DateTimeOffset? OldestReceivedAt,
     DateTimeOffset? NewestReceivedAt,
     BackupState Backups,
+    RetentionState Retention,
     long ObservationsLastWeek);
+
+/// <summary>
+/// What retention is set to do, and what it has actually done on this host.
+/// </summary>
+/// <param name="Enabled">Whether anything is deleted at all.</param>
+/// <param name="Keep">How long a prunable row is kept.</param>
+/// <param name="PrunableNow">
+/// How many rows the policy would remove if it ran now. Reported whether or not it is enabled,
+/// because that is the figure the decision to enable it is made against.
+/// </param>
+/// <param name="RowsRemoved">How many rows it has removed since this host started.</param>
+/// <param name="ReclaimedBytes">How much disk a vacuum gave back over the same period.</param>
+/// <param name="LastRunAt">When it last ran, or null if it has not run on this host.</param>
+public sealed record RetentionState(
+    bool Enabled,
+    TimeSpan Keep,
+    long PrunableNow,
+    long RowsRemoved,
+    long ReclaimedBytes,
+    DateTimeOffset? LastRunAt);
 
 /// <summary>
 /// What copies of this database exist, read from the destination rather than from what a scheduler

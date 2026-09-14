@@ -58,6 +58,21 @@ public static class ServiceCollectionExtensions
         // moved on, and the whole point of it is to be current enough to decide retention against.
         services.AddScoped<IOperationsRepository, SqliteOperationsRepository>();
         services.AddScoped<IOperationsService, OperationsService>();
+
+        // The thing that measures and the thing that deletes are separate registrations of separate
+        // interfaces on purpose. The report is served to anybody who can reach the dashboard; there
+        // is no request that should be able to reach the second.
+        services.AddScoped<IRetentionRepository, EfRetentionRepository>();
+
+        // Singleton because it is the count a hosted service writes and a scoped report reads. It
+        // holds what retention has done since this host started, which is deliberately not durable:
+        // see the note on the type.
+        services.AddSingleton<RetentionLog>();
+
+        // Bound here rather than beside the hosted service because the operations report states the
+        // policy whether or not any host is running it, and a report that could not name the horizon
+        // would be reporting a prunable count against an unstated rule.
+        services.AddOptions<RetentionOptions>().BindConfiguration(RetentionOptions.SectionName);
         services.AddScoped<IIncidentQueryService, IncidentQueryService>();
         services.AddScoped<ISpatialQueryService, SpatialQueryService>();
         services.AddScoped<IAnalyticsService, AnalyticsService>();
@@ -201,6 +216,11 @@ public static class ServiceCollectionExtensions
             .ValidateOnStart();
 
         services.AddHostedService<DatabaseBackupService>();
+
+        // Inert unless Retention:Enabled, and its first pass is one interval after start-up rather
+        // than at start-up: a host restarted while somebody is reading a failure should not delete
+        // that failure as its first act.
+        services.AddHostedService<RetentionService>();
 
         services.AddHealthChecks()
             .AddCheck<ObservationQueueHealthCheck>("processing-queue", tags: ["pipeline"]);

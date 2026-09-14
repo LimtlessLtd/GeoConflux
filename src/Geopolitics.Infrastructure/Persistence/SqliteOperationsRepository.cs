@@ -21,7 +21,10 @@ namespace Geopolitics.Infrastructure.Persistence;
 /// </summary>
 public sealed class SqliteOperationsRepository(
     GeopoliticsDbContext dbContext,
+    IRetentionRepository retention,
     IOptions<BackupOptions> backupOptions,
+    IOptions<RetentionOptions> retentionOptions,
+    RetentionLog retentionLog,
     TimeProvider timeProvider) : IOperationsRepository
 {
     private static readonly TimeSpan RecentWindow = TimeSpan.FromDays(7);
@@ -50,7 +53,8 @@ public sealed class SqliteOperationsRepository(
                     await ScalarAsync(connection, $"SELECT COUNT(*) FROM \"{table}\";", cancellationToken)));
             }
 
-            var cutoff = timeProvider.GetUtcNow() - RecentWindow;
+            var now = timeProvider.GetUtcNow();
+            var cutoff = now - RecentWindow;
             var observations = dbContext.Observations.AsNoTracking();
 
             return new DatabaseMeasurement(
@@ -62,6 +66,7 @@ public sealed class SqliteOperationsRepository(
                 await observations.MinAsync(value => (DateTimeOffset?)value.ReceivedAt, cancellationToken),
                 await observations.MaxAsync(value => (DateTimeOffset?)value.ReceivedAt, cancellationToken),
                 Backups(connection.DataSource),
+                await RetentionAsync(now, cancellationToken),
                 await observations.LongCountAsync(value => value.ReceivedAt >= cutoff, cancellationToken));
         }
         finally
@@ -85,6 +90,29 @@ public sealed class SqliteOperationsRepository(
             .Select(name => name!)
             .Distinct(StringComparer.Ordinal)
             .OrderBy(name => name, StringComparer.Ordinal);
+
+    /// <summary>
+    /// What retention would remove, and what it has removed.
+    /// <para>
+    /// The prunable count is measured whether or not retention is enabled, because that is the
+    /// figure the decision to enable it is made against. A host that has never deleted anything and
+    /// would delete nothing is a different situation from one that is sitting on a hundred thousand
+    /// prunable rows with the policy switched off, and only the number separates them.
+    /// </para>
+    /// </summary>
+    private async Task<RetentionState> RetentionAsync(DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        var settings = retentionOptions.Value;
+        var removed = retentionLog.Read();
+
+        return new RetentionState(
+            settings.Enabled,
+            settings.Keep,
+            await retention.CountPrunableAsync(now - settings.Keep, cancellationToken),
+            removed.Observations + removed.Inferences,
+            removed.ReclaimedBytes,
+            removed.LastRunAt);
+    }
 
     /// <summary>
     /// What copies exist, read from the destination directory.

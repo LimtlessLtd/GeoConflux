@@ -8,6 +8,8 @@ import {
   hasOperations,
   holdingRows,
   journalLine,
+  retentionBoundary,
+  retentionLine,
   spanLine,
   storageLine,
 } from '../../src/Geopolitics.Api/wwwroot/lib/operations.js';
@@ -49,6 +51,16 @@ const report = (overrides = {}) => ({
     newestBytes: 0,
     note: 'No backup destination is configured, so nothing here would survive the loss of this database.',
   },
+  retention: {
+    enabled: false,
+    keep: '90.00:00:00',
+    prunableNow: 0,
+    rowsRemoved: 0,
+    reclaimedBytes: 0,
+    lastRunAt: null,
+    boundary: 'Evidence behind a published incident is never touched.',
+    note: '',
+  },
   measuredAt: '2026-09-14T12:00:00Z',
   ...overrides,
 });
@@ -72,6 +84,37 @@ test('a malformed or missing payload leaves the panel empty rather than throwing
   assert.equal(growthLine(null), '');
   assert.equal(journalLine(null), '');
   assert.equal(backupLine(null), '');
+  assert.equal(retentionLine(null), '');
+  assert.equal(retentionBoundary(null), '');
+});
+
+test('the prunable count is stated whether or not retention is running', () => {
+  // Off with nothing prunable and off while sitting on a hundred thousand prunable rows read
+  // identically from a flag. The number is the only thing that separates them.
+  const idle = retentionLine(report({
+    retention: { ...report().retention, enabled: false, prunableNow: 100_000 },
+  }));
+
+  assert.match(idle, /Retention is off/);
+  assert.match(idle, /100000 rows prunable today/);
+
+  const running = retentionLine(report({
+    retention: { ...report().retention, enabled: true, rowsRemoved: 400, prunableNow: 12 },
+  }));
+
+  assert.match(running, /400 rows removed since this host started/);
+  assert.match(running, /12 rows prunable today/);
+});
+
+test('the boundary is shown only where deletion is actually happening', () => {
+  // A standing reassurance printed where nothing is deleted is one readers learn to skip, which is
+  // the day it would have mattered.
+  assert.equal(retentionBoundary(report()), '');
+
+  assert.match(
+    retentionBoundary(report({ retention: { ...report().retention, enabled: true } })),
+    /never touched/,
+  );
 });
 
 test('the backup statement is passed through rather than rebuilt from a flag', () => {
