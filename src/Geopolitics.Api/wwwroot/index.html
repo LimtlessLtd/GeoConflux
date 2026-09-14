@@ -80,6 +80,10 @@
           <input type="checkbox" id="locatedOnly">
           <span>Located only</span>
         </label>
+        <label class="filter checkbox">
+          <input type="checkbox" id="showControl">
+          <span>Assessed control</span>
+        </label>
         <label class="filter">
           <span>Basemap</span>
           <select id="basemapFilter">
@@ -107,6 +111,7 @@
       </section>
 
       <p id="basemapNote" class="basemap-note" role="status" hidden></p>
+      <p id="controlCaveat" class="basemap-note" role="status" hidden></p>
     </section>
 
     <aside class="side-panel" aria-label="Incidents and evidence">
@@ -121,6 +126,7 @@
           Chokepoints <span id="chokepointCount" class="count">0</span>
         </button>
         <button class="tab" role="tab" data-tab="conflicts" aria-selected="false">Conflicts</button>
+        <button class="tab" role="tab" data-tab="control" aria-selected="false">Control</button>
         <button class="tab" role="tab" data-tab="coverage" aria-selected="false">Coverage</button>
         <button class="tab" role="tab" data-tab="analytics" aria-selected="false">Analytics</button>
         <button class="tab" role="tab" data-tab="submit" aria-selected="false" id="submitTabButton">Submit</button>
@@ -161,6 +167,17 @@
         <div id="conflictList" class="coverage-list"></div>
         <p class="feed-hint" id="conflictNote"></p>
         <p class="feed-hint" id="conflictProvenance"></p>
+      </div>
+
+      <div id="controlTab" class="tab-panel" role="tabpanel" hidden>
+        <p class="feed-hint">
+          Who is <strong>assessed</strong> to hold each place, from reports about who holds it —
+          never from reports of fighting. Every assessment carries the records behind it and the age
+          of the newest, so it can be checked rather than believed.
+        </p>
+        <p class="feed-hint" id="controlMethod"></p>
+        <div id="controlList" class="coverage-list"></div>
+        <p class="feed-hint" id="controlNote"></p>
       </div>
 
       <div id="coverageTab" class="tab-panel" role="tabpanel" hidden>

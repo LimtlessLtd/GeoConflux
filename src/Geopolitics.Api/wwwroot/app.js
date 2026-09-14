@@ -53,6 +53,9 @@ import {
   backupLine, downtimeLine, downtimeRows, growthLine, hasOperations, holdingRows, journalLine,
   retentionBoundary, retentionLine, spanLine, spatialScaleLine, storageLine,
 } from './lib/operations.js';
+import {
+  NOT_A_FRONT_LINE, controlMethod, controlRows, controlSummary, drawablePlaces, hasControl,
+} from './lib/control.js';
 
 (() => {
   'use strict';
@@ -189,6 +192,11 @@ import {
     coverageCeiling: document.querySelector('#coverageCeiling'),
     coverageSources: document.querySelector('#coverageSources'),
     operationsPanel: document.querySelector('#operationsPanel'),
+    controlList: document.querySelector('#controlList'),
+    controlMethod: document.querySelector('#controlMethod'),
+    controlNote: document.querySelector('#controlNote'),
+    controlCaveat: document.querySelector('#controlCaveat'),
+    showControl: document.querySelector('#showControl'),
     conflictList: document.querySelector('#conflictList'),
     conflictCoverage: document.querySelector('#conflictCoverage'),
     conflictUnassigned: document.querySelector('#conflictUnassigned'),
@@ -216,6 +224,16 @@ import {
 
   let viewer = null;
   let selectedIncidentId = null;
+
+  /**
+   * The control layer's markers, kept apart from the incident ones on purpose. They answer different
+   * questions — what was reported to have happened against who is assessed to hold a place — and one
+   * map holding both must be able to clear either without disturbing the other.
+   */
+  const controlEntities = new Map();
+
+  /** The most recent assessment, held so the globe layer can be toggled without another fetch. */
+  let latestControl = null;
   let pollTimer = null;
   let dataSource = null;
 
@@ -298,6 +316,10 @@ import {
       const response = await fetch('./api/operations', { headers: { Accept: 'application/json' } });
       return response.ok ? response.json() : null;
     },
+    async loadControl() {
+      const response = await fetch('./api/control', { headers: { Accept: 'application/json' } });
+      return response.ok ? response.json() : null;
+    },
   };
 
   /** Reads the snapshot a real pipeline run exported at build time. */
@@ -356,6 +378,10 @@ import {
       // Describes the database this build created for itself and then discarded, which is what the
       // panel says. Absent from an older snapshot, which leaves it empty rather than failing.
       const response = await fetch('./data/operations.json', { headers: { Accept: 'application/json' } });
+      return response.ok ? response.json() : null;
+    },
+    async loadControl() {
+      const response = await fetch('./data/control.json', { headers: { Accept: 'application/json' } });
       return response.ok ? response.json() : null;
     },
   };
@@ -1439,6 +1465,137 @@ import {
     dom.operationsPanel.append(card);
   }
 
+  /**
+   * Who is assessed to hold what, as a list, with every refusal spelled out.
+   *
+   * The list carries what the globe cannot: the age of the evidence, how many records and sources
+   * are behind it, and the sentence explaining why an unassessed place was not assessed. A marker
+   * on a globe carries none of that, which is why only asserting, recent places are ever drawn.
+   */
+  function renderControl(report) {
+    dom.controlList.replaceChildren();
+    dom.controlMethod.textContent = controlMethod(report);
+    dom.controlNote.textContent = controlSummary(report);
+
+    latestControl = report;
+    syncControlGlobe();
+
+    if (!hasControl(report)) {
+      const empty = document.createElement('p');
+      empty.className = 'feed-hint';
+      empty.textContent = 'No control assessment is available from this data source.';
+      dom.controlList.append(empty);
+      return;
+    }
+
+    controlRows(report).forEach((row) => {
+      const card = document.createElement('article');
+      card.className = row.asserting ? 'coverage is-active' : 'coverage';
+
+      const heading = document.createElement('h3');
+      heading.textContent = row.country ? `${row.place} (${row.country})` : row.place;
+      card.append(heading);
+
+      const meta = document.createElement('div');
+      meta.className = 'coverage-meta';
+
+      const verdict = document.createElement('span');
+      verdict.className = `coverage-chip coverage-${row.verdict.toLowerCase()}`;
+      verdict.textContent = row.actor ? `${row.label}: ${row.actor}` : row.label;
+      meta.append(verdict);
+
+      const age = document.createElement('span');
+      age.className = 'coverage-chip';
+      age.textContent = `newest evidence ${row.ageDays}d old`;
+      meta.append(age);
+
+      const evidence = document.createElement('span');
+      evidence.className = 'coverage-chip';
+      evidence.textContent = `${row.evidenceCount} record${row.evidenceCount === 1 ? '' : 's'}, `
+        + `${row.sourceCount} source${row.sourceCount === 1 ? '' : 's'}`;
+      meta.append(evidence);
+
+      card.append(meta);
+
+      const statement = document.createElement('p');
+      statement.className = 'coverage-caveat';
+      statement.textContent = row.statement;
+      card.append(statement);
+
+      dom.controlList.append(card);
+    });
+  }
+
+  /**
+   * Draws assessed places on the globe, and nothing between them.
+   *
+   * Markers are square so they cannot be mistaken for the round incident dots: one is a report of
+   * something that happened, the other is this system's conclusion about who holds a place, and
+   * conflating them would be the worst misreading available here.
+   *
+   * Colours distinguish actors and mean nothing else — they are assigned from the actor's name, not
+   * chosen, which the caveat says out loud. Contested places take one fixed colour instead, because
+   * a contested place has no single actor to colour by and blending two would render exactly the
+   * consensus the assessment refuses to manufacture.
+   */
+  function syncControlGlobe() {
+    if (!viewer) return;
+
+    for (const entity of controlEntities.values()) viewer.entities.remove(entity);
+    controlEntities.clear();
+
+    const show = dom.showControl?.checked && latestControl;
+    const places = show ? drawablePlaces(latestControl) : [];
+
+    dom.controlCaveat.hidden = places.length === 0;
+    dom.controlCaveat.textContent = places.length === 0 ? '' : NOT_A_FRONT_LINE;
+
+    places.forEach((place, index) => {
+      const colour = place.contested
+        ? '#ff9f1c'
+        : `hsl(${actorHue(place.actor)}, 62%, 58%)`;
+
+      const entity = viewer.entities.add({
+        id: `control-${index}-${place.place}`,
+        position: Cesium.Cartesian3.fromDegrees(place.longitude, place.latitude),
+        point: {
+          color: Cesium.Color.fromCssColorString(colour),
+          pixelSize: 13,
+          outlineColor: Cesium.Color.fromCssColorString('#070b12'),
+          outlineWidth: 3,
+        },
+        label: {
+          show: true,
+          text: place.contested ? `${place.place} — contested` : `${place.place} — ${place.actor}`,
+          font: '600 11px system-ui, sans-serif',
+          fillColor: Cesium.Color.WHITE,
+          showBackground: true,
+          backgroundColor: Cesium.Color.fromCssColorString('rgba(7, 11, 18, 0.78)'),
+          backgroundPadding: new Cesium.Cartesian2(6, 4),
+          style: Cesium.LabelStyle.FILL,
+          pixelOffset: new Cesium.Cartesian2(0, 20),
+          scaleByDistance: new Cesium.NearFarScalar(1.0e6, 1.0, 2.0e7, 0.5),
+        },
+      });
+
+      controlEntities.set(entity.id, entity);
+    });
+  }
+
+  /**
+   * A stable hue per actor, so two actors are told apart at a glance.
+   *
+   * Assigned rather than chosen, and the caveat says so: a colour that looked meaningful would
+   * invite a reader to infer an allegiance or a side from it, which this system does not know.
+   */
+  function actorHue(actor) {
+    let hash = 0;
+    for (let index = 0; index < actor.length; index += 1) {
+      hash = (hash * 31 + actor.charCodeAt(index)) % 360;
+    }
+    return hash;
+  }
+
   function renderChokepoints(analysis) {
     const entries = analysis?.chokepoints ?? [];
     dom.chokepointList.replaceChildren();
@@ -1871,7 +2028,9 @@ import {
   }
 
   async function loadSnapshotState() {
-    const [loadedIncidents, loadedObservations, chokepoints, coverage, conflicts, operations] = await Promise.all([
+    const [
+      loadedIncidents, loadedObservations, chokepoints, coverage, conflicts, operations, control,
+    ] = await Promise.all([
       dataSource.loadIncidents(),
       dataSource.loadObservations(),
 
@@ -1889,6 +2048,10 @@ import {
 
       // And again, for the newest of all of them.
       dataSource.loadOperations?.().catch(() => null) ?? null,
+
+      // And the assessment. Absent from an older snapshot, which empties the panel rather than
+      // failing the load — and an empty control panel is a legitimate state in any case.
+      dataSource.loadControl?.().catch(() => null) ?? null,
     ]);
 
     incidents.clear();
@@ -1907,6 +2070,7 @@ import {
     renderChokepoints(chokepoints);
     renderCoverage(coverage);
     renderOperations(operations);
+    renderControl(control);
     renderConflicts(conflicts);
   }
 
@@ -1992,6 +2156,11 @@ import {
   function wireControls() {
     [dom.severityFilter, dom.typeFilter, dom.locatedOnly]
       .forEach((control) => control.addEventListener('change', renderIncidents));
+
+    // Off by default, and a deliberate choice rather than an oversight. The control layer is the one
+    // thing on this map that is this system's conclusion rather than a record of what was reported,
+    // so a reader opts into seeing it instead of finding it already drawn.
+    dom.showControl.addEventListener('change', syncControlGlobe);
 
     dom.submitForm.addEventListener('submit', submitObservation);
 

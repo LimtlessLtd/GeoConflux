@@ -6,6 +6,7 @@ using Geopolitics.Application.Analytics;
 using Geopolitics.Application.Conflicts;
 using Geopolitics.Application.Coverage;
 using Geopolitics.Application.Contracts;
+using Geopolitics.Application.Control;
 using Geopolitics.Application.Operations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -241,6 +242,15 @@ public static partial class SnapshotExporter
             .BuildAsync(cancellationToken);
 
         await WriteJsonAsync(Path.Combine(outputDirectory, "operations.json"), operations, cancellationToken);
+
+        // Who is assessed to hold what. Exported whole rather than summarised, because the evidence
+        // identifiers are the point: an assessment a reader cannot trace back to records is the one
+        // artefact this repository refuses to publish, and stripping them for the static build would
+        // publish exactly that.
+        var control = await scope.ServiceProvider.GetRequiredService<IControlAssessmentService>()
+            .BuildAsync(cancellationToken);
+
+        await WriteJsonAsync(Path.Combine(outputDirectory, "control.json"), control, cancellationToken);
 
         // What this run saw about each conflict, per window, for the same reason analytics are
         // exported per window: the published page has no backend to ask. Narratives are deliberately

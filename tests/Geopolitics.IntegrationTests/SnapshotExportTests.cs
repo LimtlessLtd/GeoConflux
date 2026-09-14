@@ -93,6 +93,18 @@ public sealed class SnapshotExportTests
 
         Assert.Equal(EnvelopeCount, observations);
 
+        // The assessment is exported whole, evidence identifiers included. Summarising it for the
+        // static build would publish an assessment a reader cannot trace back to records, which is
+        // the one artefact this repository refuses.
+        var control = JsonDocument.Parse(
+            await File.ReadAllTextAsync(Path.Combine(directory, "control.json"), CancellationToken.None));
+
+        Assert.True(control.RootElement.TryGetProperty("places", out _));
+        Assert.Contains(
+            "not a front line",
+            control.RootElement.GetProperty("method").GetString(),
+            StringComparison.Ordinal);
+
         Directory.Delete(directory, recursive: true);
     }
 

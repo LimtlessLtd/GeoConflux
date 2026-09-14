@@ -1022,6 +1022,12 @@ html, body {
 .coverage-chip.coverage-exact,
 .coverage-chip.coverage-settlement { color: var(--text); border-color: var(--accent); }
 
+/* Control verdicts. Only an assertion is marked; the two that decline stay pale, so a panel of
+   refusals reads as a panel of refusals rather than as a set of findings. Contested takes the
+   warning colour because it is the one a reader most needs to not skim past. */
+.coverage-chip.coverage-assessed { color: var(--text); border-color: var(--accent); }
+.coverage-chip.coverage-contested { color: #ff9f1c; border-color: #ff9f1c; }
+
 .coverage-lexicon { margin: .4rem 0 0; font-size: .68rem; color: var(--muted); }
 
 .coverage-caveat {
