@@ -196,11 +196,18 @@ public sealed class CodedConflictRegister : IConflictRegister
     /// happens to be spelled like a place somewhere else.
     /// <para>
     /// The distinction is not cosmetic and the data makes it plainly: of the six countries the
-    /// Russia–Ukraine coding resolved into, Ukraine is backed by 378 distinct place names and Russia
-    /// by 41 — both real, and the incursion into Kursk is exactly why a box drawn round Ukraine would
-    /// have been wrong — while Turkey, China, Romania and the Philippines are backed by one name each.
-    /// Every one of those is a collision. Left in, they would put reports from four unrelated
-    /// countries into a European war on geographic grounds.
+    /// Russia–Ukraine entry picked up, Ukraine is backed by 378 distinct place names and Russia by 41
+    /// — both are places that war is fought in, the incursion into Kursk being why — while Turkey,
+    /// China, Romania and the Philippines are backed by one name each. Every one of those is a
+    /// collision. Left in, they would put reports from four unrelated countries into a European war
+    /// on geographic grounds.
+    /// </para>
+    /// <para>
+    /// Worth saying once, because the obvious misreading is the damaging one: this set records where
+    /// a conflict's events happened. It is not attribution. A country here is not being blamed for
+    /// the war, nor is the war being sited in it — who is fighting lives in
+    /// <see cref="Conflict.SideA"/> and <see cref="Conflict.SideB"/>, copied from the coding and
+    /// never derived. All this answers is whether a report placed at a location could belong here.
     /// </para>
     /// <para>
     /// So a country needs two of the conflict's own place names behind it. Not a share of events,

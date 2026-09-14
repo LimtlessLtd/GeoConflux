@@ -606,9 +606,19 @@ watches.
 
 A conflict's geography is derived rather than declared. Its places are the ones the coding says its
 events happened at, resolved through the same gazetteer the pipeline uses, and its countries are
-wherever those turned out to be. No box is drawn — which is why the Russia–Ukraine coding resolves
-into Russia as well, as the incursion into Kursk is in the data and a box round Ukraine would have
-excluded it.
+wherever those turned out to be. No box is drawn.
+
+**That geography records where fighting happened and nothing else.** A country appearing in a
+conflict's list is not this system attributing the war to it, siting the war there, or saying
+anything about who started it. Who is fighting is a separate pair of fields copied verbatim from the
+coding. The geography answers one mechanical question: *if a report was placed here, is this a
+conflict it could belong to?*
+
+Russia–Ukraine is the example that makes that concrete. Its countries are Ukraine and Russia, because
+UCDP coded 234 events of this war at places on Russian soil — Kursk oblast, Belgorod, the border —
+which is the incursion into Kursk and the cross-border strikes. A box round Ukraine would have put
+132 of those events outside the map and made them unassignable. The parties on the same entry still
+read "Government of Russia" against "Government of Ukraine", exactly as Uppsala wrote them.
 
 Membership follows one rule: **identity assigns, geography only narrows.** A source that coded its
 own conflict settles it. A report naming a party identifies it. Geography assigns only where it

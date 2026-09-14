@@ -55,14 +55,29 @@ built as **place identity** instead, and the substitution is deliberate.
 
 A conflict's places are the ones the coding says its events happened at. Those names are resolved
 through the gazetteer, and a conflict's countries are wherever its own places turned out to be.
-Nobody draws a rectangle. The Russia–Ukraine coding resolves into Ukraine *and Russia*, because the
-incursion into Kursk is in the data — a box drawn round Ukraine would have excluded it, and a box
-drawn round both would have claimed the Black Sea and half of Belarus. A conflict confined to one
-region of one country is held by that region's place names without anybody having to notice that it
-needs narrowing, which is precisely the hand-maintenance Tigray's bounding box used to require.
+Nobody draws a rectangle.
+
+**This set records where fighting happened, and nothing else.** It is worth stating flatly, because
+the obvious misreading is the damaging one: a country appearing in a conflict's geography is not this
+system attributing the war to that country, siting the war there, or saying anything whatsoever about
+who began it. Who is fighting is a separate pair of fields, `SideA` and `SideB`, copied verbatim from
+the coding and never derived here. The geography answers one question and it is a mechanical one:
+*if a report was placed at this location, is this a conflict it could belong to?*
+
+The Russia–Ukraine entry is the example that makes the distinction concrete. Its country set holds
+Ukraine and Russia, because UCDP coded 234 events of this war at places on Russian soil — Kursk
+oblast 132, Kursk direction 37, Belgorod oblast 29, the border itself 14 — which is the incursion
+into Kursk and the cross-border strikes. A box drawn round Ukraine would have put every one of those
+outside the map and made 132 events unassignable; a box drawn round both would have claimed the Black
+Sea and half of Belarus. Meanwhile the parties on that entry read "Government of Russia" against
+"Government of Ukraine", exactly as Uppsala wrote them, and nothing in the geography touches that.
+
+A conflict confined to one region of one country is held by that region's place names without anybody
+having to notice that it needs narrowing, which is precisely the hand-maintenance Tigray's bounding
+box used to require.
 
 **A country needs two of the conflict's own place names behind it.** Measured, the single-name
-countries are collisions without exception: the Russia–Ukraine coding resolved into Turkey, China,
+countries are collisions without exception: the Russia–Ukraine entry picked up Turkey, China,
 Romania and the Philippines on the strength of one Ukrainian place name each that is spelled like
 somewhere else, and every report from those four countries would then have matched a European war on
 geographic grounds. A share-of-events rule was tried first and rejected, because it discarded Russia

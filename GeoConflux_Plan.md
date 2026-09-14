@@ -2726,10 +2726,12 @@ the register of what to watch had become it.
    against a different register from the one the system watches would measure nothing.
 2. **Membership is a predicate, and geography is derived.** Done. A conflict's places are the ones
    the coding says its events happened at, resolved through the gazetteer; its countries are wherever
-   those turned out to be. No box is drawn. The Ukraine coding resolves into Russia as well, which is
-   in the data and which a box round Ukraine would have excluded. Bounds were specified and place
-   identity was built instead — [ADR 035](docs/adr/035-conflicts-as-first-class-objects.md) records
-   why.
+   those turned out to be. No box is drawn. That set records where fighting happened and nothing
+   else — it is not attribution, and who is fighting stays in the parties the coding names. Hence
+   Russia–Ukraine holds both countries: UCDP coded 234 events of it at Kursk, Belgorod and the
+   border, and a box round Ukraine would have made 132 of them unassignable. Bounds were specified
+   and place identity was built instead —
+   [ADR 035](docs/adr/035-conflicts-as-first-class-objects.md) records why.
 3. **AI assigns; it does not define.** Done. The model is offered only the conflicts the
    deterministic pass could not choose between, the permitted keys are enumerated in the request, and
    the validator rejects an unoffered key on the way back — twice over, because only some providers

@@ -26,7 +26,7 @@
 | Severity — macro F1 | 0.74 |
 | Location name — precision / recall / F1 | 1.00 / 0.92 / 0.96 |
 | Entities — precision / recall / F1 | 0.11 / 0.67 / 0.19 |
-| Latency median / p95 | 0.1 ms / 2066.6 ms |
+| Latency median / p95 | 0.1 ms / 2031.6 ms |
 
 Latency is wall-clock time for one enrichment attempt and is the only figure here that
 varies between runs of the deterministic provider — the first call absorbs JIT warm-up, so
