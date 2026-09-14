@@ -2,6 +2,7 @@ using Geopolitics.Application;
 using Geopolitics.Application.Abstractions;
 using Geopolitics.Application.Analytics;
 using Geopolitics.Application.Conflicts;
+using Geopolitics.Application.Control;
 using Geopolitics.Application.Coverage;
 using Geopolitics.Application.Enrichment;
 using Geopolitics.Application.Operations;
@@ -52,6 +53,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAnalyticsRepository, EfAnalyticsRepository>();
         services.AddScoped<ICoverageRepository, EfCoverageRepository>();
         services.AddScoped<IConflictActivityRepository, EfConflictActivityRepository>();
+
+        // Assessed control. Scoped like every other read model; the options it depends on are bound
+        // here rather than with the pipeline because the assessment is served whether or not this
+        // host is ingesting anything.
+        services.AddOptions<ControlOptions>().BindConfiguration(ControlOptions.SectionName);
+        services.AddScoped<IControlRepository, EfControlRepository>();
+        services.AddScoped<IControlAssessmentService, ControlAssessmentService>();
 
         // What the host holds rather than what it has reached. Scoped like every other repository,
         // and measured on demand: a cached figure would answer questions about a database that has
