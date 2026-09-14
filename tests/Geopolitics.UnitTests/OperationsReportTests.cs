@@ -172,6 +172,43 @@ public sealed class OperationsReportTests
 
         Assert.Contains("14 days old", report.Backups.Note, StringComparison.Ordinal);
         Assert.Contains("not running", report.Backups.Note, StringComparison.Ordinal);
+
+        // Rendered on a page, so it reads as English rather than as a format string. "7 copy(ies)"
+        // is the sort of thing nobody notices in a test fixture and everybody notices published.
+        Assert.Contains("7 copies on hand", report.Backups.Note, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ASingleCopyReadsInTheSingular()
+    {
+        var report = await BuildAsync(Measurement() with
+        {
+            Backups = new BackupState(true, 1, Now.AddHours(-2), 4_096_000, SameVolumeAsDatabase: false),
+        });
+
+        Assert.Contains("1 copy on hand", report.Backups.Note, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task EveryTableThisSprintAddedIsDescribedRatherThanLeftUnexplained()
+    {
+        // The mechanism copes with an unlisted table; leaving one unlisted is still a defect, and
+        // the published page is where it shows up.
+        var report = await BuildAsync(Measurement() with
+        {
+            Tables =
+            [
+                new TableRowCount("observations", 9),
+                new TableRowCount("incidents", 8),
+                new TableRowCount("ai_inferences", 7),
+                new TableRowCount("IngestionCheckpoints", 6),
+                new TableRowCount("DowntimePeriods", 5),
+            ],
+        });
+
+        Assert.All(
+            report.Holdings.Tables,
+            table => Assert.NotEqual("not described here", table.Holds));
     }
 
     [Fact]
@@ -246,6 +283,7 @@ public sealed class OperationsReportTests
         Assert.True(report.Downtime.Measurable);
         Assert.Equal(TimeSpan.FromMinutes(15), report.Downtime.Resolution);
         Assert.Contains("cannot be told from ordinary quiet", report.Downtime.Note, StringComparison.Ordinal);
+        Assert.Contains("about 30 minutes", report.Downtime.Note, StringComparison.Ordinal);
     }
 
     [Fact]

@@ -204,7 +204,19 @@ public sealed class OperationsService(
         ["incidents"] = "what this system concluded from them",
         ["ai_inferences"] = "the audit trail of every model call, successful or not",
         ["IngestionCheckpoints"] = "how far back each adapter has asked, and when it last polled",
+        ["DowntimePeriods"] = "spells this host was not running, worked out at each start-up",
     };
+
+    /// <summary>
+    /// Pluralises a count for prose that is rendered on a page.
+    /// <para>
+    /// Written out rather than reached for from a shared helper because the words here — period,
+    /// copy, minute, day — do not all take a bare "s", and a helper that is wrong for the word in
+    /// front of it produces "copys" on a published page.
+    /// </para>
+    /// </summary>
+    private static string Count(long value, string singular, string plural) =>
+        $"{value} {(value == 1 ? singular : plural)}";
 
     public async Task<OperationsReport> BuildAsync(CancellationToken cancellationToken)
     {
@@ -309,18 +321,19 @@ public sealed class OperationsService(
         var note = periods.Count == 0
             ? $"No downtime recorded. The last poll was {Describe(quiet)} ago, and a gap shorter than "
                 + $"about {Describe(resolution + resolution)} cannot be told from ordinary quiet."
-            : $"{periods.Count} period(s) recorded, measured from the last poll before each restart. "
-                + $"A gap shorter than about {Describe(resolution + resolution)} is not detectable, so "
-                + "each period is at least as long as it says and may be shorter than it looks.";
+            : $"{Count(periods.Count, "period", "periods")} recorded, measured from the last poll "
+                + "before each restart. A gap shorter than about "
+                + $"{Describe(resolution + resolution)} is not detectable, so each period is at least "
+                + "as long as it says and may be shorter than it looks.";
 
         return new DowntimeStanding(true, periods, sources, resolution, note);
     }
 
     private static string Describe(TimeSpan span) => span switch
     {
-        { TotalDays: >= 1 } => $"{span.TotalDays:F0} day(s)",
-        { TotalHours: >= 1 } => $"{span.TotalHours:F0} hour(s)",
-        { TotalMinutes: >= 1 } => $"{span.TotalMinutes:F0} minute(s)",
+        { TotalDays: >= 1 } => Count((long)Math.Round(span.TotalDays), "day", "days"),
+        { TotalHours: >= 1 } => Count((long)Math.Round(span.TotalHours), "hour", "hours"),
+        { TotalMinutes: >= 1 } => Count((long)Math.Round(span.TotalMinutes), "minute", "minutes"),
         _ => "under a minute",
     };
 
@@ -400,7 +413,12 @@ public sealed class OperationsService(
                 + "mistaken delete and not a failed disk."
             : " They are on a different volume from the database.";
 
-        return new BackupStanding(true, backups.Copies, newest, backups.NewestBytes, $"{backups.Copies} copy(ies) on hand.{volume}{stale}");
+        return new BackupStanding(
+            true,
+            backups.Copies,
+            newest,
+            backups.NewestBytes,
+            $"{Count(backups.Copies, "copy", "copies")} on hand.{volume}{stale}");
     }
 
     /// <summary>
