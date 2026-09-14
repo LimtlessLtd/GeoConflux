@@ -28,6 +28,7 @@ public sealed record TableRowCount(string Table, long Rows);
 /// </param>
 /// <param name="OldestReceivedAt">When the earliest surviving observation arrived, or null if there are none.</param>
 /// <param name="NewestReceivedAt">When the latest one arrived.</param>
+/// <param name="Backups">What copies of this database exist, if any.</param>
 /// <param name="ObservationsLastWeek">
 /// How many arrived in the last seven days. The only honest basis for projecting growth, because it
 /// is a measurement of this deployment rather than an assumption about a different one.
@@ -40,7 +41,32 @@ public sealed record DatabaseMeasurement(
     string JournalMode,
     DateTimeOffset? OldestReceivedAt,
     DateTimeOffset? NewestReceivedAt,
+    BackupState Backups,
     long ObservationsLastWeek);
+
+/// <summary>
+/// What copies of this database exist, read from the destination rather than from what a scheduler
+/// believes it did.
+/// <para>
+/// The distinction is the whole value of the figure. A service that has been failing for a fortnight
+/// reports a fortnight of attempts; the directory reports a fortnight-old copy, which is the fact an
+/// operator needs and the one a status flag would have hidden.
+/// </para>
+/// </summary>
+/// <param name="Configured">Whether a destination has been named at all.</param>
+/// <param name="Copies">How many copies are on hand.</param>
+/// <param name="NewestAt">When the most recent one was written, or null if there are none.</param>
+/// <param name="NewestBytes">How large that one is.</param>
+/// <param name="SameVolumeAsDatabase">
+/// Whether the copies sit on the same volume as the original, as far as this host can tell. True is
+/// not a fault, and it is not a backup in the sense most deployments mean.
+/// </param>
+public sealed record BackupState(
+    bool Configured,
+    int Copies,
+    DateTimeOffset? NewestAt,
+    long NewestBytes,
+    bool SameVolumeAsDatabase);
 
 /// <summary>
 /// Measures the store this deployment is actually running against.

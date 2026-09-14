@@ -50,7 +50,7 @@ import {
   attributionLine, claimChip, claimSummary, heldClaimNote, isHeldClaim,
 } from './lib/attribution.js';
 import {
-  growthLine, hasOperations, holdingRows, journalLine, spanLine, storageLine,
+  backupLine, growthLine, hasOperations, holdingRows, journalLine, spanLine, storageLine,
 } from './lib/operations.js';
 
 (() => {
@@ -1394,7 +1394,7 @@ import {
 
     card.append(list);
 
-    [storageLine(report), journalLine(report), growthLine(report)]
+    [storageLine(report), journalLine(report), growthLine(report), backupLine(report)]
       .filter((line) => line)
       .forEach((line) => {
         const paragraph = document.createElement('p');

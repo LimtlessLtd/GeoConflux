@@ -120,6 +120,21 @@ export function spanLine(report) {
 }
 
 /**
+ * Whether any of this would survive the disk it is on.
+ *
+ * The server writes the judgement, not the client: the three cases — no destination, a destination
+ * with nothing in it, and copies on the same volume as the original — are different facts, and the
+ * middle one looks exactly like the third from a count alone. This passes it through rather than
+ * re-deriving it from a boolean, which is how the distinction would get lost.
+ */
+export function backupLine(report) {
+  const backups = report?.backups;
+  if (!backups) return '';
+
+  return String(backups.note ?? '');
+}
+
+/**
  * What a year at the current rate would cost, or why that was not answered.
  *
  * The refusal is passed through rather than replaced with a zero. A projection declined for want of

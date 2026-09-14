@@ -57,6 +57,26 @@ public sealed record HoldingsReport(
     string Note);
 
 /// <summary>
+/// Whether this database is recoverable, and from what.
+/// </summary>
+/// <param name="Configured">Whether a destination has been named at all.</param>
+/// <param name="Copies">How many copies are on hand.</param>
+/// <param name="NewestAt">When the most recent one was written.</param>
+/// <param name="NewestBytes">How large it is.</param>
+/// <param name="Note">
+/// What those copies are worth, in a sentence. The important case is a destination on the same
+/// volume as the database, which is a real safeguard against a bad write and no safeguard at all
+/// against a failed disk — and is the arrangement a deployment is most likely to have without
+/// having decided to.
+/// </param>
+public sealed record BackupStanding(
+    bool Configured,
+    int Copies,
+    DateTimeOffset? NewestAt,
+    long NewestBytes,
+    string Note);
+
+/// <summary>
 /// What a host that has been left running can say about itself.
 /// <para>
 /// Separate from the coverage report, which answers a different question. Coverage is about the
@@ -67,9 +87,11 @@ public sealed record HoldingsReport(
 /// </para>
 /// </summary>
 /// <param name="Holdings">Rows and bytes, measured rather than estimated.</param>
+/// <param name="Backups">Whether any of it would survive the disk it is on.</param>
 /// <param name="MeasuredAt">When these figures were taken.</param>
 public sealed record OperationsReport(
     HoldingsReport Holdings,
+    BackupStanding Backups,
     DateTimeOffset MeasuredAt);
 
 /// <summary>States what this host holds and how it has been running.</summary>
@@ -143,7 +165,55 @@ public sealed class OperationsService(IOperationsRepository repository, TimeProv
                 Project(measurement, observations, now),
                 "Rows and bytes this host is holding now. A retention policy is a decision about "
                 + "these numbers, and until they existed there was nothing to decide it against."),
+            Standing(measurement.Backups, now),
             now);
+    }
+
+    /// <summary>
+    /// States what the copies on hand are worth.
+    /// <para>
+    /// Three cases and they are genuinely different. No destination named is a deployment that has
+    /// not decided. A destination with nothing in it is a schedule that has not run or has been
+    /// failing. And a destination on the same volume is the one that looks like the answer and is
+    /// not — it survives a bad write and a mistaken delete, and not the disk.
+    /// </para>
+    /// </summary>
+    private static BackupStanding Standing(BackupState backups, DateTimeOffset now)
+    {
+        if (!backups.Configured)
+        {
+            return new BackupStanding(
+                false,
+                0,
+                null,
+                0,
+                "No backup destination is configured, so nothing here would survive the loss of this "
+                + "database. Naming a destination is what turns backups on; there is no default, "
+                + "because the only possible default would be beside the original.");
+        }
+
+        if (backups.NewestAt is not { } newest)
+        {
+            return new BackupStanding(
+                true,
+                0,
+                null,
+                0,
+                "A destination is configured and holds no copies yet. Until one appears this is a "
+                + "schedule rather than a backup.");
+        }
+
+        var age = now - newest;
+        var stale = age > TimeSpan.FromDays(2)
+            ? $" The newest is {(int)age.TotalDays} days old, which is a schedule that is not running."
+            : string.Empty;
+
+        var volume = backups.SameVolumeAsDatabase
+            ? " They are on the same volume as the database, so they survive a bad write or a "
+                + "mistaken delete and not a failed disk."
+            : " They are on a different volume from the database.";
+
+        return new BackupStanding(true, backups.Copies, newest, backups.NewestBytes, $"{backups.Copies} copy(ies) on hand.{volume}{stale}");
     }
 
     /// <summary>

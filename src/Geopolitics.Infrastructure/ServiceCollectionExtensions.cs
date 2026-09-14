@@ -18,10 +18,12 @@ using Geopolitics.Infrastructure.Realtime;
 using Geopolitics.Infrastructure.Sources;
 using Geopolitics.Infrastructure.Sources.Briefs;
 using Geopolitics.Infrastructure.Sources.Providers;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 
@@ -41,7 +43,9 @@ public static class ServiceCollectionExtensions
         // Reading it eagerly would freeze whatever value existed at registration time and silently
         // ignore configuration sources added later in the host build.
         services.AddDbContext<GeopoliticsDbContext>((provider, options) =>
-            options.UseSqlite(ResolveConnectionString(provider.GetRequiredService<IConfiguration>())));
+            options.UseSqlite(ResolveConnectionString(
+                provider.GetRequiredService<IConfiguration>(),
+                provider.GetService<IHostEnvironment>()?.ContentRootPath)));
         services.AddScoped<IIncidentRepository, EfIncidentRepository>();
         services.AddScoped<IObservationRepository, EfObservationRepository>();
         services.AddScoped<IAiInferenceRepository, EfAiInferenceRepository>();
@@ -188,18 +192,66 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<EventSourcePumpService>();
         services.AddHostedService<ObservationProcessorService>();
 
+        // Backups are registered here rather than beside the DbContext because this is the call a
+        // host makes when it is opting into background work at all; AddGeopoliticsInfrastructure
+        // deliberately starts none, and tests depend on that. The service is inert until a
+        // destination is named, so registering it costs a host that does not want it nothing.
+        services.AddOptions<BackupOptions>()
+            .Bind(configuration.GetSection(BackupOptions.SectionName))
+            .ValidateOnStart();
+
+        services.AddHostedService<DatabaseBackupService>();
+
         services.AddHealthChecks()
             .AddCheck<ObservationQueueHealthCheck>("processing-queue", tags: ["pipeline"]);
 
         return services;
     }
 
-    private static string ResolveConnectionString(IConfiguration configuration)
+    /// <summary>
+    /// The configured connection string, with a relative database path anchored to the content root.
+    /// </summary>
+    /// <remarks>
+    /// SQLite resolves a relative <c>Data Source</c> against the process working directory, and the
+    /// shipped setting is the relative <c>geopolitics.db</c>. That is harmless for <c>dotnet run</c>,
+    /// where the working directory is the project, and wrong in the deployment this repository is
+    /// now aiming at: a Windows service starts in <c>C:\Windows\System32</c>, so the host would
+    /// create an empty database there and report itself healthy while holding none of the history it
+    /// was left running to accumulate. Nothing would fail; the data would simply be somewhere else.
+    ///
+    /// The content root is the right anchor rather than the assembly directory, because it is the
+    /// project directory under <c>dotnet run</c> and the binary directory under a service — so a
+    /// developer's existing database does not move, and a service's is beside its executable.
+    /// </remarks>
+    private static string ResolveConnectionString(IConfiguration configuration, string? contentRoot)
     {
         var connectionString = configuration.GetConnectionString("Geopolitics");
 
-        return string.IsNullOrWhiteSpace(connectionString)
-            ? throw new InvalidOperationException("ConnectionStrings:Geopolitics must be configured.")
-            : connectionString;
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException("ConnectionStrings:Geopolitics must be configured.");
+        }
+
+        if (string.IsNullOrWhiteSpace(contentRoot))
+        {
+            return connectionString;
+        }
+
+        var builder = new SqliteConnectionStringBuilder(connectionString);
+        var source = builder.DataSource;
+
+        // An in-memory database, a URI filename, and an already-absolute path each mean what they
+        // say. Rooting any of them would change which database the host opens.
+        if (string.IsNullOrWhiteSpace(source)
+            || builder.Mode is SqliteOpenMode.Memory
+            || source.StartsWith("file:", StringComparison.OrdinalIgnoreCase)
+            || source.Contains(":memory:", StringComparison.OrdinalIgnoreCase)
+            || Path.IsPathRooted(source))
+        {
+            return connectionString;
+        }
+
+        builder.DataSource = Path.GetFullPath(source, contentRoot);
+        return builder.ToString();
     }
 }

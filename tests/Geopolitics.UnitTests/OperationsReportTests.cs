@@ -122,6 +122,58 @@ public sealed class OperationsReportTests
         Assert.Contains("vacuum", report.Holdings.Storage.Note, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public async Task AHostWithNoBackupDestinationIsToldThatNothingWouldSurviveTheDisk()
+    {
+        var report = await BuildAsync(Measurement());
+
+        Assert.False(report.Backups.Configured);
+        Assert.Contains("would survive the loss of this database", report.Backups.Note, StringComparison.Ordinal);
+
+        // There is no default destination, and the reason is said rather than left implicit: the
+        // only possible default is beside the original, which is a copy and not a backup.
+        Assert.Contains("no default", report.Backups.Note, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ADestinationWithNothingInItIsCalledASchedule()
+    {
+        var report = await BuildAsync(Measurement() with
+        {
+            Backups = new BackupState(Configured: true, 0, null, 0, SameVolumeAsDatabase: false),
+        });
+
+        Assert.Contains("schedule rather than a backup", report.Backups.Note, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task CopiesOnTheSameVolumeAreNamedAsSurvivingAMistakeAndNotADisk()
+    {
+        // The arrangement a deployment is most likely to end up with without having chosen it, and
+        // the one that most looks like the problem is solved.
+        var report = await BuildAsync(Measurement() with
+        {
+            Backups = new BackupState(true, 7, Now.AddHours(-2), 4_096_000, SameVolumeAsDatabase: true),
+        });
+
+        Assert.Equal(7, report.Backups.Copies);
+        Assert.Contains("not a failed disk", report.Backups.Note, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ABackupThatStoppedRunningIsNamedRatherThanCounted()
+    {
+        // Seven copies and the newest a fortnight old reads as healthy from the count alone. The
+        // count is exactly what a failing schedule leaves looking right.
+        var report = await BuildAsync(Measurement() with
+        {
+            Backups = new BackupState(true, 7, Now.AddDays(-14), 4_096_000, SameVolumeAsDatabase: false),
+        });
+
+        Assert.Contains("14 days old", report.Backups.Note, StringComparison.Ordinal);
+        Assert.Contains("not running", report.Backups.Note, StringComparison.Ordinal);
+    }
+
     private static DatabaseMeasurement Measurement() => new(
         [new TableRowCount("observations", 24)],
         DatabaseBytes: 409_600,
@@ -130,6 +182,7 @@ public sealed class OperationsReportTests
         JournalMode: "wal",
         OldestReceivedAt: Now.AddDays(-1),
         NewestReceivedAt: Now,
+        Backups: new BackupState(Configured: false, 0, null, 0, SameVolumeAsDatabase: false),
         ObservationsLastWeek: 24);
 
     private static async Task<OperationsReport> BuildAsync(DatabaseMeasurement measurement)

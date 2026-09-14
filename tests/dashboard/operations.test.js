@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  backupLine,
   formatBytes,
   growthLine,
   hasOperations,
@@ -41,6 +42,13 @@ const report = (overrides = {}) => ({
     },
     note: '',
   },
+  backups: {
+    configured: false,
+    copies: 0,
+    newestAt: null,
+    newestBytes: 0,
+    note: 'No backup destination is configured, so nothing here would survive the loss of this database.',
+  },
   measuredAt: '2026-09-14T12:00:00Z',
   ...overrides,
 });
@@ -63,6 +71,18 @@ test('a malformed or missing payload leaves the panel empty rather than throwing
   assert.equal(storageLine(null), '');
   assert.equal(growthLine(null), '');
   assert.equal(journalLine(null), '');
+  assert.equal(backupLine(null), '');
+});
+
+test('the backup statement is passed through rather than rebuilt from a flag', () => {
+  // Three cases the server distinguishes and a boolean cannot: nothing configured, a destination
+  // that has never been written to, and copies sitting on the same disk as the original.
+  assert.match(backupLine(report()), /would survive the loss/);
+
+  assert.equal(
+    backupLine(report({ backups: { configured: true, copies: 7, note: 'They are on the same volume.' } })),
+    'They are on the same volume.',
+  );
 });
 
 test('row counts keep the order the server chose', () => {

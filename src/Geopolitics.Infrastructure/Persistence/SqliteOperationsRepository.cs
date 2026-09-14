@@ -1,6 +1,7 @@
 using Geopolitics.Application.Abstractions;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Geopolitics.Infrastructure.Persistence;
 
@@ -18,8 +19,10 @@ namespace Geopolitics.Infrastructure.Persistence;
 /// figure whose entire job is to be complete.
 /// </para>
 /// </summary>
-public sealed class SqliteOperationsRepository(GeopoliticsDbContext dbContext, TimeProvider timeProvider)
-    : IOperationsRepository
+public sealed class SqliteOperationsRepository(
+    GeopoliticsDbContext dbContext,
+    IOptions<BackupOptions> backupOptions,
+    TimeProvider timeProvider) : IOperationsRepository
 {
     private static readonly TimeSpan RecentWindow = TimeSpan.FromDays(7);
 
@@ -58,6 +61,7 @@ public sealed class SqliteOperationsRepository(GeopoliticsDbContext dbContext, T
                 journalMode,
                 await observations.MinAsync(value => (DateTimeOffset?)value.ReceivedAt, cancellationToken),
                 await observations.MaxAsync(value => (DateTimeOffset?)value.ReceivedAt, cancellationToken),
+                Backups(connection.DataSource),
                 await observations.LongCountAsync(value => value.ReceivedAt >= cutoff, cancellationToken));
         }
         finally
@@ -81,6 +85,40 @@ public sealed class SqliteOperationsRepository(GeopoliticsDbContext dbContext, T
             .Select(name => name!)
             .Distinct(StringComparer.Ordinal)
             .OrderBy(name => name, StringComparer.Ordinal);
+
+    /// <summary>
+    /// What copies exist, read from the destination directory.
+    /// <para>
+    /// Read from the filesystem rather than from the backup service, deliberately. A service reports
+    /// what it attempted; the directory reports what is actually recoverable, and those come apart
+    /// on precisely the day it matters.
+    /// </para>
+    /// </summary>
+    private BackupState Backups(string databasePath)
+    {
+        var settings = backupOptions.Value;
+
+        if (!settings.IsEnabled)
+        {
+            return new BackupState(Configured: false, 0, null, 0, SameVolumeAsDatabase: false);
+        }
+
+        var copies = SqliteBackup.List(settings.Directory);
+        var newest = copies.Count > 0 ? copies[0] : null;
+
+        var sameVolume = !string.IsNullOrWhiteSpace(databasePath)
+            && string.Equals(
+                SqliteBackup.VolumeOf(databasePath),
+                SqliteBackup.VolumeOf(settings.Directory),
+                StringComparison.OrdinalIgnoreCase);
+
+        return new BackupState(
+            Configured: true,
+            copies.Count,
+            newest is null ? null : new DateTimeOffset(newest.LastWriteTimeUtc, TimeSpan.Zero),
+            newest?.Length ?? 0,
+            sameVolume);
+    }
 
     /// <summary>
     /// The write-ahead log and its shared-memory index, measured on disk.
