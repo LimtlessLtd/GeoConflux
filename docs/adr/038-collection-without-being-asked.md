@@ -82,6 +82,22 @@ fail and this file is not updated, the conservative reading raises a false alarm
 the optimistic reading hides a real one indefinitely. The self-test pins that default rather than the
 list of outcomes, because the list is the thing that will drift.
 
+### A commit records a finding, not a run
+
+A second round on a day that already has one — a re-run of a failed job, a manual dispatch, a
+schedule that fired twice — finds the same posts and stamps them with a new `retrievedAt`. Committing
+that would put a diff of pure timestamps into the history, and `git log data/osint` would become a
+record of rounds that ran rather than rounds that found something.
+
+So a bundle is compared against the one already committed for that brief today, by the content hashes
+of its items and nothing else. Every field that differs between two runs of the same brief —
+`bundleId`, `collectedAt`, every `retrievedAt` — is about the run; the hashes are about the findings,
+and they are over the excerpt, so an identical fingerprint means the same posts quoted unedited. Same
+fingerprint, nothing committed.
+
+A round that could read nothing stays an alarm regardless of what is already committed. Otherwise a
+collector that broke after a successful morning round would report a quiet afternoon.
+
 ### The lint moves in front of the commit
 
 Every committed bundle is linted by the parser that reads it at runtime, inside the ordinary test
@@ -157,7 +173,8 @@ is automated" to mean more than it does.
   workflow to run. A push made with `GITHUB_TOKEN` deliberately does not trigger other workflows, so
   this is asked for explicitly; if it ever stops working the step fails rather than leaving bundles
   committed and never published.
-- Re-running a brief on the same day overwrites that day's bundle rather than adding one. One bundle
-  per brief per day is the convention the filename already implied.
+- One bundle per brief per day, which the filename already implied. Re-running a brief on the same
+  day replaces that day's bundle only if it found something different, so `git log data/osint` is a
+  record of findings rather than of runs.
 - Running `tools/collect.sh` locally can never push. It collects and prunes the working tree, and
   what reaches the repository is decided entirely in the workflow.

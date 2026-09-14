@@ -73,8 +73,11 @@ for plan in "$BRIEFS"/*.run.json; do
         continue
     fi
 
+    # Compared against today's bundle when there already is one, so a second round an hour later
+    # does not commit the same posts with new timestamps on them.
     verdict=0
-    reason=$("$PYTHON" tools/collect/schedule.py --verdict "$bundle") || verdict=$?
+    reason=$("$PYTHON" tools/collect/schedule.py \
+        --verdict "$bundle" --against "$BUNDLES/$today-$brief.json") || verdict=$?
 
     case "$verdict" in
         0)

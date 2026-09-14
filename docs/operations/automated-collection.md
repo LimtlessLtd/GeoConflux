@@ -36,8 +36,8 @@ Three outcomes, and the middle one is the whole point of the design.
 
 | Outcome | What it means | What happens |
 | --- | --- | --- |
-| `kept` | The brief collected items. | Committed, and the Pages workflow is asked to publish. |
-| `quiet` | Channels were read; nothing matched the brief. | Nothing committed. The run succeeds. |
+| `kept` | The brief collected items not already in today's bundle. | Committed, and the Pages workflow is asked to publish. |
+| `quiet` | Channels were read; nothing matched, or nothing was new. | Nothing committed. The run succeeds. |
 | `ALARM` | No channel could be read at all. | Nothing committed. **The run fails.** |
 
 A quiet week and a broken collector both produce an empty bundle and a process that exits zero. The
@@ -48,6 +48,10 @@ too.
 
 An outcome the tooling does not recognise counts as *not read*, so a new failure mode in `collect.py`
 raises a false alarm rather than hiding a real one.
+
+`quiet` also covers a second round on a day that already has one. Re-running a brief finds the same
+posts with new timestamps on them, and a commit is meant to record a finding rather than a run —
+bundles are compared by the content hashes of their items, so an identical set commits nothing.
 
 ## Watching it
 

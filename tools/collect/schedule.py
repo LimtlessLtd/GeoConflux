@@ -86,11 +86,29 @@ def channels_read(bundle):
     return read, len(sources)
 
 
-def verdict(bundle):
+def fingerprint(bundle):
+    """What a bundle found, independent of when it went looking.
+
+    The content hashes and nothing else. Every other field a second run of the same brief changes —
+    bundleId, collectedAt, every retrievedAt — is about the run rather than about the findings, and
+    a hash is over the excerpt, so two bundles with the same fingerprint quote the same posts
+    unedited.
+    """
+
+    items = bundle.get("items")
+
+    if not isinstance(items, list):
+        return frozenset()
+
+    return frozenset(item.get("contentHash") for item in items if item.get("contentHash"))
+
+
+def verdict(bundle, against=None):
     """Whether this bundle is worth committing, and whether its emptiness is worth shouting about.
 
-    Returns (code, reason). The reason is written to be read in a workflow log by someone who did
-    not run the job and is trying to work out whether anything is wrong.
+    `against` is the bundle already committed for this brief today, when there is one. Returns
+    (code, reason). The reason is written to be read in a workflow log by someone who did not run
+    the job and is trying to work out whether anything is wrong.
     """
 
     items = bundle.get("items")
@@ -98,6 +116,16 @@ def verdict(bundle):
     read, tried = channels_read(bundle)
 
     if count > 0:
+        # A second round on a day that already has one. Re-running a brief an hour later finds the
+        # same posts and stamps them with a new retrievedAt, so committing would put a diff of pure
+        # timestamps into the history and make `git log data/osint` a record of rounds that ran
+        # rather than rounds that found something.
+        if against is not None and fingerprint(bundle) == fingerprint(against):
+            return QUIET, (
+                f"The same {count} item(s) already collected today, re-stamped with this run's "
+                "timestamps. Nothing new to commit."
+            )
+
         return COMMIT, f"{count} item(s) from {read} of {tried} channel(s)."
 
     # Nothing collected. Which of the two failures it is depends entirely on whether anybody
@@ -156,10 +184,13 @@ def self_test():
     def check(name, condition):
         checks.append((name, bool(condition)))
 
-    def bundle(items=0, outcomes=(), collected="2026-09-14T20:54:19Z"):
+    def bundle(items=0, outcomes=(), collected="2026-09-14T20:54:19Z", first=0):
         return {
             "collectedAt": collected,
-            "items": [{"url": f"https://example.test/{index}"} for index in range(items)],
+            "items": [
+                {"url": f"https://example.test/{n}", "contentHash": f"sha256:{n}"}
+                for n in range(first, first + items)
+            ],
             "coverage": {"sources": [{"channel": f"c{i}", "outcome": o} for i, o in enumerate(outcomes)]},
         }
 
@@ -196,7 +227,35 @@ def self_test():
         not (READ_OUTCOMES & UNREAD_OUTCOMES),
     )
 
-    # 6. Pruning ages against the bundle's own timestamp, which is the field the runtime ages it by.
+    # 6. A second round on a day that already has one. Same posts, new timestamps: the findings are
+    #    what a commit is for, and re-running an hour later has not found anything.
+    today = bundle(items=3, outcomes=("collected",))
+    restamped = bundle(items=3, outcomes=("collected",), collected="2026-09-14T22:10:00Z")
+    code, reason = verdict(restamped, against=today)
+    check("re-collecting the same items commits nothing", code == QUIET)
+    check("and says the items were already collected", "already collected today" in reason)
+
+    check(
+        "a run that found one new item does commit",
+        verdict(bundle(items=4, outcomes=("collected",)), against=today)[0] == COMMIT,
+    )
+    check(
+        "a run that found different items commits",
+        verdict(bundle(items=3, outcomes=("collected",), first=9), against=today)[0] == COMMIT,
+    )
+    check(
+        "with nothing to compare against, items are committed",
+        verdict(today, against=None)[0] == COMMIT,
+    )
+
+    # A round that read nothing stays an alarm even when today's bundle already exists. Otherwise a
+    # collector that broke after a successful morning round would report a quiet afternoon.
+    check(
+        "an unreadable round is still an alarm against an existing bundle",
+        verdict(bundle(items=0, outcomes=("unreachable",)), against=today)[0] == ALARM,
+    )
+
+    # 7. Pruning ages against the bundle's own timestamp, which is the field the runtime ages it by.
     now = dt.datetime(2026, 10, 20, tzinfo=dt.timezone.utc)
     check("a bundle past the horizon is prunable", prunable(bundle(collected="2026-09-14T20:54:19Z"), now))
     check("a bundle inside it is not", not prunable(bundle(collected="2026-10-01T00:00:00Z"), now))
@@ -206,10 +265,10 @@ def self_test():
     check("exactly keep-days old is kept", not prunable(bundle(collected="2026-09-22T00:00:00Z"), now, 28))
     check("a day past keep-days is not", prunable(bundle(collected="2026-09-21T00:00:00Z"), now, 28))
 
-    # 7. The horizon is behind the runtime's, so pruning can never remove a bundle still being read.
+    # 8. The horizon is behind the runtime's, so pruning can never remove a bundle still being read.
     check("the working set outlives what the pipeline reads", DEFAULT_KEEP_DAYS > 14)
 
-    # 8. A bundle with no timestamp is a fault, not a thing to quietly delete.
+    # 9. A bundle with no timestamp is a fault, not a thing to quietly delete.
     try:
         collected_at({"items": []})
         check("a bundle with no collectedAt is refused", False)
@@ -233,6 +292,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--self-test", action="store_true", help="run the offline checks and exit")
     parser.add_argument("--verdict", help="decide whether one freshly collected bundle is worth committing")
+    parser.add_argument("--against", help="the bundle already committed for this brief today, if there is one")
     parser.add_argument("--prunable", help="list the bundles in a directory that have aged out")
     parser.add_argument(
         "--keep-days",
@@ -254,7 +314,22 @@ def main():
 
     if arguments.verdict:
         with open(arguments.verdict, encoding="utf-8") as handle:
-            code, reason = verdict(json.load(handle))
+            fresh = json.load(handle)
+
+        against = None
+
+        # Absent is the ordinary case — the first round of the day has nothing to compare with. A
+        # path that was given and cannot be read is left as no comparison rather than failing the
+        # round: the worst it costs is a commit of timestamps, and refusing to commit a real
+        # collection because an old file is unreadable would be the more expensive mistake.
+        if arguments.against and os.path.exists(arguments.against):
+            try:
+                with open(arguments.against, encoding="utf-8") as handle:
+                    against = json.load(handle)
+            except (OSError, ValueError):
+                against = None
+
+        code, reason = verdict(fresh, against)
 
         print(reason)
         return code
