@@ -16,7 +16,16 @@ public interface IObservationQueryService
 /// </summary>
 public sealed class ObservationQueryService(IObservationRepository observationRepository) : IObservationQueryService
 {
-    private const int MaxTake = 200;
+    /// <summary>
+    /// Ceiling on one read. Raised from 200 on 2026-09-14, when the deploy went from four feeds to
+    /// ten and a run began producing more observations than the snapshot exporter could ask for —
+    /// so the published page carried a sample while every count beside it described the whole.
+    /// <para>
+    /// The endpoint defaults to 50 and a caller chooses from there, so this bounds the worst case
+    /// rather than the usual one.
+    /// </para>
+    /// </summary>
+    private const int MaxTake = 400;
 
     public async Task<IReadOnlyList<ObservationResponse>> ListRecentAsync(int take, CancellationToken cancellationToken)
     {

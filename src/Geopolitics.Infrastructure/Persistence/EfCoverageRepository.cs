@@ -65,15 +65,40 @@ public sealed class EfCoverageRepository(GeopoliticsDbContext dbContext) : ICove
         // providers and not others, and an unknown-language count that silently disappeared would
         // make the breakdown look more complete than the data is — which is the one thing a coverage
         // figure must never do.
-        var byLanguage = await observations
-            .Where(observation => observation.DetectedLanguage != null)
-            .GroupBy(observation => observation.DetectedLanguage!)
-            .OrderByDescending(group => group.Count())
+        // A declared language beats a detected one, and the gap between them is not small. Detection
+        // reads the script, which is all that can be established without a model: it separates Arabic
+        // from Cyrillic and cannot separate French from Spanish from English, because all three are
+        // written in the same alphabet. So a Latin-script feed was being counted as English whatever
+        // it published in — which was near enough true when every feed was English and became a
+        // misstatement the moment they were not.
+        //
+        // Counted as two queries and merged here rather than coalesced inside one GroupBy, for the
+        // reason the paragraph above this method already gives: coalescing translates on some
+        // providers and not others.
+        var declared = await observations
+            .Where(observation => observation.DeclaredLanguage != null)
+            .GroupBy(observation => observation.DeclaredLanguage!)
             .Select(group => new CategoryCount(group.Key, group.Count()))
             .ToListAsync(cancellationToken);
 
+        var detected = await observations
+            .Where(observation => observation.DeclaredLanguage == null && observation.DetectedLanguage != null)
+            .GroupBy(observation => observation.DetectedLanguage!)
+            .Select(group => new CategoryCount(group.Key, group.Count()))
+            .ToListAsync(cancellationToken);
+
+        var byLanguage = declared
+            .Concat(detected)
+            .GroupBy(entry => entry.Category, StringComparer.OrdinalIgnoreCase)
+            .Select(group => new CategoryCount(group.Key, group.Sum(entry => entry.Count)))
+            .OrderByDescending(entry => entry.Count)
+            .ThenBy(entry => entry.Category, StringComparer.Ordinal)
+            .ToList();
+
         var unknownLanguage = await observations
-            .CountAsync(observation => observation.DetectedLanguage == null, cancellationToken);
+            .CountAsync(
+                observation => observation.DeclaredLanguage == null && observation.DetectedLanguage == null,
+                cancellationToken);
 
         if (unknownLanguage > 0)
         {

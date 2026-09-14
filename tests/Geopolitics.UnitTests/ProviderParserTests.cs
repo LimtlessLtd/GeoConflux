@@ -291,4 +291,54 @@ public sealed class ProviderParserTests
 
         Assert.Equal(3, atTheLimit.Events.Count);
     }
+
+    [Fact]
+    public void AFeedsDeclaredLanguageIsReadAndInheritedByItsItems()
+    {
+        // Detection reads the script, which separates Arabic from Cyrillic and cannot separate
+        // French from English because both use the same alphabet. A publisher stating what it
+        // publishes in is better evidence than this system's inference, and is why this is read.
+        var feed = """
+            <?xml version="1.0" encoding="utf-8"?>
+            <rss version="2.0">
+              <channel>
+                <title>Invented Wire</title>
+                <language>fr-FR</language>
+                <item><title>Un titre</title><description>Un resume</description></item>
+                <item><title>Un autre</title><description>Un autre resume</description><language>es</language></item>
+              </channel>
+            </rss>
+            """;
+
+        var entries = SyndicationFeedParser.Parse(feed);
+
+        // Normalised to the primary subtag, because the panel counts languages rather than locales
+        // and two publishers writing the tag differently must not report French twice.
+        Assert.Equal("fr", entries[0].Language);
+
+        // An item may override the channel it sits in.
+        Assert.Equal("es", entries[1].Language);
+    }
+
+    [Fact]
+    public void AFeedDeclaringNoLanguageOrARubbishOneDeclaresNothing()
+    {
+        // Null rather than a guess. The value reaches a database column from an open feed, and a tag
+        // that is not a tag is no tag at all.
+        var feed = """
+            <?xml version="1.0" encoding="utf-8"?>
+            <rss version="2.0">
+              <channel>
+                <title>Invented Wire</title>
+                <language>   </language>
+                <item><title>A headline</title><description>A summary</description></item>
+              </channel>
+            </rss>
+            """;
+
+        Assert.Null(SyndicationFeedParser.Parse(feed)[0].Language);
+
+        var rubbish = feed.Replace("   ", "not-a-language-tag-at-all-really");
+        Assert.Null(SyndicationFeedParser.Parse(rubbish)[0].Language);
+    }
 }

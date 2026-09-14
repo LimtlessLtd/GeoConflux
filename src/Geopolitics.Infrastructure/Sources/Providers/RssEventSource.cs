@@ -97,8 +97,13 @@ public sealed partial class RssEventSource(
                 Title = entry.Title,
                 OccurredAt = entry.PublishedAt,
 
-                // Nothing is declared. A feed item states no category, severity, or position, and
-                // inventing any of them here would put a guess where the pipeline expects a fact.
+                // The one thing a feed does declare about itself. Everything else — category,
+                // severity, position — it states nothing about, and inventing any of them here would
+                // put a guess where the pipeline expects a fact. Language is different: the channel
+                // says what it publishes in, and that beats inferring it from the script, which
+                // cannot tell French from English because both are written in the same alphabet.
+                DeclaredLanguage = entry.Language,
+
                 Provenance = ObservationProvenance.Polled,
             })];
     }

@@ -8,7 +8,22 @@ namespace Geopolitics.Infrastructure.Sources.Providers;
 
 /// <param name="Identifier">Stable per-item identifier from the feed: a GUID, an Atom id, or the link.</param>
 /// <param name="PublishedAt">When the publisher says the item was published, when it says at all.</param>
-public sealed record SyndicationEntry(string? Identifier, string Title, string Summary, DateTimeOffset? PublishedAt);
+/// <param name="Language">
+/// The language the feed declares for itself, as a BCP 47 tag, or null when it declares none.
+/// <para>
+/// Read because the alternative is worse than it looks. Language is otherwise determined from the
+/// script, which is all that can be established without a model — and a script tells Arabic from
+/// Cyrillic while telling nothing at all between French, Spanish and English. A feed stating it
+/// publishes in French is the publisher's own declaration and beats this system's inference, which
+/// is the hierarchy every other Declared field here follows.
+/// </para>
+/// </param>
+public sealed record SyndicationEntry(
+    string? Identifier,
+    string Title,
+    string Summary,
+    DateTimeOffset? PublishedAt,
+    string? Language = null);
 
 /// <summary>
 /// Turns an RSS 2.0 or Atom document into entries, with no knowledge of HTTP or of the pipeline.
@@ -87,6 +102,11 @@ public static partial class SyndicationFeedParser
         var items = root.Descendants().Where(element => element.Name.LocalName == "item");
         var entries = new List<SyndicationEntry>();
 
+        // Declared once on the channel and inherited by every item, which is how RSS expresses it.
+        // An item that overrides it wins below.
+        var feedLanguage = Language(root.Descendants()
+            .FirstOrDefault(element => element.Name.LocalName == "channel") ?? root);
+
         foreach (var item in items)
         {
             var title = Clean(Value(item, "title"), MaxTitleLength);
@@ -101,7 +121,8 @@ public static partial class SyndicationFeedParser
                 Value(item, "guid") ?? Value(item, "link"),
                 title.Length == 0 ? Truncate(summary, MaxTitleLength) : title,
                 summary.Length == 0 ? title : summary,
-                ParseDate(Value(item, "pubDate") ?? Value(item, "date"))));
+                ParseDate(Value(item, "pubDate") ?? Value(item, "date")),
+                Language(item) ?? feedLanguage));
         }
 
         return entries;
@@ -136,6 +157,41 @@ public static partial class SyndicationFeedParser
     /// content, and bare elements freely, and matching on local name is what makes one code path
     /// work across them.
     /// </summary>
+    /// <summary>
+    /// The language an element declares, from either the RSS element or the XML attribute.
+    /// </summary>
+    /// <remarks>
+    /// Normalised to its primary subtag — <c>fr-FR</c> becomes <c>fr</c> — because what the coverage
+    /// panel counts is languages rather than locales, and leaving both would report French twice for
+    /// two publishers who happened to write the tag differently.
+    /// </remarks>
+    private static string? Language(XElement element)
+    {
+        var declared = Value(element, "language")
+            ?? element.Attributes().FirstOrDefault(attribute => attribute.Name.LocalName == "lang")?.Value;
+
+        if (string.IsNullOrWhiteSpace(declared))
+        {
+            return null;
+        }
+
+        var subtags = declared.Trim().Split('-', StringSplitOptions.RemoveEmptyEntries);
+
+        // The whole value has to look like a tag before its first part is trusted, not just the
+        // first part on its own. "not-a-language-tag-at-all-really" has a plausible three-letter
+        // head and is plainly not a language, and reading it as "not" would put a language nobody
+        // publishes in onto the coverage panel — which is a worse outcome than reading nothing,
+        // because it would be counted rather than shown as unknown.
+        //
+        // A language subtag is two or three letters; the rest are script, region or variant, and a
+        // real tag has few of them. This accepts fr, fr-FR and zh-Hant-TW and rejects a sentence.
+        var wellFormed = subtags.Length is >= 1 and <= 3
+            && subtags[0].Length is 2 or 3
+            && subtags.All(subtag => subtag.Length is >= 2 and <= 8 && subtag.All(char.IsAsciiLetterOrDigit));
+
+        return wellFormed ? subtags[0].ToLowerInvariant() : null;
+    }
+
     private static string? Value(XElement parent, string localName)
     {
         var match = parent.Elements().FirstOrDefault(element =>
