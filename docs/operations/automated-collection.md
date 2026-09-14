@@ -88,8 +88,43 @@ or that the register holds a conflict no brief covers. A brief that has drifted 
 looks, to this workflow, exactly like one that is working.
 
 That is judgement, it changes what the project claims to have looked for, and it belongs in a diff
-somebody wrote. The material to do it with is in the run log and in `coverage.sources` inside every
-bundle: how many posts each channel served, how many matched, and which ones could not be read.
+somebody wrote. What the schedule can do is lay the facts out, which is the section below.
+
+## Reviewing what the rounds actually found
+
+```powershell
+python tools/collect/schedule.py --health data/osint
+```
+
+Per channel, across every committed bundle: how many rounds could read it, how many rounds it
+contributed an item to, how many posts it served in total, and the last date it gave anything.
+
+Counting *rounds* is the point. A channel that answers 200 every morning and has not contributed in a
+fortnight is invisible in any single bundle, in the workflow's exit status, and on the published page
+— it looks exactly like a channel covering a quiet beat. Only the count separates them.
+
+The report names two shapes and deliberately stops there:
+
+- **Answered every round and contributed nothing.** Either the brief's terms miss what the channel
+  publishes, or the channel does not cover this subject.
+- **Never readable.** Listed in the brief and never actually collected from.
+
+Neither is automatically a fault, and the tool does not say it is. Both run files already record the
+opposite decision for at least one channel — *a source that is listed and produces nothing is a
+stated gap; a source quietly dropped from the list is an unstated one* — so the report gives a number
+and leaves the judgement where it belongs.
+
+A review worth doing every week or two, with the health table in front of you:
+
+1. `gh run list --workflow=collect.yml` — are the rounds running, and how many alarmed?
+2. `--health` — has a channel stopped contributing, and has anything become unreadable that was not?
+3. Read a few excerpts from the newest bundle. Terms match as substrings, and the failure that does
+   not show up in any count is a term quietly matching the wrong subject.
+4. Does the conflict register hold something no brief covers? Two briefs of roughly ten channels is
+   the reach this project has, and running them more often does not widen it.
+
+Anything that comes out of that is an edit to `data/osint/briefs/`, in a diff, with the brief's
+`revision` raised so bundles collected before and after stay comparable.
 
 ## If the run fails
 

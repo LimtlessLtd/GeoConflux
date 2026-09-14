@@ -178,6 +178,104 @@ def prunable_files(directory, now, keep_days=DEFAULT_KEEP_DAYS):
     return stale
 
 
+def channel_health(directory):
+    """Per channel, across every bundle in a directory: how it has been behaving.
+
+    The material for the review the schedule deliberately does not do. A channel that answers 200
+    every round and has not contributed an item in a fortnight is not visible from any single
+    bundle, from the workflow's exit status, or from the published page — it looks exactly like a
+    channel covering a quiet beat. Counting rounds is what separates them.
+
+    This reports; it does not judge. Whether a silent channel should be dropped depends on what the
+    brief is for, which is the part that belongs to a person.
+    """
+
+    bundles = []
+
+    for name in sorted(os.listdir(directory)):
+        if not name.endswith(".json"):
+            continue
+
+        try:
+            with open(os.path.join(directory, name), encoding="utf-8") as handle:
+                bundles.append(json.load(handle))
+        except (OSError, ValueError):
+            continue
+
+    return summarise(bundles)
+
+
+def summarise(bundles):
+    """The counting half of channel_health, separated so it can be tested without a filesystem."""
+
+    health = {}
+    rounds = 0
+
+    for bundle in bundles:
+        rounds += 1
+        collected_on = str(bundle.get("collectedAt", ""))[:10]
+
+        for source in bundle.get("coverage", {}).get("sources", []):
+            channel = source.get("channel")
+
+            if not channel:
+                continue
+
+            record = health.setdefault(
+                channel,
+                {"channel": channel, "rounds": 0, "read": 0, "contributed": 0, "last": None, "posts": 0},
+            )
+
+            record["rounds"] += 1
+
+            if source.get("outcome") in READ_OUTCOMES:
+                record["read"] += 1
+                record["posts"] += source.get("read", 0) or 0
+
+            if (source.get("collected") or 0) > 0:
+                record["contributed"] += 1
+                record["last"] = collected_on
+
+    return rounds, [health[key] for key in sorted(health)]
+
+
+def report_health(directory):
+    rounds, channels = channel_health(directory)
+
+    if not channels:
+        print(f"No bundles in {directory}.")
+        return 0
+
+    print(f"{len(channels)} channel(s) across {rounds} bundle(s) in {directory}.\n")
+    print(f"{'channel':<34} {'read':>9} {'gave items':>11} {'posts':>7}  last")
+
+    for record in channels:
+        read = f"{record['read']}/{record['rounds']}"
+        gave = f"{record['contributed']}/{record['rounds']}"
+        print(f"{record['channel']:<34} {read:>9} {gave:>11} {record['posts']:>7}  {record['last'] or '-'}")
+
+    # Named rather than left to be spotted in the table. These are the two shapes worth acting on,
+    # and both are invisible from any single round.
+    mute = [r["channel"] for r in channels if r["read"] == r["rounds"] and r["contributed"] == 0]
+    unread = [r["channel"] for r in channels if r["read"] == 0]
+
+    # Named rather than prescribed against. Both shapes have a legitimate answer already recorded in
+    # the run files — "a source that is listed and produces nothing is a stated gap; a source quietly
+    # dropped from the list is an unstated one" — so reporting the count and stopping is the whole
+    # job here. Advising a removal would be arguing with a decision this tool cannot see.
+    if mute:
+        print(f"\nAnswered every round and contributed nothing: {', '.join(mute)}")
+        print("  Read fine and matched nothing. Either the terms miss what the channel publishes,")
+        print("  or it does not cover this subject and is carried as a stated gap.")
+
+    if unread:
+        print(f"\nNever readable: {', '.join(unread)}")
+        print("  Listed in the brief and never actually collected from. Worth confirming the entry")
+        print("  is still right, and worth leaving alone if it is kept deliberately as a gap.")
+
+    return 0
+
+
 def self_test():
     checks = []
 
@@ -268,7 +366,39 @@ def self_test():
     # 8. The horizon is behind the runtime's, so pruning can never remove a bundle still being read.
     check("the working set outlives what the pipeline reads", DEFAULT_KEEP_DAYS > 14)
 
-    # 9. A bundle with no timestamp is a fault, not a thing to quietly delete.
+    # 9. Channel health across rounds. The point of counting rounds rather than reading one bundle:
+    #    a channel that answers every time and has never contributed is indistinguishable, in any
+    #    single round, from one covering a quiet beat.
+    def round_with(*sources):
+        return {
+            "collectedAt": "2026-09-14T00:00:00Z",
+            "coverage": {"sources": [dict(s) for s in sources]},
+        }
+
+    rounds, channels = summarise([
+        round_with(
+            {"channel": "a", "outcome": "collected", "read": 40, "collected": 2},
+            {"channel": "b", "outcome": "nothing matched", "read": 40, "collected": 0},
+            {"channel": "c", "outcome": "unreachable"},
+        ),
+        round_with(
+            {"channel": "a", "outcome": "nothing matched", "read": 40, "collected": 0},
+            {"channel": "b", "outcome": "nothing matched", "read": 40, "collected": 0},
+            {"channel": "c", "outcome": "unreachable"},
+        ),
+    ])
+
+    by_name = {record["channel"]: record for record in channels}
+    check("every channel across every round is counted once", rounds == 2 and len(channels) == 3)
+    check("a channel that contributed in one round of two says so", by_name["a"]["contributed"] == 1)
+    check("and records when it last did", by_name["a"]["last"] == "2026-09-14")
+    check("a readable channel that never contributed is read but empty-handed",
+          by_name["b"]["read"] == 2 and by_name["b"]["contributed"] == 0)
+    check("and its last contribution is nothing rather than a date", by_name["b"]["last"] is None)
+    check("an unreachable channel is never counted as read", by_name["c"]["read"] == 0)
+    check("posts served are totalled only for rounds that were read", by_name["a"]["posts"] == 80)
+
+    # 10. A bundle with no timestamp is a fault, not a thing to quietly delete.
     try:
         collected_at({"items": []})
         check("a bundle with no collectedAt is refused", False)
@@ -294,6 +424,7 @@ def main():
     parser.add_argument("--verdict", help="decide whether one freshly collected bundle is worth committing")
     parser.add_argument("--against", help="the bundle already committed for this brief today, if there is one")
     parser.add_argument("--prunable", help="list the bundles in a directory that have aged out")
+    parser.add_argument("--health", help="per-channel behaviour across every bundle in a directory")
     parser.add_argument(
         "--keep-days",
         type=int,
@@ -339,6 +470,9 @@ def main():
             print(path)
 
         return 0
+
+    if arguments.health:
+        return report_health(arguments.health)
 
     parser.print_help()
     return 2

@@ -155,6 +155,15 @@ is automated" to mean more than it does.
   and neither of those notices that a channel has quietly become worthless while still returning 200.
   A brief that has drifted out of usefulness looks, to this workflow, exactly like one that is
   working.
+
+  What the tooling does do is count, because the thing being judged is invisible in any single
+  bundle. `schedule.py --health` reports, per channel across every committed bundle, how many rounds
+  could read it and how many it contributed to — and stops there. Run against the bundles that
+  existed when this was written it finds one channel never readable in three rounds and two that
+  answered every round and contributed nothing, all three of which the run files already record a
+  deliberate decision about. That is exactly why it reports a number rather than advising a removal:
+  *a source that is listed and produces nothing is a stated gap; a source quietly dropped from the
+  list is an unstated one*, and a tool that cannot see that comment should not argue with it.
 - **Extending the briefs.** Two briefs, roughly ten channels each, is the reach this project has. A
   schedule runs them more often; it does not widen them, and running a narrow brief daily produces a
   confident-looking series of bundles about the same small set of channels.
