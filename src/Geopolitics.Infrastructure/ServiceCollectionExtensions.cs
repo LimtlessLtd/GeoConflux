@@ -69,6 +69,11 @@ public static class ServiceCollectionExtensions
         // answer that cannot have changed.
         services.AddSingleton<IConflictRegister, CodedConflictRegister>();
         services.AddSingleton<IConflictAssigner, ConflictAssigner>();
+
+        // Asked only where the deterministic assignment could not decide, which is why it sits beside
+        // the enrichment service rather than inside it: the question depends on where the report was
+        // placed, and placement depends on what enrichment already answered.
+        services.AddScoped<IConflictClassifier, ChatClientConflictClassifier>();
         services.AddScoped<IObservationQueryService, ObservationQueryService>();
         services.AddScoped<DemoDataSeeder>();
         services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();

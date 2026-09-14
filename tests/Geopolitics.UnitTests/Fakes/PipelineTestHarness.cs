@@ -219,6 +219,9 @@ public sealed class PipelineTestHarness
     /// </summary>
     public IConflictRegister Conflicts { get; set; } = new FixedConflictRegister();
 
+    /// <summary>Skipped by default, which is a deployment with no model configured.</summary>
+    public StubConflictClassifier ConflictClassifier { get; } = new();
+
     public ObservationProcessor BuildProcessor() => new(
         Normaliser,
         Observations,
@@ -228,7 +231,9 @@ public sealed class PipelineTestHarness
         Microsoft.Extensions.Options.Options.Create(Enrichment),
         SeverityModel,
         LocationResolver,
+        Conflicts,
         new ConflictAssigner(Conflicts),
+        ConflictClassifier,
         Correlator,
         CorrelationLock,
         Corroboration,

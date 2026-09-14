@@ -23,7 +23,9 @@ public sealed partial class ObservationProcessor(
     IOptions<EnrichmentOptions> enrichmentOptions,
     ISeverityModel severityModel,
     ILocationResolver locationResolver,
+    IConflictRegister conflictRegister,
     IConflictAssigner conflictAssigner,
+    IConflictClassifier conflictClassifier,
     IIncidentCorrelator correlator,
     CorrelationLock correlationLock,
     CorroborationGate corroborationGate,
@@ -138,7 +140,7 @@ public sealed partial class ObservationProcessor(
         // the point: membership is a description of the evidence, not a gate on it.
         using (var stage = diagnostics.StartStage(PipelineDiagnostics.Stages.AssignConflict))
         {
-            AssignConflicts(envelope, observation);
+            await AssignConflictsAsync(envelope, observation, cancellationToken);
             stage.Tag("conflict.assigned", observation.IsAssignedToConflict);
             stage.Tag("conflict.basis", observation.ConflictBasis?.ToString() ?? "none");
         }
@@ -575,7 +577,10 @@ public sealed partial class ObservationProcessor(
     /// a coded record that could not be placed is still assigned by the country its provider stated.
     /// </para>
     /// </summary>
-    private void AssignConflicts(ObservationEnvelope envelope, RawObservation observation)
+    private async Task AssignConflictsAsync(
+        ObservationEnvelope envelope,
+        RawObservation observation,
+        CancellationToken cancellationToken)
     {
         var assignment = conflictAssigner.Assign(new ConflictCandidate(
             CodedConflictKey: envelope.DeclaredConflictKey,
@@ -584,11 +589,161 @@ public sealed partial class ObservationProcessor(
             ActorNames: [.. observation.Entities.Select(entity => entity.Name)],
             EventType: observation.EventType));
 
+        // The model is asked only where the deterministic pass genuinely could not decide and left
+        // something to decide between. Not where it succeeded, because a report whose own source
+        // coded it has nothing to add; and not where it found nothing, because an empty offer is not
+        // a question — it is an invitation to invent a category, which is the one thing the model
+        // must never do.
+        if (assignment.Memberships.Count == 0 && assignment.Candidates.Count > 0)
+        {
+            assignment = await ChooseConflictAsync(envelope, observation, assignment, cancellationToken);
+        }
+
         observation.AssignConflicts(
             assignment.Memberships.Select(membership => membership.ConflictKey),
             assignment.Memberships.Count > 0 ? assignment.Memberships[0].Basis : null,
             assignment.Candidates.Select(membership => membership.ConflictKey),
             assignment.Note);
+    }
+
+    /// <summary>
+    /// Puts the undecided choice to a model, and records what it said whether or not the answer is
+    /// used.
+    /// <para>
+    /// The model chooses from the register; it does not add to it. That is enforced twice over — the
+    /// request enumerates the permitted keys, and the validator rejects anything else — and the
+    /// belt-and-braces is deliberate, because only some providers support constrained decoding and
+    /// the guarantee must not depend on which one is configured.
+    /// </para>
+    /// </summary>
+    private async Task<ConflictAssignment> ChooseConflictAsync(
+        ObservationEnvelope envelope,
+        RawObservation observation,
+        ConflictAssignment assignment,
+        CancellationToken cancellationToken)
+    {
+        var options = new List<ConflictOption>(assignment.Candidates.Count);
+
+        foreach (var candidate in assignment.Candidates)
+        {
+            if (conflictRegister.TryGet(candidate.ConflictKey, out var conflict))
+            {
+                options.Add(new ConflictOption(
+                    conflict.Key,
+                    conflict.Name,
+                    conflict.SideA,
+                    conflict.SideB,
+                    string.Join(", ", conflict.Countries.Order())));
+            }
+        }
+
+        if (options.Count == 0)
+        {
+            return assignment;
+        }
+
+        var result = await conflictClassifier.ChooseAsync(
+            new ConflictChoiceRequest(
+                observation.SourceName,
+                observation.Title ?? envelope.Title,
+                observation.Summary ?? observation.Content,
+                options),
+            cancellationToken);
+
+        if (result.Outcome != AiInferenceOutcome.Skipped)
+        {
+            await RecordConflictInferenceAsync(observation, result, cancellationToken);
+        }
+
+        if (result.Choice is not { ConflictKey: { } chosen } choice)
+        {
+            // No answer, or the model declined. Either way the candidates stand as candidates, which
+            // is what they already were.
+            return result.Choice?.ProposedName is { } proposed
+                ? assignment with { Note = Proposed(proposed, assignment.Note) }
+                : assignment;
+        }
+
+        if (choice.Confidence < enrichment.MinimumAcceptedConfidence)
+        {
+            // The model answered and was honest about being unsure. An unsure assignment shown
+            // without qualification reads exactly like a confident one, so the report stays
+            // unassigned and the inference stays on record.
+            LogConflictChoiceBelowThreshold(
+                logger,
+                observation.Id,
+                choice.Confidence,
+                enrichment.MinimumAcceptedConfidence);
+
+            return assignment;
+        }
+
+        var membership = assignment.Candidates.First(entry => entry.ConflictKey == chosen);
+
+        return new ConflictAssignment(
+            [membership with { Basis = ConflictMatchBasis.Assigned }],
+            [.. assignment.Candidates.Where(entry => entry.ConflictKey != chosen)],
+            null);
+    }
+
+    /// <summary>
+    /// What a model thinks this is, when it thinks none of the offered conflicts covers it.
+    /// <para>
+    /// Recorded as a sentence rather than as a register entry, and that is the whole decision. A
+    /// register a model can write is a register shaped by what the model has read about, and what a
+    /// model has read about tracks volume of reporting — so the conflicts it would fail to propose
+    /// are the under-reported ones, and a missing category reads exactly like peace.
+    /// </para>
+    /// </summary>
+    private static string Proposed(string name, string? existing) =>
+        "A model suggested this may belong to a conflict the register does not hold, which it named "
+        + $"'{name}'. That is a claim and is recorded as one; nothing has been added to the register."
+        + (string.IsNullOrWhiteSpace(existing) ? string.Empty : " " + existing);
+
+    /// <summary>
+    /// Writes the audit record for an assignment attempt. As with enrichment, failing to store it
+    /// must not fail the observation: it is telemetry about processing, not evidence.
+    /// </summary>
+    private async Task RecordConflictInferenceAsync(
+        RawObservation observation,
+        ConflictChoiceResult result,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var inference = result.IsSuccess
+                ? AiInference.Succeeded(
+                    Guid.CreateVersion7(timeProvider.GetUtcNow()),
+                    observation.Id,
+                    result.Provider,
+                    result.Model,
+                    result.PromptVersion,
+                    result.SchemaVersion,
+                    result.Choice!.Confidence,
+                    result.Attempts,
+                    result.LatencyMilliseconds,
+                    timeProvider.GetUtcNow(),
+                    result.StructuredOutput!)
+                : AiInference.Failed(
+                    Guid.CreateVersion7(timeProvider.GetUtcNow()),
+                    observation.Id,
+                    result.Provider,
+                    result.Model,
+                    result.PromptVersion,
+                    result.SchemaVersion,
+                    result.Outcome,
+                    result.Attempts,
+                    result.LatencyMilliseconds,
+                    timeProvider.GetUtcNow(),
+                    result.Error ?? "The conflict assignment attempt failed.");
+
+            await inferenceRepository.AddAsync(inference, cancellationToken);
+            await inferenceRepository.SaveChangesAsync(cancellationToken);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            LogConflictInferenceNotRecorded(logger, exception, observation.Id);
+        }
     }
 
     private async Task ResolveLocationAsync(
@@ -800,6 +955,12 @@ public sealed partial class ObservationProcessor(
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Enrichment for observation {ObservationId} reported confidence {Confidence}, below the {Threshold} threshold; the deterministic classification was kept.")]
     private static partial void LogEnrichmentBelowThreshold(ILogger logger, Guid observationId, double confidence, double threshold);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Conflict assignment for observation {ObservationId} reported confidence {Confidence}, below the {Threshold} threshold; it was left unassigned.")]
+    private static partial void LogConflictChoiceBelowThreshold(ILogger logger, Guid observationId, double confidence, double threshold);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "The conflict assignment audit record for observation {ObservationId} could not be stored; processing continued.")]
+    private static partial void LogConflictInferenceNotRecorded(ILogger logger, Exception exception, Guid observationId);
 
     [LoggerMessage(
         Level = LogLevel.Debug,

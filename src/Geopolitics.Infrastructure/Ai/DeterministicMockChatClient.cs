@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using Geopolitics.Application.Abstractions;
+using Geopolitics.Application.Conflicts;
 using Geopolitics.Application.Enrichment;
 using Geopolitics.Domain;
 using Geopolitics.Infrastructure.Location;
@@ -45,7 +46,7 @@ public sealed class DeterministicMockChatClient(IEventClassifier classifier) : I
         cancellationToken.ThrowIfCancellationRequested();
 
         var report = ExtractReport(messages);
-        var json = BuildPayload(report);
+        var json = IsConflictAssignment(messages) ? DeclineToAssign() : BuildPayload(report);
 
         return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, json))
         {
@@ -85,6 +86,35 @@ public sealed class DeterministicMockChatClient(IEventClassifier classifier) : I
     {
         // Nothing to release: this client holds no connection, handle, or unmanaged resource.
     }
+
+    /// <summary>
+    /// Whether this is the conflict-assignment question rather than the enrichment one. Recognised
+    /// from the system instruction, because that is the part of the conversation this client is
+    /// entitled to read as instruction — the user turn is the untrusted report.
+    /// </summary>
+    private static bool IsConflictAssignment(IEnumerable<ChatMessage> messages) =>
+        messages.Any(message =>
+            message.Role == ChatRole.System
+            && message.Text?.Contains("assign reports to known armed conflicts", StringComparison.OrdinalIgnoreCase) == true);
+
+    /// <summary>
+    /// The honest answer from a stand-in that cannot read.
+    /// <para>
+    /// Deciding which of several wars a report belongs to needs an understanding of the text, and
+    /// this client has none — it matches keywords. It could pick the largest conflict on the list and
+    /// be right most of the time by volume, which is precisely the failure worth refusing: the
+    /// conflicts it would then be wrong about are the small ones, and those are the entire reason for
+    /// having a register of 319 rather than a list of three. So it declines, at zero confidence, and
+    /// the report stays unassigned with its candidates named.
+    /// </para>
+    /// </summary>
+    private static string DeclineToAssign() => JsonSerializer.Serialize(new
+    {
+        schemaVersion = ConflictChoiceContract.SchemaVersion,
+        conflictKey = ConflictChoiceContract.None,
+        confidence = 0.0,
+        rationale = "The offline stand-in cannot read a report well enough to choose between conflicts.",
+    });
 
     /// <summary>
     /// Recovers the report body from the prompt's delimiters. The delimiters exist to tell a real
