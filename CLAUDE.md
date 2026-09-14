@@ -56,15 +56,23 @@ it builds, runs the full test suite, executes the real pipeline, exports the sna
 non-empty, and publishes. The whole rule is therefore *get the verified increment onto `main`*.
 
 ```powershell
-dotnet build GeopoliticsDashboard.sln
-dotnet test GeopoliticsDashboard.sln
-npm test
-dotnet format GeopoliticsDashboard.sln --verify-no-changes
+bash tools/verify.sh   # everything CI checks, in CI's order, from the same script CI runs
 git checkout main
 git merge --ff-only <branch>
 git push origin main
-gh run watch          # confirm the deploy actually succeeded
+gh run watch           # confirm the deploy actually succeeded
 ```
+
+**Run `tools/verify.sh` before pushing, not a subset of it.** It is the same file
+`.github/workflows/ci.yml` invokes, so passing locally means CI passes — with one stated exception:
+`docker build` needs Docker, and the script says plainly when it could not run rather than skipping
+quietly. The reason this is a rule is measurable. In one week eight CI runs failed, and four were the
+same cause: a change altered the generated evaluation figures and `RESULTS.md` was left uncommitted.
+That check existed only inside the workflow, so the only way to meet it was to push and read the
+failure mail.
+
+Individual stages, when iterating: `bash tools/verify.sh figures`, `… test`, `… format`. The full
+list is at the bottom of the script.
 
 Confirm the workflow succeeded before reporting the increment as published. A failed run means the
 page did not update, and the previous page stays live — which is the intended safety behaviour, but
@@ -73,6 +81,9 @@ it means "pushed" and "published" are not the same claim.
 ## Local commands
 
 ```powershell
+bash tools/verify.sh                           # all of the below, as CI runs them
+bash tools/verify.sh test                      # one stage; see the script for the full list
+
 dotnet build GeopoliticsDashboard.sln
 dotnet test GeopoliticsDashboard.sln
 npm test                                       # the dashboard client (Node; installs nothing)

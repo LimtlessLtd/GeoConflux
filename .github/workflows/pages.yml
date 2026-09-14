@@ -38,27 +38,23 @@ jobs:
           dotnet-version: 10.0.x
           global-json-file: global.json
 
+      # These four are stages of tools/verify.sh, the same script CI and a developer run. Publishing
+      # has to build and test from the identical commands that gate a push, or the page could be
+      # deployed by a path nobody had checked.
       - name: Restore
-        run: dotnet restore GeopoliticsDashboard.sln
+        run: bash tools/verify.sh restore
 
       - name: Build
-        run: dotnet build GeopoliticsDashboard.sln --configuration Release --no-restore
+        run: bash tools/verify.sh build
 
       # The dashboard is only worth publishing if the pipeline behind it actually works.
       - name: Test
-        run: dotnet test GeopoliticsDashboard.sln --configuration Release --no-build
+        run: bash tools/verify.sh test
 
-# The dashboard client is JavaScript and is not part of the .NET solution, so it gets its own
-      # step. No setup-node action is needed: the runner image ships Node, and the suite has no
-      # dependencies to install — that is the point of it. See docs/adr/024-dashboard-test-runner.md.
-      #
-      # An unmatched glob fails rather than passing vacuously, so deleting the suite breaks the build
-      # instead of quietly turning it green.
+      # The dashboard client is JavaScript and is not part of the .NET solution, so it gets its own
+      # step. See docs/adr/024-dashboard-test-runner.md.
       - name: Test the dashboard client
-        run: |
-          set -euo pipefail
-          node --version
-          npm test
+        run: bash tools/verify.sh dashboard
 
       - name: Assemble the static dashboard
         # The trailing "/." copies the directory CONTENTS. Without it, cp nests the source inside

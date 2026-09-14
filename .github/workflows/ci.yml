@@ -14,6 +14,12 @@ permissions:
 # owner can move, so `@v4` means "whatever that repository decides v4 is on the day this runs" — and
 # an action runs with access to this workflow's token. The trailing comment records which release each
 # SHA was, because a bare hash is unreviewable.
+#
+# Every step below is one stage of tools/verify.sh, which is where the checks themselves live. They
+# are here as separate steps rather than as one call so a failure names itself in the run summary and
+# in the notification mail, and they are in that script rather than inline so the command a developer
+# runs before pushing is the same command that runs here. Four of the eight failures in the week this
+# was reorganised were a check that existed only in this file and so could not be run beforehand.
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -23,66 +29,27 @@ jobs:
         with:
           dotnet-version: 10.0.x
           global-json-file: global.json
-      - run: dotnet restore GeopoliticsDashboard.sln
-      - run: dotnet build GeopoliticsDashboard.sln --configuration Release --no-restore
-      - run: dotnet test GeopoliticsDashboard.sln --configuration Release --no-build
 
-      # The dashboard client is JavaScript and is not part of the .NET solution, so it gets its own
-      # step. No setup-node action is needed: the runner image ships Node, and the suite has no
-      # dependencies to install — that is the point of it. See docs/adr/024-dashboard-test-runner.md.
-      #
-      # An unmatched glob fails rather than passing vacuously, so deleting the suite breaks the build
-      # instead of quietly turning it green.
+      - name: Restore
+        run: bash tools/verify.sh restore
+
+      - name: Build
+        run: bash tools/verify.sh build
+
+      - name: Test
+        run: bash tools/verify.sh test
+
       - name: Test the dashboard client
-        run: |
-          set -euo pipefail
-          node --version
-          npm test
+        run: bash tools/verify.sh dashboard
 
-      # The evaluation suites rewrite their own RESULTS.md as they run, so after the test step those
-      # files hold what the current code actually produces. If that differs from what is committed,
-      # the repository is publishing measurements that no longer describe it — which is exactly the
-      # drift that went unnoticed when the gazetteer grew and the enrichment figures were not
-      # regenerated. Latency is excluded because it is wall-clock time and varies between runs; every
-      # other figure in these reports is deterministic, which is why the rest can be enforced.
       - name: Published evaluation figures must match what the code produces
-        run: |
-          set -euo pipefail
-          reports="tests/data/ai-evaluation/RESULTS.md tests/data/severity-model/RESULTS.md"
-          drift=$(git diff -U0 -- $reports | grep -E '^[+-][^+-]' | grep -v 'Latency median' || true)
-          if [ -n "$drift" ]; then
-            echo "::error::Committed evaluation results do not match this code. Run the evaluation suite and commit the regenerated RESULTS.md."
-            git --no-pager diff -- $reports
-            exit 1
-          fi
+        run: bash tools/verify.sh figures
 
-          # The README quotes several of these figures so a reader does not have to open another
-          # file. That copy is where drift hides next, so every row it shares verbatim with the
-          # generated report has to agree with it.
-          quoted=$(grep -cE '^\| (Structured output success rate|Language accuracy|Location name|Entities) ' README.md || true)
-          if [ "$quoted" -lt 4 ]; then
-            echo "::error::The README no longer quotes the evaluation rows this check compares. Update the check or restore the rows; do not let it pass by matching nothing."
-            exit 1
-          fi
-
-          while IFS= read -r row; do
-            grep -Fqx "$row" tests/data/ai-evaluation/RESULTS.md || {
-              echo "::error::README quotes an evaluation figure the harness did not produce: $row"
-              exit 1
-            }
-          done < <(grep -E '^\| (Structured output success rate|Language accuracy|Location name|Entities) ' README.md)
-
-      # The collection tooling is Python and is in neither suite, like the gazetteer extractor before
-      # it. What it decides, though, is the access policy — whether a path is allowed, whether a
-      # status is a refusal, how long to wait — and those are exactly the rules that get stated in a
-      # document, believed, and are quietly untrue a year later. Both self-tests run offline.
-      # See docs/adr/030-collection-access-policy.md.
       - name: Test the collection tooling
-        run: |
-          set -euo pipefail
-          python3 --version
-          python3 tools/collect/access.py --self-test
-          python3 tools/collect/collect.py --self-test
+        run: bash tools/verify.sh tooling
 
-      - run: dotnet format GeopoliticsDashboard.sln --verify-no-changes --no-restore
-      - run: docker build -t geopolitics-dashboard .
+      - name: Format
+        run: bash tools/verify.sh format
+
+      - name: Container build
+        run: bash tools/verify.sh docker
