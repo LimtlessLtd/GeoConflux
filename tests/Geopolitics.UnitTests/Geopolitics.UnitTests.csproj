@@ -43,6 +43,15 @@
       <Link>committed-bundles\%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+
+    <!-- The two host project files, linted for what a project has to declare to be run rather than
+         merely built. Copied rather than located by walking up from the test assembly, because that
+         walk breaks the moment the output path changes and the failure looks like a missing file
+         rather than a moved one. -->
+    <Content Include="..\..\src\Geopolitics.Api\Geopolitics.Api.csproj;..\..\src\Geopolitics.Workers\Geopolitics.Workers.csproj">
+      <Link>host-projects\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

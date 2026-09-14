@@ -4,6 +4,12 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- This is the host that is actually left running, so it is the host that needs somewhere for
+         credentials to live. Without this identifier "dotnet user-secrets" has no store to write to
+         and refuses, which left the only routes an environment variable or appsettings.json - and
+         the second of those is in the repository. See docs/operations/running-continuously.md. -->
+    <UserSecretsId>dotnet-Geopolitics.Api-c342db8f-a194-485d-8d90-a8d3abc80575</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
