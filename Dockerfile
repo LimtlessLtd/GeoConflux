@@ -13,6 +13,7 @@ COPY src/Geopolitics.Workers/*.csproj src/Geopolitics.Workers/
 COPY tests/Geopolitics.UnitTests/*.csproj tests/Geopolitics.UnitTests/
 COPY tests/Geopolitics.IntegrationTests/*.csproj tests/Geopolitics.IntegrationTests/
 COPY tests/Geopolitics.AiEvaluationTests/*.csproj tests/Geopolitics.AiEvaluationTests/
+COPY tests/Geopolitics.ConflictBenchmark/*.csproj tests/Geopolitics.ConflictBenchmark/
 RUN dotnet restore GeopoliticsDashboard.sln
 
 COPY . .
