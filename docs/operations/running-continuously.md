@@ -252,6 +252,11 @@ serves a container, a developer and a service.
 
 ### Installing it
 
+**Nothing in the test suite or in CI exercises this script.** CI runs on Ubuntu, so `sc.exe`, the
+service control manager and the registry environment block are unverified here — the same standing
+caveat the container build carries. Read it before you run it; it is short, and it is the one thing
+in this repository that changes machine state outside the working tree.
+
 ```powershell
 # from an elevated PowerShell, in a clone of the repository
 .\tools\service\install.ps1 -Path 'C:\GeoConflux'

@@ -2562,6 +2562,11 @@ cropland mask, which cannot be sourced from inside this repository.
 register of what this system watches. The register is now UCDP's 319 conflicts rather than three
 somebody typed.
 
+**Sprint 17** (the system that keeps running) is complete. The API host — the deployment this plan
+calls the live system — can now be left alone: it states what it holds, deletes only what no incident
+rests on, takes a backup that is a backup rather than a file copy, comes back after a reboot without
+anybody logging in, and records the periods it was not running.
+
 **Sprint 10** (global placement) is complete, and it was the prerequisite the assessment said
 everything else was downstream of. The lexicon now spans **246 countries** rather than three.
 
@@ -2791,28 +2796,84 @@ restart at the present; it can poll far more often than a build can; and with a 
 [ADR 004](docs/adr/004-ai-provider-abstraction.md) its enrichment has no marginal cost, which removes
 most of what makes Sprint 14 expensive. It also introduces problems a snapshot build never has —
 unbounded database growth, credentials needing somewhere to live, surviving a reboot, and missing the
-world while switched off. Those are Sprints 17 and 18.
+world while switched off. The first three are Sprint 17 and are built: the host states what it holds,
+prunes only what no incident rests on, backs itself up with SQLite's online backup rather than a file
+copy, and comes back after a reboot as a Windows service. The fourth is Sprint 18, and Sprint 17 left
+it what it needs — every period the host was not running is now a row in the database rather than
+something to be inferred afterwards.
+
+Sprint 17 progress:
+
+The first sprint about the host rather than about the world. Everything before it solved a problem a
+build has; these are the six a build never meets, and what they have in common is that each of them
+fails silently. [ADR 036](docs/adr/036-running-continuously.md) records all of it.
+
+1. **Credentials have somewhere to live.** Done. The API project carries a `UserSecretsId` — the
+   Workers project always had one, and the host actually being run did not, so `dotnet user-secrets`
+   refused against it and the only remaining places for a key were an environment variable or a
+   committed file. It is now linted rather than remembered.
+2. **Measurement before policy.** Done. `/api/operations` reports rows per table, the database's own
+   size, the write-ahead log, the pages a vacuum would return, and what a year at last week's rate
+   would add. Two of its statements are refusals: growth declines to project from less than seven
+   days of records, and a database whose records all arrived within ten minutes is named as a build's
+   own rather than presented as the holdings of a system that has been watching.
+3. **Retention, bounded by ADR 023.** Done, and off by default because the rule was measure before
+   deciding. Only duplicates and failures are ever deleted, only once nothing links them to an
+   incident, and an integration test ages every stored row past the horizon, prunes, and checks that
+   every incident's evidence still resolves. Held claims are excluded, which narrows what the sprint
+   specified: a held claim is unlinked, and it is also drawn on the map and counted in the coverage
+   panel's tier split.
+4. **Write-ahead logging, and a backup that is one.** Done. Copying the file is wrong in WAL mode and
+   wrong quietly — a committed row can sit in the log until a checkpoint moves it, so a file copy
+   opens, reads, and is missing data. The backup uses SQLite's online backup API, verifies the copy
+   before rotating any older one out, and has no default destination, because the only possible
+   default is beside the original.
+5. **Surviving a reboot.** Done, as a Windows service rather than the scheduled task at logon the
+   plan offered: a logon task does not run until somebody signs in, which is the failure it was
+   supposed to prevent. The decisive detail was the content root — a service starts in `System32`, so
+   the shipped relative database path would have resolved there. That is fixed whether or not
+   anybody installs a service.
+6. **The downtime ledger.** Done, built on the checkpoint table as the plan said, and on the only
+   evidence available: a poll happening is the one thing that can only be true of a running host.
+   At startup the gap from the newest poll becomes a recorded period, for Sprint 18 to recover
+   against.
+7. **The PostGIS trigger, named as a measurement.** Done, and sharper than expected — it is a
+   correctness failure rather than a slow one. See below.
+
+Two things are worth carrying forward. The spatial search pulls at most a thousand rows from its
+bounding box before measuring distances over them; at that cap the rows beyond it are never measured,
+so a count becomes the cap rather than a count, and no index fixes it because an index can narrow a
+rectangle and cannot narrow a distance. And a credential-free clone's downtime ledger records
+**nothing**, because nothing polls — so the panel says it has no record of its own uptime rather than
+reporting no downtime, which is the same distinction as an empty map not meaning peace.
 
 ## What is left
 
-**Take Sprint 17 next.** It is the one the others now depend on, and the reason is Sprint 16's own
-result: the register holds 319 conflicts and a credential-free build identifies a handful of them,
-because a snapshot build has seconds of history and no model. A host that stays up accumulates the
-database that makes tempo, baselines and narrative mean anything, and it is the deployment those
-features were written for. Nothing else unlocks as much.
+**Take Sprint 18 next.** It is what Sprint 17 was the prerequisite for: the downtime periods are now
+rows in a table, and the job is to act on them — recover from the datasets, which are archives and
+still hold what was missed, and write a labelled summary for the flows, which are rolling windows and
+do not.
 
-Nothing in the original plan is outstanding. Sprints 12 to 15 and 17 to 19 of
+The division Sprint 18 rests on is already sharp, and it decides the whole design: a dataset is an
+archive and a recorded interval is a window to go and ask for, while a social feed is a rolling
+window and the same interval is a statement about what cannot be recovered. Conflating the two would
+be the failure. So would writing the summary from anything but the recovered records — a model asked
+what happened in a theatre last month will answer fluently from training data, which is the
+coordinate rule of [ADR 012](docs/adr/012-ai-output-is-untrusted-input.md) applied to prose.
+
+Nothing in the original plan is outstanding. Sprints 12 to 15, 18 and 19 of
 [the global coverage assessment](docs/global-coverage-plan.md) are, none begun. That document holds
 the definitions and the recommended order; the shape of it is:
 
-- **Sprints 17 and 18 — running continuously, and closing the gaps when it has not been.** Retention,
-  credentials, reboots, a downtime ledger; then recovery from the datasets, which are archives and
+- **Sprint 18 — closing the gaps after downtime.** Recovery from the datasets, which are archives and
   still hold what was missed, and a labelled summary for the flows, which are rolling windows and do
-  not.
+  not. Sprint 17 built what it reads: a downtime period is a row rather than an inference.
 - **Sprint 19 — control layers.** Control **asserted**, with provenance and disagreement intact,
   rather than control **assessed**. An assessed control-of-terrain map is an analyst product and is
   recorded as out of reach; the layer underneath it is not.
-- **Sprints 12 to 15** as volume and appetite justify them.
+- **Sprints 12 to 15** as volume and appetite justify them. Sprint 14 now has a trigger rather than a
+  date: a spatial search returning the full candidate cap, recorded in
+  [ADR 017](docs/adr/017-spatial-querying.md) and reported on the page.
 
 Three things are recorded as declined rather than pending, and each would reopen only if the world
 changed:

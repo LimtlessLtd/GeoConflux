@@ -339,7 +339,7 @@ What a credential-free run actually shows is stated rather than dressed up: of 2
 conflicts identified, nine reports undecided with their candidates named, ten reaching no conflict at
 all. A provider moves the nine and a dataset credential moves the ten.
 
-### Sprint 17 — The system that keeps running
+### Sprint 17 — The system that keeps running *(complete, 2026-09-14)*
 
 The published page is a snapshot; the live system is the API host, and it already exists. It serves
 the dashboard from `wwwroot`, maps the SignalR hub, and ships with `SourcesEnabled` and
@@ -369,6 +369,36 @@ missing is everything about being left running for months rather than seconds.
 
 **Done when** the host can be left running for a month unattended, and can state what it holds, what
 it pruned, and when it was down.
+
+**Built, 2026-09-14.** All seven items, recorded in
+[ADR 036](adr/036-running-continuously.md). Three of them turned out differently from the way this
+plan framed them, and each difference is worth carrying forward.
+
+- **The PostGIS trigger is a correctness failure, not a latency one.** This plan asked for a
+  measurement rather than a date and expected a threshold on speed. The spatial search pulls at most
+  a thousand rows from its bounding box before measuring exact distances over them, and below that
+  cap the answer is complete and exact. At the cap the rows beyond it are never measured, so
+  "incidents within 50 km" silently becomes "the most recent thousand in the rectangle, then
+  filtered", and the chokepoint count becomes the cap rather than a count. That is the trigger, and
+  no index fixes it: an index can narrow a rectangle and cannot narrow a distance.
+- **"A scheduled task at logon" fails the requirement it was offered for.** It does not run until
+  somebody signs in, so a server that rebooted overnight and is not logged into stays down
+  indefinitely. It is a Windows service, and the decisive argument turned out to be neither
+  restart-on-failure nor clean shutdown but the content root: a service starts in `System32`, so the
+  shipped relative database path would have resolved there — an empty database and a healthy-looking
+  host. That path is now anchored to the content root whether or not anybody installs a service.
+- **The retention rule narrows what this plan specified.** "Unlinked, failed and duplicate material"
+  would allow deleting a claim held for corroboration, which is unlinked. It is also drawn on the map
+  and counted in the coverage panel's tier split, so removing it would change what the page says
+  about its own composition, silently. Only duplicates and failures are prunable, and the exclusion
+  is recorded rather than made quietly.
+
+What a credential-free run shows is, again, stated rather than dressed up. Retention and backups both
+ship off — the first because the rule was measure before deciding, the second because the only
+possible default destination is beside the original, which is a copy and not a backup. And the
+downtime ledger records nothing at all, because every provider ships dormant so nothing polls: the
+panel says it has no record of its own uptime rather than reporting no downtime, which is the same
+distinction as an empty map not meaning peace.
 
 ### Sprint 18 — Closing the gaps after downtime
 
@@ -506,8 +536,9 @@ Nothing else is started. In dependency order:
    not blocked behind placement: membership can be decided from a country code or an actor without
    any coordinate at all. A conflict whose events cannot be mapped can still be counted, and saying
    so makes the placement gap *more* visible rather than less.
-3. **Sprint 17 — the system that keeps running.** Small, unglamorous, and the difference between a
-   thing that demonstrates and a thing that operates.
+3. ~~**Sprint 17 — the system that keeps running.**~~ **Done, 2026-09-14.** Small, unglamorous, and
+   the difference between a thing that demonstrates and a thing that operates. It also produced the
+   table Sprint 18 reads from: a downtime period is now a row rather than an inference.
 4. **Sprint 18 — closing gaps after downtime.** Depends on 16 for its categories and 17 for its
    ledger.
 5. **Sprint 13 — the fast layer.** What makes it *current* rather than *recorded*.

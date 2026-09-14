@@ -408,6 +408,32 @@ Both hosts compose the same pipeline from the same registration methods.
 `Pipeline:SourcesEnabled` and `Pipeline:ProcessorEnabled` control which host does which job, so
 ingestion and processing can be separated without code changes.
 
+### Being left running
+
+`Geopolitics.Api` is also the deployment meant to stay up for months, and that is a different set of
+problems from the ones a build meets. All of them are in
+[ADR 036](adr/036-running-continuously.md); the shape is:
+
+- **It states what it holds.** `/api/operations` reports rows per mapped table, the database's own
+  size, the write-ahead log, and the pages a vacuum would return. It declines to project a year's
+  growth from less than seven days of records, and it names a database whose records all arrived
+  within ten minutes as a build's own rather than a watched month.
+- **Retention is bounded by [ADR 023](adr/023-failure-boundary-and-evidence-retention.md).** Only
+  duplicates and failures are ever deleted, and only once nothing links them to an incident. Held
+  claims are excluded, because they are drawn on the map and counted in the coverage panel's tier
+  split. It ships off.
+- **The store is in write-ahead logging mode**, and backups therefore use SQLite's online backup API
+  rather than a file copy — in WAL mode a committed row can sit in the log, so a file copy opens,
+  reads, and is silently missing data. No default destination: the only one available is beside the
+  original.
+- **A Windows service is the supported way to survive a reboot.** `UseWindowsService()` also sets the
+  content root, without which a service starting in `System32` would resolve the shipped relative
+  database path there. A relative `Data Source` is now anchored to the content root regardless.
+- **It records when it was not running.** Every polling adapter writes a last-polled timestamp to
+  `IngestionCheckpoints`; at startup the gap from the newest becomes a `DowntimePeriod` row. With no
+  provider enabled nothing polls, and the report says it has no record of its own uptime rather than
+  reporting no downtime.
+
 ## Known limitations
 
 Recorded here rather than discovered later.
@@ -435,6 +461,13 @@ not between sources that describe one event in different terms.
 database and bounds the candidate set; the exact distances are measured in the application. At this
 data volume that is irrelevant, and the candidate count is capped. A deployment with a working
 spatial extension would implement `ISpatialQueryService` against SQL functions instead (ADR 017).
+
+The cap is now the stated trigger for replacing it, and the reason is correctness rather than speed:
+at the cap the rows beyond it are never measured, so "incidents within 50 km" becomes "the most recent
+thousand in the rectangle, then filtered", and a count becomes a floor. Every search records how many
+rows its rectangle returned, and `/api/operations` says so the moment one reaches the cap. Raising the
+cap trades a wrong answer for a slow one; no index helps, because an index can narrow a rectangle and
+cannot narrow a distance.
 
 **Semantic similarity is lexical.** `LexicalTextSimilarity` compares shared vocabulary and reports
 itself as `lexical-overlap`. It cannot recognise a paraphrase with no words in common, or one event
