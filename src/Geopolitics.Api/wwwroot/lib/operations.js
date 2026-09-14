@@ -167,6 +167,46 @@ export function retentionBoundary(report) {
 }
 
 /**
+ * When this host was not running, or why it is in no position to say.
+ *
+ * The unmeasurable case is the one that ships and the one that must not read as reassurance. With
+ * every provider dormant nothing polls, so there is no record of uptime at all — and "no downtime
+ * recorded" would be the same error as an empty map reading as peace.
+ */
+export function downtimeLine(report) {
+  const downtime = report?.downtime;
+  if (!downtime) return '';
+
+  return String(downtime.note ?? '');
+}
+
+/**
+ * Each recorded gap, newest first, as a line a reader can act on.
+ *
+ * Dates rather than durations alone, because the question this answers is *what did we miss*, and
+ * an interval is what a recovery is pointed at. Malformed entries are dropped rather than rendered
+ * as an invalid date.
+ */
+export function downtimeRows(report) {
+  return (report?.downtime?.periods ?? [])
+    .map((period) => {
+      const from = Date.parse(period?.startedAt ?? '');
+      const to = Date.parse(period?.endedAt ?? '');
+      if (!Number.isFinite(from) || !Number.isFinite(to) || to <= from) return null;
+
+      const hours = Math.round((to - from) / 3_600_000);
+      const length = hours >= 48 ? plural(Math.round(hours / 24), 'day') : plural(Math.max(1, hours), 'hour');
+
+      return {
+        from: new Date(from).toISOString().slice(0, 16).replace('T', ' '),
+        to: new Date(to).toISOString().slice(0, 16).replace('T', ' '),
+        length,
+      };
+    })
+    .filter(Boolean);
+}
+
+/**
  * What a year at the current rate would cost, or why that was not answered.
  *
  * The refusal is passed through rather than replaced with a zero. A projection declined for want of

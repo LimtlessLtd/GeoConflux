@@ -1,4 +1,5 @@
 using System.Globalization;
+using Geopolitics.Application.Abstractions;
 using Geopolitics.Application.Contracts;
 using Geopolitics.Application.Pipeline;
 using Geopolitics.Domain;
@@ -33,8 +34,9 @@ internal sealed partial class UcdpEventSource(
     IIngestionCheckpointStore checkpoints,
     IOptions<ProviderOptions> options,
     PipelineDiagnostics diagnostics,
+    ISourceLivenessRecorder liveness,
     TimeProvider timeProvider,
-    ILogger<UcdpEventSource> logger) : PollingEventSource(diagnostics, timeProvider, logger)
+    ILogger<UcdpEventSource> logger) : PollingEventSource(diagnostics, liveness, timeProvider, logger)
 {
     public const string HttpClientName = "osint.ucdp";
 

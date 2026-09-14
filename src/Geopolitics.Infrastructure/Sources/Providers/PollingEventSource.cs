@@ -18,6 +18,7 @@ namespace Geopolitics.Infrastructure.Sources.Providers;
 /// </summary>
 public abstract partial class PollingEventSource(
     PipelineDiagnostics diagnostics,
+    ISourceLivenessRecorder liveness,
     TimeProvider timeProvider,
     ILogger logger) : IEventSource, IBatchEventSource
 {
@@ -113,6 +114,13 @@ public abstract partial class PollingEventSource(
         CancellationToken cancellationToken)
     {
         var startedAt = timeProvider.GetTimestamp();
+
+        // Written down before the fetch and regardless of how it goes. This is the downtime ledger's
+        // only evidence, and what it records is that this process was alive and asking — which a
+        // provider being unreachable says nothing about. Recording only successful polls would have
+        // an outage at a provider read as an outage here.
+        await RecordPollAsync(cancellationToken);
+
         IReadOnlyList<ObservationEnvelope> batch;
 
         try
@@ -152,6 +160,29 @@ public abstract partial class PollingEventSource(
 
         LogPolled(Logger, Name, batch.Count, fresh.Count, suppressed);
         return fresh;
+    }
+
+    /// <summary>
+    /// Notes that this source polled, without letting a storage fault stop it polling.
+    /// <para>
+    /// Contained for the same reason a failed fetch is. The ledger is a record of the host's own
+    /// availability; a database that will not take the write is a problem, and it is not a reason to
+    /// stop collecting the reports this host exists to collect.
+    /// </para>
+    /// </summary>
+    private async Task RecordPollAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await liveness.RecordPollAsync(Name, PollInterval, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+        catch (Exception exception)
+        {
+            LogLivenessNotRecorded(Logger, exception, Name);
+        }
     }
 
     private void RecordLatency(long startedAt, string outcome) =>
@@ -200,6 +231,11 @@ public abstract partial class PollingEventSource(
             return false;
         }
     }
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Could not record that {ProviderName} polled, so this poll is not evidence of uptime in the downtime ledger. Collection is unaffected.")]
+    private static partial void LogLivenessNotRecorded(ILogger logger, Exception exception, string providerName);
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Provider {ProviderName} is not enabled; it will make no external calls.")]
     private static partial void LogDisabled(ILogger logger, string providerName);

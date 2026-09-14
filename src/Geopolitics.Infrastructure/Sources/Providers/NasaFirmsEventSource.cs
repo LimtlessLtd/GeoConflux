@@ -1,4 +1,5 @@
 using System.Globalization;
+using Geopolitics.Application.Abstractions;
 using Geopolitics.Application.Contracts;
 using Geopolitics.Application.Pipeline;
 using Geopolitics.Domain;
@@ -28,8 +29,9 @@ public sealed partial class NasaFirmsEventSource(
     IHttpClientFactory httpClientFactory,
     IOptions<ProviderOptions> options,
     PipelineDiagnostics diagnostics,
+    ISourceLivenessRecorder liveness,
     TimeProvider timeProvider,
-    ILogger<NasaFirmsEventSource> logger) : PollingEventSource(diagnostics, timeProvider, logger)
+    ILogger<NasaFirmsEventSource> logger) : PollingEventSource(diagnostics, liveness, timeProvider, logger)
 {
     public const string HttpClientName = "osint.firms";
 

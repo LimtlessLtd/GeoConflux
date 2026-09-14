@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 
 import {
   backupLine,
+  downtimeLine,
+  downtimeRows,
   formatBytes,
   growthLine,
   hasOperations,
@@ -61,6 +63,14 @@ const report = (overrides = {}) => ({
     boundary: 'Evidence behind a published incident is never touched.',
     note: '',
   },
+  downtime: {
+    measurable: false,
+    periods: [],
+    sources: [],
+    resolution: null,
+    note: 'No source has ever polled on this host, so it cannot say when it was last running. '
+      + 'That is not a statement that it has always been up.',
+  },
   measuredAt: '2026-09-14T12:00:00Z',
   ...overrides,
 });
@@ -86,6 +96,49 @@ test('a malformed or missing payload leaves the panel empty rather than throwing
   assert.equal(backupLine(null), '');
   assert.equal(retentionLine(null), '');
   assert.equal(retentionBoundary(null), '');
+  assert.equal(downtimeLine(null), '');
+  assert.deepEqual(downtimeRows(null), []);
+});
+
+test('a host with nothing polling says it cannot tell, not that it never went down', () => {
+  // The shipped state: every provider dormant, so nothing polls, so there is no record of uptime
+  // either way. "No downtime" here would be the same error as an empty map reading as peace.
+  const line = downtimeLine(report());
+
+  assert.match(line, /cannot say when it was last running/);
+  assert.match(line, /not a statement that it has always been up/);
+});
+
+test('recorded gaps render as intervals a recovery could be pointed at', () => {
+  const rows = downtimeRows(report({
+    downtime: {
+      ...report().downtime,
+      measurable: true,
+      periods: [
+        { startedAt: '2026-08-30T09:00:00Z', endedAt: '2026-09-13T09:00:00Z' },
+        { startedAt: '2026-09-14T01:00:00Z', endedAt: '2026-09-14T04:00:00Z' },
+      ],
+    },
+  }));
+
+  assert.equal(rows.length, 2);
+  assert.equal(rows[0].from, '2026-08-30 09:00');
+  assert.equal(rows[0].length, '14 days');
+  assert.equal(rows[1].length, '3 hours');
+});
+
+test('a malformed or inverted period is dropped rather than drawn as an invalid date', () => {
+  const rows = downtimeRows(report({
+    downtime: {
+      ...report().downtime,
+      periods: [
+        { startedAt: 'not a date', endedAt: '2026-09-13T09:00:00Z' },
+        { startedAt: '2026-09-14T09:00:00Z', endedAt: '2026-09-13T09:00:00Z' },
+      ],
+    },
+  }));
+
+  assert.deepEqual(rows, []);
 });
 
 test('the prunable count is stated whether or not retention is running', () => {

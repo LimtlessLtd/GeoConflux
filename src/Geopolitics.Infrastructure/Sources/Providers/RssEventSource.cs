@@ -1,3 +1,4 @@
+using Geopolitics.Application.Abstractions;
 using Geopolitics.Application.Contracts;
 using Geopolitics.Application.Pipeline;
 using Geopolitics.Domain;
@@ -24,8 +25,9 @@ public sealed partial class RssEventSource(
     IHttpClientFactory httpClientFactory,
     IOptions<ProviderOptions> options,
     PipelineDiagnostics diagnostics,
+    ISourceLivenessRecorder liveness,
     TimeProvider timeProvider,
-    ILogger<RssEventSource> logger) : PollingEventSource(diagnostics, timeProvider, logger)
+    ILogger<RssEventSource> logger) : PollingEventSource(diagnostics, liveness, timeProvider, logger)
 {
     public const string HttpClientName = "osint.rss";
 

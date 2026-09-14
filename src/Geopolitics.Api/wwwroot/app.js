@@ -50,8 +50,8 @@ import {
   attributionLine, claimChip, claimSummary, heldClaimNote, isHeldClaim,
 } from './lib/attribution.js';
 import {
-  backupLine, growthLine, hasOperations, holdingRows, journalLine, retentionBoundary, retentionLine,
-  spanLine, storageLine,
+  backupLine, downtimeLine, downtimeRows, growthLine, hasOperations, holdingRows, journalLine,
+  retentionBoundary, retentionLine, spanLine, storageLine,
 } from './lib/operations.js';
 
 (() => {
@@ -1402,6 +1402,7 @@ import {
       backupLine(report),
       retentionLine(report),
       retentionBoundary(report),
+      downtimeLine(report),
     ]
       .filter((line) => line)
       .forEach((line) => {
@@ -1410,6 +1411,29 @@ import {
         paragraph.textContent = line;
         card.append(paragraph);
       });
+
+    const gaps = downtimeRows(report);
+
+    if (gaps.length > 0) {
+      const periods = document.createElement('ul');
+      periods.className = 'coverage-breadth-rows';
+
+      gaps.forEach((gap) => {
+        const entry = document.createElement('li');
+
+        const when = document.createElement('span');
+        when.textContent = `${gap.from} to ${gap.to} UTC`;
+
+        const length = document.createElement('span');
+        length.className = 'coverage-breadth-count';
+        length.textContent = gap.length;
+
+        entry.append(when, length);
+        periods.append(entry);
+      });
+
+      card.append(periods);
+    }
 
     dom.operationsPanel.append(card);
   }

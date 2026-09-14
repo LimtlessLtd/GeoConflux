@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
+using Geopolitics.Application.Abstractions;
 using Geopolitics.Application.Contracts;
 using Geopolitics.Application.Pipeline;
 using Geopolitics.Domain;
@@ -46,9 +47,10 @@ internal sealed partial class AcledEventSource : PollingEventSource
         IIngestionCheckpointStore checkpoints,
         IOptions<ProviderOptions> options,
         PipelineDiagnostics diagnostics,
+        ISourceLivenessRecorder liveness,
         TimeProvider timeProvider,
         ILogger<AcledEventSource> logger)
-        : base(diagnostics, timeProvider, logger)
+        : base(diagnostics, liveness, timeProvider, logger)
     {
         ArgumentNullException.ThrowIfNull(options);
 

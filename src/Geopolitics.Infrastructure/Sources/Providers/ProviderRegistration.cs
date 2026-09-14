@@ -81,7 +81,13 @@ public static class ProviderRegistration
         // Shared by the two dataset adapters so that a backfill survives a restart. A singleton
         // holding a scope factory rather than a DbContext: the adapters that use it are singletons,
         // and a context on one of those is the classic way this goes wrong.
-        services.AddSingleton<IIngestionCheckpointStore, IngestionCheckpointStore>();
+        services.AddSingleton<IngestionCheckpointStore>();
+        services.AddSingleton<IIngestionCheckpointStore>(provider => provider.GetRequiredService<IngestionCheckpointStore>());
+
+        // The same object under a second interface, because it writes both facts to the same row.
+        // Every polling adapter records that it polled, not only the two that backfill: the ledger's
+        // question is whether this host was running, and any source asking anything answers it.
+        services.AddSingleton<ISourceLivenessRecorder>(provider => provider.GetRequiredService<IngestionCheckpointStore>());
 
         services.AddSingleton<IEventSource, RssEventSource>();
         services.AddSingleton<IEventSource, NasaFirmsEventSource>();

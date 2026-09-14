@@ -98,6 +98,28 @@ public sealed record RetentionStanding(
     string Note);
 
 /// <summary>
+/// When this host was not running, and whether it is in a position to know.
+/// </summary>
+/// <param name="Measurable">
+/// Whether any source has ever polled here. False is not "no downtime": it is "no evidence either
+/// way", and the two must not be shown as the same thing. A deployment with every provider dormant
+/// — which is what this repository ships — has no record of its own uptime at all.
+/// </param>
+/// <param name="Periods">Recorded gaps, newest first.</param>
+/// <param name="Sources">Each polling source with when it last asked and how often it asks.</param>
+/// <param name="Resolution">
+/// The fastest polling interval among them. A gap shorter than a couple of these cannot be told from
+/// ordinary quiet, so it bounds what this ledger can detect at all.
+/// </param>
+/// <param name="Note">What the ledger is in a position to say.</param>
+public sealed record DowntimeStanding(
+    bool Measurable,
+    IReadOnlyList<DowntimeRecord> Periods,
+    IReadOnlyList<SourceLiveness> Sources,
+    TimeSpan? Resolution,
+    string Note);
+
+/// <summary>
 /// What a host that has been left running can say about itself.
 /// <para>
 /// Separate from the coverage report, which answers a different question. Coverage is about the
@@ -110,11 +132,13 @@ public sealed record RetentionStanding(
 /// <param name="Holdings">Rows and bytes, measured rather than estimated.</param>
 /// <param name="Backups">Whether any of it would survive the disk it is on.</param>
 /// <param name="Retention">What it is throwing away, and what it will not.</param>
+/// <param name="Downtime">When it was not running, and whether it can tell.</param>
 /// <param name="MeasuredAt">When these figures were taken.</param>
 public sealed record OperationsReport(
     HoldingsReport Holdings,
     BackupStanding Backups,
     RetentionStanding Retention,
+    DowntimeStanding Downtime,
     DateTimeOffset MeasuredAt);
 
 /// <summary>States what this host holds and how it has been running.</summary>
@@ -132,7 +156,10 @@ public interface IOperationsService
 /// the guess was wrong, silently, for months.
 /// </para>
 /// </summary>
-public sealed class OperationsService(IOperationsRepository repository, TimeProvider timeProvider) : IOperationsService
+public sealed class OperationsService(
+    IOperationsRepository repository,
+    IContinuityService continuity,
+    TimeProvider timeProvider) : IOperationsService
 {
     /// <summary>
     /// Seven days, because that is the shortest span over which a weekly-cyclical reporting rate
@@ -190,8 +217,63 @@ public sealed class OperationsService(IOperationsRepository repository, TimeProv
                 + "these numbers, and until they existed there was nothing to decide it against."),
             Standing(measurement.Backups, now),
             Standing(measurement.Retention),
+            await DowntimeAsync(now, cancellationToken),
             now);
     }
+
+    /// <summary>
+    /// How many downtime periods to show. Enough to make a pattern visible — a host that restarts
+    /// nightly reads very differently from one that was off for a fortnight once — without turning
+    /// the panel into a log.
+    /// </summary>
+    private const int RecentPeriods = 10;
+
+    /// <summary>
+    /// What the ledger can say, including that it cannot say anything.
+    /// <para>
+    /// The unmeasurable case is the one that ships. Every provider in this repository is dormant
+    /// without a credential, so nothing polls, so there is no evidence of uptime to compare against.
+    /// Reporting that as "no downtime" would be the same error as an empty map reading as peace, and
+    /// it is the error this whole dashboard is built to avoid.
+    /// </para>
+    /// </summary>
+    private async Task<DowntimeStanding> DowntimeAsync(DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        var sources = await continuity.LivenessAsync(cancellationToken);
+
+        if (sources.Count == 0)
+        {
+            return new DowntimeStanding(
+                Measurable: false,
+                [],
+                [],
+                null,
+                "No source has ever polled on this host, so it has no record of its own uptime and "
+                + "cannot say when it was last running. That is not a statement that it has always "
+                + "been up. Every provider ships dormant; enabling one starts the ledger.");
+        }
+
+        var periods = await continuity.RecentAsync(RecentPeriods, cancellationToken);
+        var resolution = sources.Min(source => source.PollEvery);
+        var quiet = now - sources.Max(source => source.LastPolledAt);
+
+        var note = periods.Count == 0
+            ? $"No downtime recorded. The last poll was {Describe(quiet)} ago, and a gap shorter than "
+                + $"about {Describe(resolution + resolution)} cannot be told from ordinary quiet."
+            : $"{periods.Count} period(s) recorded, measured from the last poll before each restart. "
+                + $"A gap shorter than about {Describe(resolution + resolution)} is not detectable, so "
+                + "each period is at least as long as it says and may be shorter than it looks.";
+
+        return new DowntimeStanding(true, periods, sources, resolution, note);
+    }
+
+    private static string Describe(TimeSpan span) => span switch
+    {
+        { TotalDays: >= 1 } => $"{span.TotalDays:F0} day(s)",
+        { TotalHours: >= 1 } => $"{span.TotalHours:F0} hour(s)",
+        { TotalMinutes: >= 1 } => $"{span.TotalMinutes:F0} minute(s)",
+        _ => "under a minute",
+    };
 
     /// <summary>
     /// States the policy, what it would take, and what it will not take whatever the numbers say.

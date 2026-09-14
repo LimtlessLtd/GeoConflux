@@ -180,3 +180,44 @@ somebody is reading a failure does not delete that failure as its first act.
 **What the panel reports is what this host has done since it started**, not a lifetime total. That is
 deliberate: a row per run would outlive a restart and would itself be a second thing to prune, and
 the question the figure answers — is the policy actually running — is about the host running now.
+
+## The downtime ledger
+
+A machine that is switched off misses the world, and the world does not tell it so on the way back.
+So the host works out, at startup, whether it has been away — and writes the gap down.
+
+**Its only evidence is that an adapter polled.** Observations carry the times *sources* reported, not
+the times this process was alive, and a backfill routinely stores records dated years ago. A poll
+happening is the one thing that can only be true of a running host, so `IngestionCheckpoints` now
+carries a `LastPolledAt` and a `PollEvery` beside the backfill frontier it already held. Every polling
+adapter writes them, not only the two that backfill, and it writes them whether the poll succeeded or
+not: a provider being unreachable says nothing about whether this machine was switched on.
+
+At startup, the newest poll across all sources is the last moment the host is known to have been
+alive. If the gap from there to now exceeds **two of the fastest polling intervals** — and at least
+fifteen minutes — it is recorded as a downtime period, from the last poll to now.
+
+- **Two intervals, not one.** One interval's silence is a poll that ran late or a provider that took a
+  minute. Two means a source demonstrably missed one.
+- **From the last poll, not one interval after it.** Over-covering costs a re-read that deduplication
+  absorbs. Under-covering loses records nothing will ever ask for again.
+- **The periods are rows, not log lines,** because Sprint 18 has to act on them: a dataset is an
+  archive and still holds what happened while the machine was off, so an interval is a window to go
+  and ask for; a social feed is a rolling window and does not, so the same interval is a statement
+  about what cannot be recovered.
+
+### What it cannot tell you
+
+**If nothing polls, there is no ledger.** Every provider in this repository ships dormant, so a clone
+with no credentials has no record of its own uptime at all. The panel says exactly that — *"no source
+has ever polled on this host, so it cannot say when it was last running; that is not a statement that
+it has always been up"* — rather than reporting no downtime. Enabling any provider starts the ledger.
+
+**The resolution is the fastest poll you run.** With only a daily dataset enabled, a day off the air
+is indistinguishable from having been up the whole time. The panel publishes the resolution so the
+limit is visible rather than assumed.
+
+The detection runs in `StartAsync` rather than in a background loop, and it is registered before the
+ingestion pump. A background service returns to the host at its first await, so the pump would start
+and poll while the ledger was still reading — and the first poll overwrites the very timestamp the
+gap is measured from.

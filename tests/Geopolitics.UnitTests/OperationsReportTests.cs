@@ -217,6 +217,53 @@ public sealed class OperationsReportTests
         Assert.Contains("has not yet run", report.Retention.Note, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task AHostWithNothingPollingSaysItCannotTellRatherThanReportingNoDowntime()
+    {
+        // The case this repository ships in: every provider dormant, so nothing polls, so there is
+        // no evidence of uptime either way. Reporting that as "no downtime" would be the same error
+        // as an empty map reading as peace.
+        var report = await BuildAsync(Measurement());
+
+        Assert.False(report.Downtime.Measurable);
+        Assert.Contains("cannot say when it was last running", report.Downtime.Note, StringComparison.Ordinal);
+        Assert.Contains("not a statement that it has always been up", report.Downtime.Note, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheLedgerStatesTheResolutionItCanDetectAtAll()
+    {
+        // A gap shorter than a couple of polling intervals is indistinguishable from ordinary quiet,
+        // so the panel says what it cannot see rather than letting silence read as continuity.
+        var report = await BuildAsync(
+            Measurement(),
+            sources:
+            [
+                new SourceLiveness("rss", Now.AddMinutes(-5), TimeSpan.FromMinutes(15)),
+                new SourceLiveness("ucdp", Now.AddHours(-20), TimeSpan.FromHours(24)),
+            ]);
+
+        Assert.True(report.Downtime.Measurable);
+        Assert.Equal(TimeSpan.FromMinutes(15), report.Downtime.Resolution);
+        Assert.Contains("cannot be told from ordinary quiet", report.Downtime.Note, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task RecordedPeriodsAreReportedAsAtLeastAsLongAsTheySay()
+    {
+        var period = new DowntimeRecord(
+            Guid.NewGuid(), Now.AddDays(-14), Now.AddDays(-1), Now.AddDays(-1), "rss", TimeSpan.FromMinutes(15));
+
+        var report = await BuildAsync(
+            Measurement(),
+            sources: [new SourceLiveness("rss", Now.AddMinutes(-5), TimeSpan.FromMinutes(15))],
+            periods: [period]);
+
+        Assert.Single(report.Downtime.Periods);
+        Assert.Equal(TimeSpan.FromDays(13), report.Downtime.Periods[0].Duration);
+        Assert.Contains("at least as long as it says", report.Downtime.Note, StringComparison.Ordinal);
+    }
+
     private static DatabaseMeasurement Measurement() => new(
         [new TableRowCount("observations", 24)],
         DatabaseBytes: 409_600,
@@ -229,9 +276,16 @@ public sealed class OperationsReportTests
         Retention: new RetentionState(Enabled: false, TimeSpan.FromDays(90), 0, 0, 0, null),
         ObservationsLastWeek: 24);
 
-    private static async Task<OperationsReport> BuildAsync(DatabaseMeasurement measurement)
+    private static async Task<OperationsReport> BuildAsync(
+        DatabaseMeasurement measurement,
+        IReadOnlyList<SourceLiveness>? sources = null,
+        IReadOnlyList<DowntimeRecord>? periods = null)
     {
-        var service = new OperationsService(new StubRepository(measurement), new FakeTimeProvider(Now));
+        var service = new OperationsService(
+            new StubRepository(measurement),
+            new StubContinuity(sources ?? [], periods ?? []),
+            new FakeTimeProvider(Now));
+
         return await service.BuildAsync(CancellationToken.None);
     }
 
@@ -239,5 +293,19 @@ public sealed class OperationsReportTests
     {
         public Task<DatabaseMeasurement> MeasureAsync(CancellationToken cancellationToken) =>
             Task.FromResult(measurement);
+    }
+
+    private sealed class StubContinuity(
+        IReadOnlyList<SourceLiveness> sources,
+        IReadOnlyList<DowntimeRecord> periods) : IContinuityService
+    {
+        public Task<DowntimeRecord?> RecordStartupGapAsync(CancellationToken cancellationToken) =>
+            Task.FromResult<DowntimeRecord?>(null);
+
+        public Task<IReadOnlyList<DowntimeRecord>> RecentAsync(int take, CancellationToken cancellationToken) =>
+            Task.FromResult(periods);
+
+        public Task<IReadOnlyList<SourceLiveness>> LivenessAsync(CancellationToken cancellationToken) =>
+            Task.FromResult(sources);
     }
 }

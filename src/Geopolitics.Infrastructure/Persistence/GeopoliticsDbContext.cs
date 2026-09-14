@@ -17,8 +17,14 @@ public sealed class GeopoliticsDbContext(DbContextOptions<GeopoliticsDbContext> 
     /// <summary>Append-only audit trail of enrichment attempts, successful and otherwise.</summary>
     public DbSet<AiInference> Inferences => Set<AiInference>();
 
-    /// <summary>How far back each dataset adapter has asked, so a backfill survives a restart.</summary>
+    /// <summary>
+    /// How far back each dataset adapter has asked, so a backfill survives a restart, and when each
+    /// one last polled, which is the only evidence this host has of having been running.
+    /// </summary>
     public DbSet<IngestionCheckpoint> Checkpoints => Set<IngestionCheckpoint>();
+
+    /// <summary>Periods this host was not running, worked out at startup and kept for Sprint 18.</summary>
+    public DbSet<DowntimePeriod> Downtime => Set<DowntimePeriod>();
 
     /// <summary>
     /// Commits, translating a lost deduplication race into a signal the pipeline understands.
@@ -71,7 +77,35 @@ public sealed class GeopoliticsDbContext(DbContextOptions<GeopoliticsDbContext> 
         ConfigureIncidents(modelBuilder, utcTicksConverter);
         ConfigureObservations(modelBuilder, utcTicksConverter, nullableUtcTicksConverter);
         ConfigureInferences(modelBuilder, utcTicksConverter);
-        ConfigureCheckpoints(modelBuilder, utcTicksConverter);
+        ConfigureCheckpoints(modelBuilder, utcTicksConverter, nullableUtcTicksConverter);
+        ConfigureDowntime(modelBuilder, utcTicksConverter);
+    }
+
+    /// <summary>
+    /// One row per period the host was away. No unique constraint on the interval: two overlapping
+    /// periods would be a fault worth seeing rather than one worth silently refusing, and a ledger
+    /// that rejected a write would lose the very gap it exists to record.
+    /// </summary>
+    private static void ConfigureDowntime(ModelBuilder modelBuilder, ValueConverter<DateTimeOffset, long> utcTicks)
+    {
+        modelBuilder.Entity<DowntimePeriod>(period =>
+        {
+            period.ToTable("DowntimePeriods");
+            period.HasKey(value => value.Id);
+            period.Property(value => value.StartedAt).HasConversion(utcTicks).IsRequired();
+            period.Property(value => value.EndedAt).HasConversion(utcTicks).IsRequired();
+            period.Property(value => value.DetectedAt).HasConversion(utcTicks).IsRequired();
+            period.Property(value => value.LastSource).HasMaxLength(60).IsRequired();
+
+            // Stored as ticks for the same reason the timestamps are: a formatted interval would
+            // make a comparison depend on how it was written.
+            period.Property(value => value.Cadence)
+                .HasConversion(value => value.Ticks, value => TimeSpan.FromTicks(value))
+                .IsRequired();
+
+            // The one question asked of this table is "what did we miss, most recently first".
+            period.HasIndex(value => value.StartedAt);
+        });
     }
 
     /// <summary>
@@ -81,15 +115,24 @@ public sealed class GeopoliticsDbContext(DbContextOptions<GeopoliticsDbContext> 
     /// </summary>
     private static void ConfigureCheckpoints(
         ModelBuilder modelBuilder,
-        ValueConverter<DateTimeOffset, long> utcTicks)
+        ValueConverter<DateTimeOffset, long> utcTicks,
+        ValueConverter<DateTimeOffset?, long?> nullableUtcTicks)
     {
         modelBuilder.Entity<IngestionCheckpoint>(checkpoint =>
         {
             checkpoint.ToTable("IngestionCheckpoints");
             checkpoint.HasKey(value => value.Source);
             checkpoint.Property(value => value.Source).HasMaxLength(60);
-            checkpoint.Property(value => value.RequestedFrom).HasConversion(utcTicks).IsRequired();
-            checkpoint.Property(value => value.UpdatedAt).HasConversion(utcTicks).IsRequired();
+
+            // Nullable, and the nullability is the point. A row now exists for any source that has
+            // polled, which is most of them and almost none of which backfill. Defaulting the
+            // frontier to a date would tell the backfill that history from that date had already
+            // been requested, and the walk would start short of where it should and never notice.
+            checkpoint.Property(value => value.RequestedFrom).HasConversion(nullableUtcTicks);
+            checkpoint.Property(value => value.UpdatedAt).HasConversion(nullableUtcTicks);
+            checkpoint.Property(value => value.LastPolledAt).HasConversion(nullableUtcTicks);
+            checkpoint.Property(value => value.PollEvery)
+                .HasConversion(value => value!.Value.Ticks, value => TimeSpan.FromTicks(value));
         });
     }
 

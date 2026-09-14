@@ -64,6 +64,11 @@ public static class ServiceCollectionExtensions
         // is no request that should be able to reach the second.
         services.AddScoped<IRetentionRepository, EfRetentionRepository>();
 
+        // The downtime ledger. Scoped like the other repositories; the service above it holds the
+        // rule that turns a gap between polls into a period this host was away.
+        services.AddScoped<IContinuityRepository, EfContinuityRepository>();
+        services.AddScoped<IContinuityService, ContinuityService>();
+
         // Singleton because it is the count a hosted service writes and a scoped report reads. It
         // holds what retention has done since this host started, which is deliberately not durable:
         // see the note on the type.
@@ -203,6 +208,11 @@ public static class ServiceCollectionExtensions
         // in registration order, and leaving this to the first observation put a second and a half
         // inside a request rather than inside startup.
         services.AddHostedService<LexiconWarmUpService>();
+
+        // Before the pump, and the order is load-bearing. The ledger measures the gap between the
+        // newest poll on record and now; the pump's first poll overwrites that record within
+        // milliseconds of starting, so a ledger running after it would measure nothing every time.
+        services.AddHostedService<DowntimeLedgerService>();
 
         services.AddHostedService<EventSourcePumpService>();
         services.AddHostedService<ObservationProcessorService>();

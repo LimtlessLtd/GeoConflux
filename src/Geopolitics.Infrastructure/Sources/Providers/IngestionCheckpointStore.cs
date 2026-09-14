@@ -1,3 +1,4 @@
+using Geopolitics.Application.Abstractions;
 using Geopolitics.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,8 +32,41 @@ internal interface IIngestionCheckpointStore
 /// </para>
 /// </summary>
 internal sealed class IngestionCheckpointStore(IServiceScopeFactory scopeFactory, TimeProvider timeProvider)
-    : IIngestionCheckpointStore
+    : IIngestionCheckpointStore, ISourceLivenessRecorder
 {
+    /// <summary>
+    /// Writes down that this source asked its provider something, which is the only evidence this
+    /// host has that it was running at that moment.
+    /// <para>
+    /// It shares the checkpoint's table and its key because it answers a question of the same shape —
+    /// what does this deployment know about this adapter — and because the row already exists for
+    /// the two adapters that backfill. It does not share its rule: the frontier only ever moves
+    /// earlier, and this only ever moves later.
+    /// </para>
+    /// </summary>
+    public async Task RecordPollAsync(string source, TimeSpan pollInterval, CancellationToken cancellationToken)
+    {
+        await using var scope = scopeFactory.CreateAsyncScope();
+        var database = scope.ServiceProvider.GetRequiredService<GeopoliticsDbContext>();
+
+        var checkpoint = await database.Checkpoints
+            .FirstOrDefaultAsync(value => value.Source == source, cancellationToken);
+
+        if (checkpoint is null)
+        {
+            // Created with no backfill frontier. A row existing because a source polled must not
+            // answer "how far back has history been requested" — leaving it null is what keeps the
+            // walk starting from the live window rather than from whenever this row appeared.
+            checkpoint = new IngestionCheckpoint { Source = source };
+            database.Checkpoints.Add(checkpoint);
+        }
+
+        checkpoint.LastPolledAt = timeProvider.GetUtcNow();
+        checkpoint.PollEvery = pollInterval;
+
+        await database.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<DateTimeOffset?> ReadAsync(string source, CancellationToken cancellationToken)
     {
         await using var scope = scopeFactory.CreateAsyncScope();
