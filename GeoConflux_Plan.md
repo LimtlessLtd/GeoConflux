@@ -61,7 +61,8 @@ For each sprint:
 2. Summarise the current architecture and identify the next coherent increment.
 3. Implement the sprint requirements.
 4. Add/modify tests.
-5. Run formatting/build/tests.
+5. Run `bash tools/verify.sh` — the same script CI runs, so passing locally means CI passes. Docker
+   is the stated exception; the script says when it could not check it.
 6. Fix genuine problems found by verification.
 7. Update documentation/ADRs.
 8. Provide a concise implementation summary.
@@ -2794,9 +2795,15 @@ world while switched off. Those are Sprints 17 and 18.
 
 ## What is left
 
-Nothing in the original plan. Sprints 12 to 15 and 17 to 19 of
-[the global coverage assessment](docs/global-coverage-plan.md) are outstanding, none begun. That
-document holds the definitions and the recommended order; the shape of it is:
+**Take Sprint 17 next.** It is the one the others now depend on, and the reason is Sprint 16's own
+result: the register holds 319 conflicts and a credential-free build identifies a handful of them,
+because a snapshot build has seconds of history and no model. A host that stays up accumulates the
+database that makes tempo, baselines and narrative mean anything, and it is the deployment those
+features were written for. Nothing else unlocks as much.
+
+Nothing in the original plan is outstanding. Sprints 12 to 15 and 17 to 19 of
+[the global coverage assessment](docs/global-coverage-plan.md) are, none begun. That document holds
+the definitions and the recommended order; the shape of it is:
 
 - **Sprints 17 and 18 — running continuously, and closing the gaps when it has not been.** Retention,
   credentials, reboots, a downtime ledger; then recovery from the datasets, which are archives and

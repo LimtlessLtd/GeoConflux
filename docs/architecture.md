@@ -62,7 +62,7 @@ outbound request is made.
 ## Processing pipeline
 
 ```text
-IEventSource (replay, RSS, NASA FIRMS, ACLED) + manual submission
+IEventSource (replay, RSS, NASA FIRMS, ACLED, UCDP, agent bundles) + manual submission
       |
       v
 ObservationIngestionService   validation; untrusted input stops here
@@ -79,6 +79,7 @@ ObservationProcessor
       |-- deduplicate          content fingerprint + unique index   (ADR 010)
       |-- enrich               AI; validated, fallible, optional    (ADR 012)
       |-- resolve location     deterministic resolver only          (ADR 005)
+      |-- assign conflict      register predicate, then AI if open  (ADR 035)
       |-- correlate            positional ceiling + corroboration   (ADR 006, 016)
       |                        serialised per category across the commit
       |-- score severity       trained model; recorded, never applied (ADR 020)
@@ -257,6 +258,45 @@ Correlate-then-commit is serialised per event type by `CorrelationGate`, because
 candidates and then writes. Enrichment and location resolution run outside that gate, since they are
 the slow stages and touch no shared state.
 
+## Conflict register
+
+The register answers "which conflict does this report belong to", and its defining property is that
+this project did not write it. It is UCDP's coding of organised violence — 319 conflicts recorded in
+2024, with named parties — committed as `data/conflicts/ucdp-2024.tsv` and loaded by
+`CodedConflictRegister` in infrastructure, because assembling it needs the gazetteer. Everything that
+reasons about membership is application logic behind `IConflictRegister`, and the dependency runs one
+way, as it does for the lexicon.
+
+```text
+CodedConflictRegister        coded extract, resolved through the gazetteer at startup
+      |                      countries derived from each conflict's own coded places
+      v
+ConflictAssigner             identity assigns, geography only narrows
+      |-- source coding      authoritative; nothing else is consulted
+      |-- actor words        one word shared with several conflicts identifies none
+      |-- coded place        only where the country agrees
+      |-- country            assigns only when exactly one conflict matches
+      v
+IConflictClassifier          asked only when candidates remain and nothing chose between them
+                             offered keys are enumerated; an unoffered key is rejected on return
+```
+
+Membership is recorded on the observation as keys, a basis, the candidates that were not chosen, and
+a note saying why nothing was when nothing was. It gates nothing: a report belonging to no conflict
+is stored, placed and correlated exactly as before. One report can belong to several conflicts, so
+per-conflict counts do not sum to the total.
+
+`ConflictActivityService` reports tempo over a window and is the one read model that materialises
+rows rather than pushing a `GROUP BY` into the database — membership is a JSON list per row and
+SQLite cannot group by its elements. The projection is cut to four fields and the sample is capped
+with truncation reported. A membership table is the right shape and is not worth its migration at
+this volume; the trade is recorded in `IConflictActivityRepository` rather than left to be
+discovered.
+
+Every figure it produces carries the number of sources that produced it. See
+[ADR 035](adr/035-conflicts-as-first-class-objects.md) for why, and for what the register does not
+mean: a country in a conflict's geography is where its events happened, never an attribution.
+
 ## Spatial queries
 
 Two stages, because a database can index a coordinate but not a distance.
@@ -405,10 +445,23 @@ requiring positional corroboration is what limits the damage in the meantime.
 distributed lock. Running two processor hosts against one database would reintroduce the
 read-then-write race it exists to close.
 
-**The gazetteer is small and Latin-script.** It holds the chokepoints, seas, and cities that recur in
-the demo dataset. A place outside it resolves to nothing, and the observation stays visibly unplaced.
-That is the designed behaviour, but it means location recall is bounded by the lexicon rather than by
-the extraction step.
+**The gazetteer is coarse outside the tasked theatres.** It is no longer small — three layers hold
+127,377 places across 246 countries, with Arabic, Cyrillic and Han spellings — but outside the deep
+theatres it holds administrative units and the towns that are their seats, not villages. A place
+outside it resolves to nothing and the observation stays visibly unplaced, which is the designed
+behaviour; it means location recall is bounded by the lexicon rather than by the extraction step, and
+52 countries are held by fewer than twenty names each. The Coverage tab states that ceiling per
+country (ADR 032, ADR 033).
 
-**No classical ML model exists yet.** Severity comes from enrichment or from keywords. The comparison
-between a model prediction, an LLM assessment, and a human label is a later increment (ADR 009).
+**The trained severity model is a second opinion and nothing more.** `MLNetSeverityModel` is fitted
+at startup from a committed corpus and its prediction is recorded beside the severity the pipeline
+acted on, never in place of it — a model fitted to a small synthetic corpus is evidence about the
+model rather than authority over a source that declared its own severity. Where the two disagree,
+that disagreement is the record worth having (ADR 009, ADR 020).
+
+**Conflict membership rests on string matching until a model is configured.** The deterministic pass
+assigns what a source coded, what names a party distinctively, and what geography leaves no choice
+about. Everything else is offered to a model, and with none configured those reports stay unassigned
+with their candidate conflicts named. On a credential-free run that is most of them. UCDP's party
+names are also not reporting's names — its 2024 coding contains no occurrence of "Houthi" — so actor
+matching does less work on wire text than it appears to (ADR 035).
