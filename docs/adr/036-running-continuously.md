@@ -165,7 +165,10 @@ again. **Rows rather than log lines**, because Sprint 18 has to act on them.
 
 Detection runs in `StartAsync` and is registered before the ingestion pump. A background service
 returns to the host at its first await, and the pump's first poll overwrites the very timestamp the
-gap is measured from.
+gap is measured from. It is also the one containment in this project that had to be got right in the
+other direction: an exception out of `StartAsync` aborts host startup, so an unwritten ledger row
+would take down the collection this host exists to do — trading a record of an outage for an outage.
+The gap is lost and the host runs.
 
 **The case that ships is the one that had to be got right.** Every provider in this repository is
 dormant without a credential, so a clone polls nothing and has no record of its own uptime at all.

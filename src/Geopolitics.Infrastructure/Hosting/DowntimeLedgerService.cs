@@ -1,6 +1,7 @@
 using Geopolitics.Application.Operations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Geopolitics.Infrastructure.Hosting;
 
@@ -15,15 +16,33 @@ namespace Geopolitics.Infrastructure.Hosting;
 /// service starts, which is also why it is registered before the pump.
 /// </para>
 /// </summary>
-public sealed class DowntimeLedgerService(IServiceScopeFactory scopeFactory) : IHostedService
+public sealed partial class DowntimeLedgerService(
+    IServiceScopeFactory scopeFactory,
+    ILogger<DowntimeLedgerService> logger) : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        await using var scope = scopeFactory.CreateAsyncScope();
-        var continuity = scope.ServiceProvider.GetRequiredService<IContinuityService>();
+        try
+        {
+            await using var scope = scopeFactory.CreateAsyncScope();
+            var continuity = scope.ServiceProvider.GetRequiredService<IContinuityService>();
 
-        await continuity.RecordStartupGapAsync(cancellationToken);
+            await continuity.RecordStartupGapAsync(cancellationToken);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            // Contained, and this one matters more than the other containments in this project.
+            // An exception out of StartAsync aborts host startup, so an unwritten ledger row would
+            // take down the collection this host exists to do — trading a record of an outage for
+            // an outage. The gap is lost and the host runs.
+            LogNotRecorded(logger, exception);
+        }
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Could not work out whether this host has been away, so no downtime period was recorded for this start. Collection is unaffected.")]
+    private static partial void LogNotRecorded(ILogger logger, Exception exception);
 }
