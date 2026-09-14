@@ -250,11 +250,9 @@ public sealed class CollectedBundlePipelineTests
     /// </summary>
     private static async Task<JsonElement[]> WaitForCollectedAsync(HttpClient client)
     {
-        var previousTotal = -1;
-        var stablePolls = 0;
-
-        for (var attempt = 0; attempt < 150; attempt++)
+        for (var attempt = 0; attempt < 300; attempt++)
         {
+            var enqueued = await TotalEnqueuedAsync(client);
             var observations = await client.GetFromJsonAsync<JsonElement>("/api/observations?take=100");
 
             var all = observations.EnumerateArray()
@@ -265,12 +263,12 @@ public sealed class CollectedBundlePipelineTests
                 .Where(observation => observation.GetProperty("status").GetString() != "Received")
                 .ToArray();
 
-            var drained = all.Length > 0 && processed.Length == all.Length;
-
-            stablePolls = drained && all.Length == previousTotal ? stablePolls + 1 : 0;
-            previousTotal = all.Length;
-
-            if (stablePolls >= 3)
+            // Every envelope the queue has accepted has become a row, and nothing is left waiting.
+            // Replay is off in this host and the bundle source is the only producer, so the queue's
+            // own counter is exactly the number of collected observations to expect — which makes
+            // this a statement about the pipeline having finished rather than about it having been
+            // quiet for a moment.
+            if (enqueued > 0 && all.Length == enqueued && processed.Length == all.Length)
             {
                 return processed;
             }
@@ -281,5 +279,33 @@ public sealed class CollectedBundlePipelineTests
         throw new InvalidOperationException(
             "No collected observation reached the read model, or the pipeline never settled. Either "
             + "no bundle is committed, or the collected source did not run.");
+    }
+
+    /// <summary>
+    /// How many envelopes the processing queue has accepted, read from the health endpoint.
+    /// <para>
+    /// This replaced a settling heuristic — "everything visible has been processed, and the count has
+    /// not moved for three polls" — that was wrong in a way only a loaded machine showed. The two
+    /// committed bundles are split by tier: seven published documents in one file and six social
+    /// posts in the other. A processor part-way through the batch satisfies both halves of that
+    /// heuristic, because the items it has not reached yet are in the queue rather than in the
+    /// database and are therefore invisible to it. The test then asserted against seven of thirteen
+    /// records and found no platform among them, which is exactly what CI reported.
+    /// </para>
+    /// </summary>
+    private static async Task<int> TotalEnqueuedAsync(HttpClient client)
+    {
+        var health = await client.GetFromJsonAsync<JsonElement>("/api/health");
+
+        foreach (var check in health.GetProperty("checks").EnumerateArray())
+        {
+            if (check.GetProperty("name").GetString() == "processing-queue"
+                && check.GetProperty("data").TryGetProperty("totalEnqueued", out var total))
+            {
+                return total.GetInt32();
+            }
+        }
+
+        return 0;
     }
 }
