@@ -31,11 +31,34 @@ rules and that difference is what makes the whole table trustworthy:
 | Layer | What it holds | Where it comes from | Size |
 | --- | --- | --- | --- |
 | **Curated core** | Chokepoints, seas, country centroids, contested and informal naming | Hand-written in `Gazetteer.cs`, argued for in comments | ~250 entries |
-| **Global coarse** | Every first- and second-order administrative unit on earth, and the settlement that is the seat of each | GeoNames, CC BY 4.0 | 78,547 places, 193,445 spellings |
+| **Global coarse** | Every first- and second-order administrative unit on earth, and every populated place above 5,000 inhabitants | GeoNames, CC BY 4.0 | 127,377 places, 289,307 spellings |
 | **Theatre deep** | Settlements below district level, for theatres under active tasking | Wikidata, CC0 | 2,750 places, 9,179 spellings |
 
-The tiering is honest about what it is. The global layer places a report to a district; it does not
-place one to a village, because it does not hold villages. Adding a theatre is what buys that depth,
+**The coarse layer originally held administrative units and their seats, and that was wrong.** The
+correction is recorded here rather than quietly applied because the mistake is instructive: an
+administrative *seat* is a role in a national scheme, not a synonym for "somewhere people live", and
+the two diverge exactly where reporting is thickest. GeoNames codes Acapulco — population 658,609 —
+as a plain populated place, while the administrative unit around it is a separate record named
+"Acapulco de Juárez" carrying none of the spellings anybody writes. The city was therefore absent and
+`Acapulco` resolved to nothing, as did Morelia, Khan Yunis and a great many others.
+
+Nothing in the reasoning found that. [The conflict-coverage benchmark](034-conflict-coverage-benchmark.md)
+found it, by asking how much of the world's recorded violence this lexicon could place and answering
+45%. Adding populated places above a floor took that to 52%, and Africa from 25% to 33%.
+
+The floor is 5,000 because that is where the curve flattens, measured rather than chosen:
+
+| Population floor | Places | Artefact | Conflicts reachable | Events placed |
+| ---: | ---: | ---: | ---: | ---: |
+| seats only | 78,547 | 6.1 MB | 73% | 45% |
+| 15,000 | 100,698 | 7.7 MB | 76% | 50% |
+| **5,000** | **127,377** | **10.2 MB** | **77%** | **52%** |
+| 1,000 | 195,696 | 13.0 MB | 77% | 54% |
+
+The last two percentage points cost 41% more artefact, and buy one additional conflict.
+
+The tiering is honest about what it is. The global layer places a report to a district or a town; it
+does not place one to a village, because it does not hold villages. Adding a theatre is what buys that depth,
 and it is a deliberate act with a cost, which is exactly how this project already thinks about
 theatres. It also makes the coverage panel's statement concrete: *we hold 105 places for Myanmar* is
 a limit a reader can act on, in a way that *coverage is uneven* is not.
@@ -52,6 +75,10 @@ out to be mostly an artefact of the encoding rather than of the data. The same 7
 | **One tab-separated line per place** | **6.1 MB** | **78,547** | **Yes: one place is one line** |
 | That, gzipped | 2.2 MB | — | No |
 
+*(Measured at the 78,547 places the tier held when the decision was taken. The committed file is now
+10.2 MB, having gained the world's towns and two administrative-code columns; the ratio between the
+encodings is what the decision turned on and it is unchanged.)*
+
 So the choice that keeps the artefact smallest *also* keeps it most reviewable, and the compression
 option buys 3.9 MB in exchange for every property this repository says it values. A changed place is
 one changed line in a diff. The file is greppable. Nothing is decompressed at startup and nothing is
@@ -60,9 +87,17 @@ fetched during a build.
 The format is the header, then one line per place:
 
 ```text
-# name	lat	lon	country	precision	rank	population	spellings separated by |
-Kayin State	17.2	97.75	MM	R	1	1574079	Karen State|Kayin|État de Kayin|ولاية كايين|ကရင်ပြည်နယ်|克倫邦
+# name	lat	lon	country	precision	rank	population	admin1	admin2	spellings separated by |
+Kayin State	17.2	97.75	MM	R	1	1574079	13		Karen State|Kayin|ولاية كايين|ကရင်ပြည်နယ်|克倫邦
 ```
+
+The two administrative codes say which units a place sits inside, and they are there to replace a
+guess. The merge has to recognise that Homs the city, Homs the district and Homs the governorate are
+one place described at three scales, and it used to decide that by asking whether their centroids
+were within 1.5° of each other — a tolerance [ADR 026](026-gazetteer-sourcing.md) calibrated against
+Yemeni governorates. Large units defeat it: Homs Governorate reaches into the eastern desert, and New
+York State's centroid is 250 km from New York City. Recording the containment makes it a fact rather
+than an inference.
 
 The header is comment lines carrying provenance, the extraction date and the counts, so the file
 states what it is without a reader having to find the script that wrote it.

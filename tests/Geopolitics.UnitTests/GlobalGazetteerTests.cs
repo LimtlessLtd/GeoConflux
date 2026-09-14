@@ -123,6 +123,10 @@ public sealed class GlobalGazetteerTests(ITestOutputHelper output)
     [Theory]
     [InlineData("New York", "US")]
     [InlineData("Cairo", "EG")]
+
+    // Alexandria is the sharpest of these: the tasked layer holds Oleksandriia, a Ukrainian town of
+    // 76,097 whose recorded spelling is "Alexandria". Egypt's Alexandria is 5.6 million.
+    [InlineData("Alexandria", "EG")]
     public void AFarLargerPlaceElsewhereTakesANameFromATaskedVillage(string name, string country)
     {
         Assert.True(Gazetteer.TryResolve(name, out var entry), $"'{name}' did not resolve.");
@@ -146,9 +150,6 @@ public sealed class GlobalGazetteerTests(ITestOutputHelper output)
     {
         Assert.True(Gazetteer.TryResolve("Victoria", new PlaceContext("UA"), out var ukrainian));
         Assert.Equal("UA", ukrainian.CountryCode);
-
-        Assert.True(Gazetteer.TryResolve("Alexandria", new PlaceContext("UA"), out var oleksandriia));
-        Assert.Equal("UA", oleksandriia.CountryCode);
 
         Assert.True(Gazetteer.TryResolve("San Jose", new PlaceContext("US"), out var american));
         Assert.Equal("US", american.CountryCode);

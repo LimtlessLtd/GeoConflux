@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Geopolitics.IntegrationTest
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Geopolitics.AiEvaluationTests", "tests\Geopolitics.AiEvaluationTests\Geopolitics.AiEvaluationTests.csproj", "{DE42617B-272B-49BF-B9A0-8BFA15630BA9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Geopolitics.ConflictBenchmark", "tests\Geopolitics.ConflictBenchmark\Geopolitics.ConflictBenchmark.csproj", "{9D044CA8-B8B0-4194-B68A-DF2411D950E5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -129,6 +131,18 @@ Global
 		{DE42617B-272B-49BF-B9A0-8BFA15630BA9}.Release|x64.Build.0 = Release|Any CPU
 		{DE42617B-272B-49BF-B9A0-8BFA15630BA9}.Release|x86.ActiveCfg = Release|Any CPU
 		{DE42617B-272B-49BF-B9A0-8BFA15630BA9}.Release|x86.Build.0 = Release|Any CPU
+		{9D044CA8-B8B0-4194-B68A-DF2411D950E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D044CA8-B8B0-4194-B68A-DF2411D950E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D044CA8-B8B0-4194-B68A-DF2411D950E5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9D044CA8-B8B0-4194-B68A-DF2411D950E5}.Debug|x64.Build.0 = Debug|Any CPU
+		{9D044CA8-B8B0-4194-B68A-DF2411D950E5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9D044CA8-B8B0-4194-B68A-DF2411D950E5}.Debug|x86.Build.0 = Debug|Any CPU
+		{9D044CA8-B8B0-4194-B68A-DF2411D950E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D044CA8-B8B0-4194-B68A-DF2411D950E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D044CA8-B8B0-4194-B68A-DF2411D950E5}.Release|x64.ActiveCfg = Release|Any CPU
+		{9D044CA8-B8B0-4194-B68A-DF2411D950E5}.Release|x64.Build.0 = Release|Any CPU
+		{9D044CA8-B8B0-4194-B68A-DF2411D950E5}.Release|x86.ActiveCfg = Release|Any CPU
+		{9D044CA8-B8B0-4194-B68A-DF2411D950E5}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -142,5 +156,6 @@ Global
 		{DFCBD3C3-8572-4E9B-B896-B022C5AC38E3} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{951A5B7A-72C6-4187-950C-3AFDC92487E2} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{DE42617B-272B-49BF-B9A0-8BFA15630BA9} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{9D044CA8-B8B0-4194-B68A-DF2411D950E5} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal

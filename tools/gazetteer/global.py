@@ -52,8 +52,8 @@ DUMPS = {
 PLAIN = ["countryInfo.txt"]
 
 # What the coarse layer holds, and at what precision. Administrative units are areas and their
-# centroid is representative; a seat is a town and its coordinate is a position. The distinction is
-# carried into the lexicon rather than flattened, because the dashboard repeats it to the reader.
+# centroid is representative; a town is a position. The distinction is carried into the lexicon
+# rather than flattened, because the dashboard repeats it to the reader.
 #
 # Rank follows the meaning already established for the theatre extract: smaller is larger. It is what
 # lets the merge recognise that a district and the town inside it sharing a name are one place
@@ -66,6 +66,22 @@ FEATURES = {
     "PPLA2": ("Settlement", 3),
     "PPLG": ("Settlement", 3),
 }
+
+# Feature codes that are populated places rather than administrative units. Any of them above the
+# population floor is kept, whatever administrative role it does or does not hold.
+#
+# This exists because the first version of this extract took administrative units and their seats,
+# and that assumption is wrong in a way that only a benchmark could have shown. GeoNames codes
+# Acapulco -- population 658,609 -- as a plain PPL, while the administrative unit around it is a
+# separate record named "Acapulco de Juárez" carrying none of the spellings anybody writes. The city
+# was therefore absent and "Acapulco" resolved to nothing. So were Morelia, Khan Yunis, Jabaliyah and
+# a great many others: the conflict-coverage benchmark could place only 45% of UCDP's recorded events
+# before this rule, and Africa and Asia sat at roughly a quarter.
+#
+# The lesson is worth keeping rather than only the fix. "Administrative seat" is a role in a national
+# scheme, not a synonym for "somewhere people live", and the two diverge exactly where reporting is
+# thickest.
+SETTLEMENTS = {"PPL", "PPLA", "PPLA2", "PPLA3", "PPLA4", "PPLA5", "PPLC", "PPLG", "PPLS", "STLMT"}
 
 # Languages every place is allowed to carry a spelling in, whatever country it sits in: the ones the
 # sources this system reads actually publish in. The rest of a place's spellings come from its own
@@ -102,6 +118,11 @@ ANCHORS = [
     ("CN", "北京"),           # Beijing, Chinese
     ("IR", "تهران"),         # Tehran, Persian
 ]
+
+# How many inhabitants a place with no administrative role needs before it is kept. Chosen by
+# measurement rather than by taste: see docs/adr/033-tiered-gazetteer-artefact.md for what each
+# candidate floor was worth against the conflict-coverage benchmark.
+POPULATION_FLOOR = 5000
 
 # A coordinate of exactly zero in both axes is the classic sign of a missing value that was written
 # as a number anyway. There is ocean at that point and no populated place.
@@ -155,7 +176,7 @@ def country_languages(path):
     return languages
 
 
-def select(path, languages):
+def select(path, languages, floor):
     """Read the feature dump once, keeping the tier and the extent of every country in it."""
     places = {}
     extents = {}
@@ -185,7 +206,16 @@ def select(path, languages):
                     max(east, longitude), max(north, latitude),
                 )
 
+            try:
+                population = int(columns[14])
+            except ValueError:
+                population = 0
+
             feature = FEATURES.get(columns[7])
+
+            # A populated place earns its way in by size when it holds no administrative role.
+            if feature is None and columns[7] in SETTLEMENTS and population >= floor:
+                feature = ("Settlement", 3)
 
             if feature is None or not country or country not in languages:
                 continue
@@ -194,12 +224,19 @@ def select(path, languages):
                 skipped += 1
                 continue
 
-            try:
-                population = int(columns[14])
-            except ValueError:
-                population = 0
-
             precision, rank = feature
+
+            # The administrative codes are what let the merge know that Homs the city sits inside
+            # Homs the governorate. Without them containment has to be guessed from how far apart two
+            # centroids are, and that guess fails for exactly the units that are large -- which is to
+            # say, for first-order units almost everywhere.
+            #
+            # A unit's own code is the code of the level it is. Homs Governorate is admin1 "HS" with
+            # no admin2; Homs city is admin1 "HS" and some admin2 within it. So an ADM1 row keeps its
+            # admin1 and drops whatever admin2 the dump happens to carry for it, and an ADM2 row keeps
+            # both -- otherwise a unit would not contain itself.
+            admin1 = columns[10]
+            admin2 = columns[11] if columns[7] != "ADM1" else ""
 
             places[columns[0]] = {
                 "name": columns[1],
@@ -209,6 +246,8 @@ def select(path, languages):
                 "precision": precision,
                 "rank": rank,
                 "population": population,
+                "admin1": admin1,
+                "admin2": admin2,
                 "aliases": set(),
             }
 
@@ -318,6 +357,8 @@ def build(places):
             "precision": place["precision"],
             "rank": place["rank"],
             "population": place["population"] or None,
+            "admin1": place["admin1"],
+            "admin2": place["admin2"],
             "aliases": aliases,
         })
 
@@ -332,6 +373,12 @@ def degrees(value):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--population",
+        type=int,
+        default=POPULATION_FLOOR,
+        help="how many inhabitants a place with no administrative role needs to be kept",
+    )
     parser.add_argument(
         "--cache",
         default=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".geonames"),
@@ -348,7 +395,7 @@ def main():
     languages = country_languages(os.path.join(arguments.cache, "countryInfo.txt"))
 
     print("  selecting the tier from %d countries" % len(languages))
-    places, extents, skipped = select(paths["allCountries.txt"], languages)
+    places, extents, skipped = select(paths["allCountries.txt"], languages, arguments.population)
 
     if not places:
         raise SystemExit("The extract is empty, which means the selection is wrong. Nothing written.")
@@ -382,7 +429,7 @@ def main():
         "# places: %d in %d countries (%s)"
         % (len(entries), countries, ", ".join("%s %d" % item for item in sorted(by_precision.items()))),
         "#",
-        "# name\tlat\tlon\tcountry\tprecision\trank\tpopulation\tspellings separated by |",
+        "# name\tlat\tlon\tcountry\tprecision\trank\tpopulation\tadmin1\tadmin2\tspellings separated by |",
     ]
 
     os.makedirs(os.path.dirname(OUTPUT), exist_ok=True)
@@ -399,6 +446,8 @@ def main():
                 entry["precision"][0],
                 str(entry["rank"]),
                 str(entry["population"] or ""),
+                entry["admin1"],
+                entry["admin2"],
                 SPELLING.join(entry["aliases"]),
             ]) + "\n")
 

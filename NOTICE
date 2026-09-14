@@ -27,6 +27,28 @@ completeness.
 See docs/adr/032-global-gazetteer-sourcing.md for why this source was chosen.
 
 
+UCDP
+----
+
+tests/data/conflict-benchmark/conflicts.tsv is derived from the UCDP Georeferenced Event Dataset, and
+is the ground truth for the conflict-coverage benchmark: every conflict UCDP recorded an event for in
+2024, with the places those events happened at.
+
+    Source:  https://ucdp.uu.se
+    Licence: Creative Commons Attribution 4.0 International (CC BY 4.0)
+             https://creativecommons.org/licenses/by/4.0/
+    Cite:    Sundberg, Ralph and Erik Melander (2013) Introducing the UCDP Georeferenced Event
+             Dataset. Journal of Peace Research 50(4).
+             Davies, Shawn, Garoun Engstrom, Therese Pettersson and Magnus Oberg (2025) Organized
+             violence 1989-2024, and the challenges of identifying civilian victims. Journal of
+             Peace Research 62(4).
+    Changes: Filtered to 2024; events grouped into the conflicts they belong to; place names reduced
+             to one per event, most specific first. Extracted by tools/conflicts/extract.py.
+
+The UCDP API requires an access token. These flat dataset downloads do not, which is why this
+benchmark can exist without a credential nobody has requested.
+
+
 Wikidata
 --------
 

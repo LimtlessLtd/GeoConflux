@@ -878,7 +878,9 @@ public static class Gazetteer
         int Rank,
         int Population,
         bool Searchable,
-        bool Deep);
+        bool Deep,
+        string Admin1,
+        string Admin2);
 
     /// <summary>
     /// At or below this length a sourced spelling is too short to hunt for in running prose unless
@@ -937,6 +939,8 @@ public static class Gazetteer
         int Rank,
         int Population,
         bool Deep,
+        string Admin1,
+        string Admin2,
         IReadOnlyList<string> Aliases);
 
     /// <summary>
@@ -978,6 +982,8 @@ public static class Gazetteer
                 place.Rank,
                 place.Population ?? 0,
                 true,
+                string.Empty,
+                string.Empty,
                 place.Aliases)),
             curated,
             candidates);
@@ -992,6 +998,8 @@ public static class Gazetteer
                 place.Rank,
                 place.Population ?? 0,
                 false,
+                place.Admin1,
+                place.Admin2,
                 place.Aliases)),
             curated,
             candidates);
@@ -1172,7 +1180,9 @@ public static class Gazetteer
                     place.Rank,
                     place.Population,
                     IsSearchable(name, isPreferredName, place.Population, place.Deep),
-                    place.Deep));
+                    place.Deep,
+                    place.Admin1,
+                    place.Admin2));
             }
         }
     }
@@ -1255,64 +1265,172 @@ public static class Gazetteer
     /// <summary>
     /// Decides which place a shared name denotes, or that it denotes none usefully.
     /// <para>
-    /// Three rules, each answering a different reason two rows can carry one name, and a refusal when
-    /// none of them applies. The refusal is the important part: resolving to whichever candidate came
-    /// back first would put a pin in the wrong place at full confidence, and a reader has no way to
-    /// tell that from a right one.
+    /// Two steps, and the order is the whole of it. First the records that describe <em>one</em> place
+    /// are collapsed together — duplicates of the same town, and a town with the district and
+    /// province named after it. Only then are the genuinely different places that remain compared,
+    /// and only by population, by a margin wide enough to mean a town among villages rather than a
+    /// coin toss between two towns. When no place wins that comparison the name resolves to nothing,
+    /// and the refusal is the important part: resolving to whichever record came back first would put
+    /// a pin in the wrong place at full confidence, and a reader cannot tell that from a right one.
+    /// </para>
+    /// <para>
+    /// Collapsing first is a correction the global layer forced. The rules used to require that
+    /// <em>every</em> candidate be nested with every other before any of them could be collapsed, so
+    /// a single unrelated record carrying the same name defeated the whole step. One Ukrainian hamlet
+    /// called Niu-York was enough to stop New York State, New York County and New York City from
+    /// being recognised as one place, and the name then resolved to nothing at all. Grouping first
+    /// leaves the outlier as its own group, where it loses the population comparison on its merits.
     /// </para>
     /// </summary>
     private static Candidate? Disambiguate(List<Candidate> candidates)
     {
-        var first = candidates[0];
+        var groups = Collapse(candidates);
 
-        // One place, entered twice. The source genuinely holds duplicates of the same town whose
-        // coordinates differ in the fourth decimal, and dropping a real place over a rounding
-        // difference would be absurd. At globe zoom either row draws the same dot.
-        if (candidates.All(candidate => IsSamePlace(first.Entry, candidate.Entry)))
+        if (groups.Count == 1)
         {
-            return first;
-        }
-
-        // Nested administrative units. Marib is a governorate, a district and a city; Taiz is a city
-        // and a governorate. These are not competing places, they are one place described at three
-        // scales, so the containing unit is chosen — it is the answer that is certainly right, and
-        // its Region precision already tells the reader it is an area rather than a position.
-        var nested = candidates
-            .Where(candidate => candidates.All(other => IsNested(candidate.Entry, other.Entry)))
-            .ToArray();
-
-        if (nested.Length == candidates.Count)
-        {
-            var smallestRank = candidates.Min(candidate => candidate.Rank);
-
-            if (candidates.Count(candidate => candidate.Rank == smallestRank) == 1)
-            {
-                return candidates.First(candidate => candidate.Rank == smallestRank);
-            }
+            return groups[0].Representative;
         }
 
         // Genuinely different places that happen to share a name, where one of them is what anyone
-        // saying the bare name means. The margin is deliberately wide: this is meant to catch a town
-        // among villages, not to pick a winner between two towns.
-        var ordered = candidates
-            .OrderByDescending(candidate => candidate.Population)
-            .ToArray();
+        // saying the bare name means. Compared on the largest population anywhere in each group,
+        // because the group stands for one place and a district row often records no population at
+        // all while the town inside it does.
+        var ordered = groups.OrderByDescending(group => group.Population).ToArray();
+        var leader = ordered[0];
+        var runnerUp = ordered[1];
 
-        var leader = ordered[0].Population;
-        var runnerUp = ordered[1].Population;
+        return leader.Population >= DominantPopulationFloor
+            && leader.Population >= runnerUp.Population * (long)DominantPopulationRatio
+                ? leader.Representative
+                : null;
+    }
 
-        return leader >= DominantPopulationFloor && leader >= runnerUp * DominantPopulationRatio
-            ? ordered[0]
-            : null;
+    /// <param name="Representative">
+    /// The record the group answers with: the containing unit, because it is the answer that is
+    /// certainly right, and its coarser precision already tells a reader it is an area rather than a
+    /// position.
+    /// </param>
+    /// <param name="Population">The largest population anywhere in the group.</param>
+    private readonly record struct PlaceGroup(Candidate Representative, int Population);
+
+    /// <summary>
+    /// Gathers records that describe one place into one group.
+    /// <para>
+    /// Transitively: a province, the district inside it and the town inside that are one place even
+    /// where the province and the town are far enough apart that nothing but the administrative
+    /// coding connects them.
+    /// </para>
+    /// </summary>
+    private static List<PlaceGroup> Collapse(List<Candidate> candidates)
+    {
+        var owner = new int[candidates.Count];
+
+        for (var index = 0; index < owner.Length; index++)
+        {
+            owner[index] = index;
+        }
+
+        int Find(int index)
+        {
+            while (owner[index] != index)
+            {
+                owner[index] = owner[owner[index]];
+                index = owner[index];
+            }
+
+            return index;
+        }
+
+        for (var left = 0; left < candidates.Count; left++)
+        {
+            for (var right = left + 1; right < candidates.Count; right++)
+            {
+                if (IsSamePlace(candidates[left].Entry, candidates[right].Entry)
+                    || IsNested(candidates[left], candidates[right]))
+                {
+                    owner[Find(left)] = Find(right);
+                }
+            }
+        }
+
+        var members = new Dictionary<int, List<Candidate>>();
+
+        for (var index = 0; index < candidates.Count; index++)
+        {
+            var root = Find(index);
+
+            if (!members.TryGetValue(root, out var group))
+            {
+                members[root] = group = [];
+            }
+
+            group.Add(candidates[index]);
+        }
+
+        var groups = new List<PlaceGroup>(members.Count);
+
+        foreach (var (_, group) in members)
+        {
+            // Smallest rank is the containing unit. Where several records sit at that rank — two
+            // duplicate rows of one town — the larger is kept, which is the same tie-break the
+            // duplicate rule would have applied.
+            var representative = group
+                .OrderBy(candidate => candidate.Rank)
+                .ThenByDescending(candidate => candidate.Population)
+                .First();
+
+            groups.Add(new PlaceGroup(representative, group.Max(candidate => candidate.Population)));
+        }
+
+        return groups;
     }
 
     private static bool IsSamePlace(GazetteerEntry first, GazetteerEntry second) =>
         Math.Abs(first.Latitude - second.Latitude) <= SamePlaceDegrees
         && Math.Abs(first.Longitude - second.Longitude) <= SamePlaceDegrees;
 
-    private static bool IsNested(GazetteerEntry first, GazetteerEntry second) =>
-        Math.Abs(first.Latitude - second.Latitude) <= NestedDegrees
-        && Math.Abs(first.Longitude - second.Longitude) <= NestedDegrees;
+    /// <summary>
+    /// True when these two records describe one place at two scales rather than two places.
+    /// <para>
+    /// Containment first, distance only where the source recorded none. The distance test is a proxy,
+    /// and ADR 026 calibrated it against Yemeni governorates where 1.5 degrees "comfortably holds a
+    /// governorate and the district and town inside it". At global scale that calibration fails for
+    /// exactly the units that are large. Homs Governorate reaches into the eastern desert and its
+    /// centroid is nowhere near Homs; New York State's is 250 km from New York City. Adding the
+    /// world's cities turned every such pair into a name that resolved to nothing — contested names
+    /// went from 8,673 to 14,581, taking Homs, Morelia, Jabaliyah and New York with them.
+    /// </para>
+    /// <para>
+    /// GeoNames records which administrative unit each place sits in, so the proxy can be replaced by
+    /// the fact. A first-order unit carries its own code, which is what lets it contain itself.
+    /// </para>
+    /// </summary>
+    private static bool IsNested(Candidate first, Candidate second)
+    {
+        // Same level, so neither contains the other. Genuine duplicates are the same-place rule's
+        // business, and it runs before this one.
+        if (first.Rank == second.Rank)
+        {
+            return IsSamePlace(first.Entry, second.Entry);
+        }
+
+        var (coarse, fine) = first.Rank < second.Rank ? (first, second) : (second, first);
+
+        if (coarse.Admin1.Length > 0 && fine.Admin1.Length > 0
+            && string.Equals(coarse.Entry.CountryCode, fine.Entry.CountryCode, StringComparison.OrdinalIgnoreCase))
+        {
+            // Two second-order codes that are both present and different is the one case the coding
+            // rules out outright. A blank on either side says the source did not record it, which is
+            // not the same as saying they differ.
+            return string.Equals(coarse.Admin1, fine.Admin1, StringComparison.OrdinalIgnoreCase)
+                && (coarse.Admin2.Length == 0
+                    || fine.Admin2.Length == 0
+                    || string.Equals(coarse.Admin2, fine.Admin2, StringComparison.OrdinalIgnoreCase));
+        }
+
+        return Math.Abs(first.Entry.Latitude - second.Entry.Latitude) <= NestedDegrees
+            && Math.Abs(first.Entry.Longitude - second.Entry.Longitude) <= NestedDegrees;
+    }
 
     /// <summary>
     /// Indexes every known spelling by its normalised key.

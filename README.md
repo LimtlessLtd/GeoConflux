@@ -746,6 +746,13 @@ Five limitations worth stating plainly:
   position: the published dashboard is built by polling four public feeds on every deploy, so what
   you see there did come from live providers. Anything still untested is described as untested rather
   than as working.
+- **The system watches three conflicts and the world has hundreds.** Measured against UCDP's
+  register rather than this project's own list, it can place 78% of the 319 conflicts recorded
+  worldwide in 2024 and 69% of the least-reported ones — but `Theatres.cs` names three, by hand. An
+  empty map outside them is a statement about a source list, not about the world. The benchmark is
+  [tests/data/conflict-benchmark/RESULTS.md](tests/data/conflict-benchmark/RESULTS.md) and it runs in
+  CI; [ADR 034](docs/adr/034-conflict-coverage-benchmark.md) records why it is scored against a
+  register nobody here wrote.
 - **Coverage is global in capability, not yet in fact.** The two datasets that would make it global
   are built and dormant, waiting on credentials nobody has requested. Placement is no longer the
   blocker it was — the lexicon spans 246 countries — but it is coarse outside the three deep

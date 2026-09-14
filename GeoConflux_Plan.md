@@ -2739,7 +2739,12 @@ Nothing in the original plan. Sprints 12 to 19 of
 [the global coverage assessment](docs/global-coverage-plan.md) are outstanding, none begun. That
 document holds the definitions and the recommended order; the shape of it is:
 
-- **Sprint 16 — conflicts as first-class objects.** Conflicts discovered from UCDP and ACLED coding
+- **Sprint 16 — conflicts as first-class objects.** Now the highest-value item, and the
+  [conflict-coverage benchmark](tests/data/conflict-benchmark/RESULTS.md) is why. Scored against
+  UCDP's register rather than this project's own, the system can place 78% of the 319 conflicts
+  recorded worldwide in 2024 — but watches three, named in `Theatres.cs` by hand. Placement is no
+  longer the binding constraint; the register of what to watch is.
+  [ADR 034](docs/adr/034-conflict-coverage-benchmark.md). Conflicts discovered from UCDP and ACLED coding
   rather than hand-authored, membership as a predicate over actors as well as geography, AI assigning
   into that register but never defining it, tempo reported against a coverage denominator, and
   per-conflict narrative with an evidence floor.

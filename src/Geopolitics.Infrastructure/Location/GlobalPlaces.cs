@@ -12,6 +12,14 @@ namespace Geopolitics.Infrastructure.Location;
 /// those as "this name means two different places" would drop the most-reported place in a country.
 /// </param>
 /// <param name="Population">Inhabitants where the source records a figure, used only to break ties.</param>
+/// <param name="Admin1">
+/// The first-order administrative unit this place is in, in the source's own coding. An ADM1 row
+/// carries its own code here, so a unit contains itself.
+/// </param>
+/// <param name="Admin2">
+/// The second-order unit, where the source records one. Frequently blank even for places that plainly
+/// sit inside one, which is why containment falls back on distance rather than on this alone.
+/// </param>
 public sealed record GlobalPlace(
     string Name,
     double Latitude,
@@ -20,6 +28,8 @@ public sealed record GlobalPlace(
     PlacePrecision Precision,
     int Rank,
     int? Population,
+    string Admin1,
+    string Admin2,
     IReadOnlyList<string> Aliases);
 
 /// <summary>
@@ -148,9 +158,9 @@ public static class GlobalPlaces
 
         var fields = line.Split('\t');
 
-        // Eight fields exactly. Fewer means a truncated row; more means a tab reached a name, which
+        // Ten fields exactly. Fewer means a truncated row; more means a tab reached a name, which
         // the extractor refuses to emit and which would otherwise shift every column after it.
-        if (fields.Length != 8)
+        if (fields.Length != 10)
         {
             return false;
         }
@@ -193,7 +203,9 @@ public static class GlobalPlaces
             precision,
             rank,
             population,
-            fields[7].Length == 0 ? [] : fields[7].Split('|'));
+            fields[7],
+            fields[8],
+            fields[9].Length == 0 ? [] : fields[9].Split('|'));
 
         return true;
     }
