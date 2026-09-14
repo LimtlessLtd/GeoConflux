@@ -49,6 +49,9 @@ import {
 import {
   attributionLine, claimChip, claimSummary, heldClaimNote, isHeldClaim,
 } from './lib/attribution.js';
+import {
+  growthLine, hasOperations, holdingRows, journalLine, spanLine, storageLine,
+} from './lib/operations.js';
 
 (() => {
   'use strict';
@@ -184,6 +187,7 @@ import {
     coverageBreadth: document.querySelector('#coverageBreadth'),
     coverageCeiling: document.querySelector('#coverageCeiling'),
     coverageSources: document.querySelector('#coverageSources'),
+    operationsPanel: document.querySelector('#operationsPanel'),
     conflictList: document.querySelector('#conflictList'),
     conflictCoverage: document.querySelector('#conflictCoverage'),
     conflictUnassigned: document.querySelector('#conflictUnassigned'),
@@ -289,6 +293,10 @@ import {
       );
       return response.ok ? response.json() : null;
     },
+    async loadOperations() {
+      const response = await fetch('./api/operations', { headers: { Accept: 'application/json' } });
+      return response.ok ? response.json() : null;
+    },
   };
 
   /** Reads the snapshot a real pipeline run exported at build time. */
@@ -341,6 +349,12 @@ import {
         `./data/conflicts/${encodeURIComponent(token)}.json`,
         { headers: { Accept: 'application/json' } },
       );
+      return response.ok ? response.json() : null;
+    },
+    async loadOperations() {
+      // Describes the database this build created for itself and then discarded, which is what the
+      // panel says. Absent from an older snapshot, which leaves it empty rather than failing.
+      const response = await fetch('./data/operations.json', { headers: { Accept: 'application/json' } });
       return response.ok ? response.json() : null;
     },
   };
@@ -1334,6 +1348,64 @@ import {
     dom.coverageSources.append(list);
   }
 
+  /**
+   * What the host behind this page is holding.
+   *
+   * The panel that most needs to be read on the published page is the one that says the database
+   * was created for that build and thrown away with it. Without it the row counts read as the
+   * holdings of a system that has been watching, which is a claim this page is not entitled to make
+   * from a static host.
+   */
+  function renderOperations(report) {
+    dom.operationsPanel.replaceChildren();
+
+    if (!hasOperations(report)) {
+      return;
+    }
+
+    const card = document.createElement('article');
+    card.className = 'coverage-breadth-card';
+
+    const heading = document.createElement('h4');
+    heading.textContent = 'What this host holds';
+    card.append(heading);
+
+    const note = document.createElement('p');
+    note.className = 'coverage-caveat';
+    note.textContent = spanLine(report);
+    card.append(note);
+
+    const list = document.createElement('ul');
+    list.className = 'coverage-breadth-rows';
+
+    holdingRows(report).forEach((row) => {
+      const entry = document.createElement('li');
+
+      const label = document.createElement('span');
+      label.textContent = row.holds ? `${row.table} — ${row.holds}` : row.table;
+
+      const count = document.createElement('span');
+      count.className = 'coverage-breadth-count';
+      count.textContent = row.rows.toLocaleString('en-GB');
+
+      entry.append(label, count);
+      list.append(entry);
+    });
+
+    card.append(list);
+
+    [storageLine(report), journalLine(report), growthLine(report)]
+      .filter((line) => line)
+      .forEach((line) => {
+        const paragraph = document.createElement('p');
+        paragraph.className = 'coverage-caveat';
+        paragraph.textContent = line;
+        card.append(paragraph);
+      });
+
+    dom.operationsPanel.append(card);
+  }
+
   function renderChokepoints(analysis) {
     const entries = analysis?.chokepoints ?? [];
     dom.chokepointList.replaceChildren();
@@ -1766,7 +1838,7 @@ import {
   }
 
   async function loadSnapshotState() {
-    const [loadedIncidents, loadedObservations, chokepoints, coverage, conflicts] = await Promise.all([
+    const [loadedIncidents, loadedObservations, chokepoints, coverage, conflicts, operations] = await Promise.all([
       dataSource.loadIncidents(),
       dataSource.loadObservations(),
 
@@ -1781,6 +1853,9 @@ import {
       // And again. The conflicts panel is the newest of the three, so an older snapshot is the
       // expected case rather than an error.
       dataSource.loadConflicts?.(CONFLICT_WINDOW).catch(() => null) ?? null,
+
+      // And again, for the newest of all of them.
+      dataSource.loadOperations?.().catch(() => null) ?? null,
     ]);
 
     incidents.clear();
@@ -1798,6 +1873,7 @@ import {
     renderFeed();
     renderChokepoints(chokepoints);
     renderCoverage(coverage);
+    renderOperations(operations);
     renderConflicts(conflicts);
   }
 

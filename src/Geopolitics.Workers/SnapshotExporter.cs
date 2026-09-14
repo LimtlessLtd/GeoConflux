@@ -6,6 +6,7 @@ using Geopolitics.Application.Analytics;
 using Geopolitics.Application.Conflicts;
 using Geopolitics.Application.Coverage;
 using Geopolitics.Application.Contracts;
+using Geopolitics.Application.Operations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -229,6 +230,17 @@ public static partial class SnapshotExporter
             .BuildAsync(cancellationToken);
 
         await WriteJsonAsync(Path.Combine(outputDirectory, "coverage.json"), coverage, cancellationToken);
+
+        // What the run itself held, exported for the same reason coverage is: the page has no
+        // backend to ask. On a build this describes a database that was created minutes ago and is
+        // deleted with the job, and the report says so rather than being dressed up as the state of
+        // a long-running host - the growth projection declines outright below a week of records.
+        // That refusal is the panel's most useful output here, because it is the difference between
+        // the two deployments stated by the data rather than by a caption.
+        var operations = await scope.ServiceProvider.GetRequiredService<IOperationsService>()
+            .BuildAsync(cancellationToken);
+
+        await WriteJsonAsync(Path.Combine(outputDirectory, "operations.json"), operations, cancellationToken);
 
         // What this run saw about each conflict, per window, for the same reason analytics are
         // exported per window: the published page has no backend to ask. Narratives are deliberately

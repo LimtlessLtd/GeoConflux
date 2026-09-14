@@ -4,6 +4,7 @@ using Geopolitics.Application.Analytics;
 using Geopolitics.Application.Conflicts;
 using Geopolitics.Application.Coverage;
 using Geopolitics.Application.Enrichment;
+using Geopolitics.Application.Operations;
 using Geopolitics.Application.Pipeline;
 using Geopolitics.Application.Spatial;
 using Geopolitics.Infrastructure.Ai;
@@ -47,6 +48,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAnalyticsRepository, EfAnalyticsRepository>();
         services.AddScoped<ICoverageRepository, EfCoverageRepository>();
         services.AddScoped<IConflictActivityRepository, EfConflictActivityRepository>();
+
+        // What the host holds rather than what it has reached. Scoped like every other repository,
+        // and measured on demand: a cached figure would answer questions about a database that has
+        // moved on, and the whole point of it is to be current enough to decide retention against.
+        services.AddScoped<IOperationsRepository, SqliteOperationsRepository>();
+        services.AddScoped<IOperationsService, OperationsService>();
         services.AddScoped<IIncidentQueryService, IncidentQueryService>();
         services.AddScoped<ISpatialQueryService, SpatialQueryService>();
         services.AddScoped<IAnalyticsService, AnalyticsService>();

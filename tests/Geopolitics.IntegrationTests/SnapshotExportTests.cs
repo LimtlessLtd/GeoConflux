@@ -80,6 +80,19 @@ public sealed class SnapshotExportTests
         // snapshot, which is the quieter and more misleading of the two failures.
         Assert.Equal(EnvelopeCount, processed);
 
+        // The published page carries what the run itself held, so the row counts on it describe a
+        // database created for that build. Exporting it is what lets the page say so rather than
+        // leaving a reader to assume a host that has been watching.
+        var operations = JsonDocument.Parse(
+            await File.ReadAllTextAsync(Path.Combine(directory, "operations.json"), CancellationToken.None));
+
+        var observations = operations.RootElement
+            .GetProperty("holdings").GetProperty("tables").EnumerateArray()
+            .Single(table => table.GetProperty("table").GetString() == "observations")
+            .GetProperty("rows").GetInt64();
+
+        Assert.Equal(EnvelopeCount, observations);
+
         Directory.Delete(directory, recursive: true);
     }
 

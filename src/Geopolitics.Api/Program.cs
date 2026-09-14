@@ -160,6 +160,7 @@ spatial.MapGet(
 
 app.MapObservationEndpoints();
 app.MapAnalyticsEndpoints();
+app.MapOperationsEndpoints();
 app.MapSeverityEndpoints();
 app.MapHub<IncidentHub>(IncidentHub.Path);
 
