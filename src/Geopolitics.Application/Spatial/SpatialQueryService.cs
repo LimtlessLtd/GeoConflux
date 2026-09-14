@@ -1,5 +1,6 @@
 using Geopolitics.Application.Abstractions;
 using Geopolitics.Application.Contracts;
+using Geopolitics.Application.Operations;
 using Geopolitics.Domain;
 
 namespace Geopolitics.Application.Spatial;
@@ -23,12 +24,20 @@ namespace Geopolitics.Application.Spatial;
 public sealed class SpatialQueryService(
     IIncidentRepository incidentRepository,
     IChokepointCatalogue chokepoints,
+    SpatialScaleLog scale,
     TimeProvider timeProvider) : ISpatialQueryService
 {
     /// <summary>
     /// Ceiling on rows pulled from one rectangle before exact distances are measured. The box can be
     /// much larger than the circle inside it, so this bounds the cost of a deliberately wide search
     /// rather than the size of any sensible answer.
+    /// <para>
+    /// Reaching it is the measurement that triggers the move to PostGIS, and the reason is that the
+    /// failure is one of correctness rather than of speed: the rows beyond the cap are never
+    /// measured, so the search silently becomes "the most recent capful inside the rectangle" and
+    /// the chokepoint panel's count becomes the cap rather than the truth. Every search therefore
+    /// records whether it got there. See <see cref="SpatialScaleLog"/>.
+    /// </para>
     /// </summary>
     private const int MaxCandidates = 1_000;
 
@@ -96,6 +105,12 @@ public sealed class SpatialQueryService(
     {
         var box = GeoBoundingBox.FromRadius(latitude, longitude, radiusKilometres);
         var candidates = await incidentRepository.ListWithinAsync(box, occurredAfter, MaxCandidates, cancellationToken);
+
+        // Recorded before anything is filtered, because what matters is how many rows the rectangle
+        // returned rather than how many survived the circle. A search that came back with the full
+        // capful is a search whose answer is incomplete and does not say so.
+        scale.Record(candidates.Count, MaxCandidates);
+
         var centre = new GeoLocation("search", null, latitude, longitude);
         var matches = new List<NearbyIncident>(candidates.Count);
 

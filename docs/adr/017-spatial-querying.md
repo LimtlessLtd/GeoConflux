@@ -78,3 +78,31 @@ would either miss the approaches to one or sweep unrelated activity into the oth
   even though the correlator will not merge the two, because correlation pre-filters by event type
   (ADR 016). Spatial proximity and incident correlation answer different questions, and the
   chokepoint view is where the corroborative value of satellite data actually becomes visible.
+
+## Revisited 2026-09-14: the trigger that ends this decision
+
+The consequence above says "at a volume where it mattered, the interface is where the replacement
+goes". Sprint 17 was asked to name the volume, as a measurement rather than a date, and the answer
+turned out to be sharper than a latency threshold.
+
+**The trigger is a spatial search returning the full candidate cap.**
+
+`SpatialQueryService` pulls at most 1,000 rows from the rectangle before measuring exact distances
+over them, and that cap is what bounds the cost of a deliberately wide search. Below it the two
+stages together give a *complete and exact* answer: the rectangle narrows, the great-circle distance
+decides, and the price is a few hundred rows of trigonometry.
+
+At the cap the arrangement stops answering the question it was asked. The rows beyond it are never
+measured, so "incidents within 50 km of here" silently becomes "the most recent thousand inside the
+rectangle, then filtered by distance", and the chokepoint panel's count becomes the cap rather than a
+count. The failure is one of **correctness, and it is silent** — which is the worst combination
+available and the reason this is the trigger rather than a latency figure.
+
+It is also not fixable inside this decision. Raising the cap trades a wrong answer for a slow one.
+Tuning the index does nothing, because an index can narrow a rectangle and cannot narrow a distance;
+narrowing a distance is exactly the capability a spatial index provides and this does not have.
+
+So every search now records how many rows its rectangle returned, and the operations report publishes
+the count, the largest rectangle so far, and whether any search has reached the cap. Sprint 14 owns
+the migration to PostGIS; this records the number that starts it, and the page states it the moment
+it is reached rather than leaving it to be noticed.

@@ -1,4 +1,5 @@
 using Geopolitics.Application.Abstractions;
+using Geopolitics.Application.Operations;
 using Geopolitics.Application.Spatial;
 using Geopolitics.Domain;
 using Geopolitics.UnitTests.Fakes;
@@ -241,7 +242,10 @@ public sealed class SpatialQueryServiceTests
             Build(new FakeIncidentRepository()).Method);
 
     private static SpatialQueryService Build(FakeIncidentRepository repository) =>
-        new(repository, new TestChokepointCatalogue(), new FakeTimeProvider(Now));
+        Build(repository, new SpatialScaleLog());
+
+    private static SpatialQueryService Build(FakeIncidentRepository repository, SpatialScaleLog scale) =>
+        new(repository, new TestChokepointCatalogue(), scale, new FakeTimeProvider(Now));
 
     private static GeopoliticalIncident Incident(
         string title,

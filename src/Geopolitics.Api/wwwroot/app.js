@@ -51,7 +51,7 @@ import {
 } from './lib/attribution.js';
 import {
   backupLine, downtimeLine, downtimeRows, growthLine, hasOperations, holdingRows, journalLine,
-  retentionBoundary, retentionLine, spanLine, storageLine,
+  retentionBoundary, retentionLine, spanLine, spatialScaleLine, storageLine,
 } from './lib/operations.js';
 
 (() => {
@@ -1403,6 +1403,7 @@ import {
       retentionLine(report),
       retentionBoundary(report),
       downtimeLine(report),
+      spatialScaleLine(report),
     ]
       .filter((line) => line)
       .forEach((line) => {

@@ -13,6 +13,7 @@ import {
   retentionBoundary,
   retentionLine,
   spanLine,
+  spatialScaleLine,
   storageLine,
 } from '../../src/Geopolitics.Api/wwwroot/lib/operations.js';
 
@@ -71,6 +72,14 @@ const report = (overrides = {}) => ({
     note: 'No source has ever polled on this host, so it cannot say when it was last running. '
       + 'That is not a statement that it has always been up.',
   },
+  spatialScale: {
+    searches: 12,
+    truncated: 0,
+    largestCandidateSet: 40,
+    candidateCap: 1000,
+    triggerReached: false,
+    trigger: 'Move to PostGIS when a spatial search returns the full candidate cap.',
+  },
   measuredAt: '2026-09-14T12:00:00Z',
   ...overrides,
 });
@@ -98,6 +107,21 @@ test('a malformed or missing payload leaves the panel empty rather than throwing
   assert.equal(retentionBoundary(null), '');
   assert.equal(downtimeLine(null), '');
   assert.deepEqual(downtimeRows(null), []);
+  assert.equal(spatialScaleLine(null), '');
+});
+
+test('the spatial trigger speaks up only once the answers stop being complete', () => {
+  // Below the cap the arrangement is exact and a standing line would be noise. Above it the panel
+  // has to speak, because the failure is silent: a count reads as a count and is a cap.
+  assert.equal(spatialScaleLine(report()), '');
+
+  const tripped = spatialScaleLine(report({
+    spatialScale: { ...report().spatialScale, truncated: 3, triggerReached: true },
+  }));
+
+  assert.match(tripped, /3 spatial searches returned the full 1000-row candidate cap/);
+  assert.match(tripped, /floors rather than totals/);
+  assert.match(tripped, /PostGIS/);
 });
 
 test('a host with nothing polling says it cannot tell, not that it never went down', () => {

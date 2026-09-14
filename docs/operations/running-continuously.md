@@ -299,3 +299,26 @@ Invoke-RestMethod http://localhost:5266/api/operations | ConvertTo-Json -Depth 5
 
 The third is the interesting one. If the machine was off for a fortnight, the downtime ledger will
 have recorded the gap at startup and the operations report will name it.
+
+## When this outgrows SQLite
+
+Sprint 14 owns the migration to PostGIS. What belongs here is the measurement that would start it,
+because "when we get big" is a way of never deciding.
+
+**The trigger is a spatial search returning the full candidate cap.** The search narrows with an
+indexable rectangle and then measures exact great-circle distance over what the rectangle returned,
+capped at 1,000 rows ([ADR 017](../adr/017-spatial-querying.md)). Below that cap the answer is
+complete and exact. At it, the rows beyond the cap are never measured — so "incidents within 50 km"
+quietly becomes "the most recent thousand in the rectangle, then filtered", and the chokepoint
+panel's count becomes the cap rather than a count.
+
+That is a correctness failure and a silent one, which is why it is the trigger rather than a latency
+figure. Raising the cap trades a wrong answer for a slow one; tuning the index does nothing, because
+an index can narrow a rectangle and cannot narrow a distance.
+
+The operations report publishes how many spatial searches this host has served, the largest rectangle
+any of them returned, and whether any reached the cap. The panel says so the moment one does.
+
+Two other numbers on the same panel are worth watching, though neither is a trigger on its own: the
+projected yearly growth, which is what decides the retention horizon, and the prunable count, which is
+what decides whether the horizon is doing anything.

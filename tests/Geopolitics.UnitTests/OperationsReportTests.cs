@@ -264,6 +264,37 @@ public sealed class OperationsReportTests
         Assert.Contains("at least as long as it says", report.Downtime.Note, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task ThePostgisTriggerIsAMeasurementRatherThanADate()
+    {
+        var scale = new SpatialScaleLog();
+        scale.Record(candidates: 40, candidateCap: 1_000);
+
+        var report = await BuildAsync(Measurement(), spatialScale: scale);
+
+        Assert.False(report.SpatialScale.TriggerReached);
+        Assert.Equal(1, report.SpatialScale.Searches);
+        Assert.Equal(40, report.SpatialScale.LargestCandidateSet);
+        Assert.Contains("full candidate cap", report.SpatialScale.Trigger, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ASearchThatFilledTheCandidateCapTripsTheTrigger()
+    {
+        // The failure is correctness, not speed, and it is silent: rows beyond the cap are never
+        // measured, so the chokepoint panel reports the cap as though it were a count.
+        var scale = new SpatialScaleLog();
+        scale.Record(candidates: 40, candidateCap: 1_000);
+        scale.Record(candidates: 1_000, candidateCap: 1_000);
+
+        var report = await BuildAsync(Measurement(), spatialScale: scale);
+
+        Assert.True(report.SpatialScale.TriggerReached);
+        Assert.Equal(1, report.SpatialScale.Truncated);
+        Assert.Equal(1_000, report.SpatialScale.LargestCandidateSet);
+        Assert.Contains("no index fixes it", report.SpatialScale.Trigger, StringComparison.Ordinal);
+    }
+
     private static DatabaseMeasurement Measurement() => new(
         [new TableRowCount("observations", 24)],
         DatabaseBytes: 409_600,
@@ -279,11 +310,13 @@ public sealed class OperationsReportTests
     private static async Task<OperationsReport> BuildAsync(
         DatabaseMeasurement measurement,
         IReadOnlyList<SourceLiveness>? sources = null,
-        IReadOnlyList<DowntimeRecord>? periods = null)
+        IReadOnlyList<DowntimeRecord>? periods = null,
+        SpatialScaleLog? spatialScale = null)
     {
         var service = new OperationsService(
             new StubRepository(measurement),
             new StubContinuity(sources ?? [], periods ?? []),
+            spatialScale ?? new SpatialScaleLog(),
             new FakeTimeProvider(Now));
 
         return await service.BuildAsync(CancellationToken.None);

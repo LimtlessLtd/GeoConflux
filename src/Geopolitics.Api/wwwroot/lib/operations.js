@@ -207,6 +207,30 @@ export function downtimeRows(report) {
 }
 
 /**
+ * Whether the spatial search has stopped giving complete answers.
+ *
+ * Shown only once it has. Below the candidate cap the rectangle-then-distance arrangement is exact,
+ * and a standing line saying so would be one more sentence readers learn to skip — on the day it
+ * changed. Above it the panel has to speak up, because the failure is silent by construction: the
+ * rows beyond the cap were never measured, so a count reads as a count and is a cap.
+ */
+export function spatialScaleLine(report) {
+  const scale = report?.spatialScale;
+  if (!scale?.triggerReached) return '';
+
+  const truncated = asCount(scale.truncated);
+  const cap = asCount(scale.candidateCap);
+
+  // Not `plural`, which appends a bare "s" and would produce "searchs". A helper that is wrong for
+  // the word in front of it is worse than spelling the word out here.
+  const searches = `${truncated} spatial search${truncated === 1 ? '' : 'es'}`;
+
+  return `${searches} returned the full ${cap}-row candidate cap, so `
+    + 'incidents beyond it were never measured and the counts above are floors rather than totals. '
+    + 'This is the stated trigger for moving to PostGIS.';
+}
+
+/**
  * What a year at the current rate would cost, or why that was not answered.
  *
  * The refusal is passed through rather than replaced with a zero. A projection declined for want of

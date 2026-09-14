@@ -120,6 +120,26 @@ public sealed record DowntimeStanding(
     string Note);
 
 /// <summary>
+/// Whether the spatial search this deployment uses is still giving complete answers.
+/// </summary>
+/// <param name="Searches">Spatial searches this host has served.</param>
+/// <param name="Truncated">
+/// How many of them came back with the full candidate cap, meaning rows the circle would have
+/// accepted were never measured.
+/// </param>
+/// <param name="LargestCandidateSet">The most rows any one rectangle returned.</param>
+/// <param name="CandidateCap">What a rectangle is allowed to return.</param>
+/// <param name="TriggerReached">Whether the condition for moving to PostGIS has been met.</param>
+/// <param name="Trigger">The condition, written down so it is a measurement rather than a date.</param>
+public sealed record SpatialScaleStanding(
+    long Searches,
+    long Truncated,
+    int LargestCandidateSet,
+    int CandidateCap,
+    bool TriggerReached,
+    string Trigger);
+
+/// <summary>
 /// What a host that has been left running can say about itself.
 /// <para>
 /// Separate from the coverage report, which answers a different question. Coverage is about the
@@ -133,12 +153,14 @@ public sealed record DowntimeStanding(
 /// <param name="Backups">Whether any of it would survive the disk it is on.</param>
 /// <param name="Retention">What it is throwing away, and what it will not.</param>
 /// <param name="Downtime">When it was not running, and whether it can tell.</param>
+/// <param name="SpatialScale">Whether its spatial search is still answering the question asked.</param>
 /// <param name="MeasuredAt">When these figures were taken.</param>
 public sealed record OperationsReport(
     HoldingsReport Holdings,
     BackupStanding Backups,
     RetentionStanding Retention,
     DowntimeStanding Downtime,
+    SpatialScaleStanding SpatialScale,
     DateTimeOffset MeasuredAt);
 
 /// <summary>States what this host holds and how it has been running.</summary>
@@ -159,6 +181,7 @@ public interface IOperationsService
 public sealed class OperationsService(
     IOperationsRepository repository,
     IContinuityService continuity,
+    SpatialScaleLog spatialScale,
     TimeProvider timeProvider) : IOperationsService
 {
     /// <summary>
@@ -218,7 +241,33 @@ public sealed class OperationsService(
             Standing(measurement.Backups, now),
             Standing(measurement.Retention),
             await DowntimeAsync(now, cancellationToken),
+            Standing(spatialScale),
             now);
+    }
+
+    /// <summary>
+    /// States the condition that would move this project to PostGIS, and whether it has been met.
+    /// <para>
+    /// Sprint 14 owns the migration; this owns the trigger, written as a measurement because "when
+    /// we get big" is a way of never deciding. The measurement is not latency: while the candidate
+    /// cap is not reached, the rectangle-then-distance arrangement gives a complete and exact answer
+    /// for the price of a few hundred rows of trigonometry. Reaching it is a correctness failure
+    /// rather than a slow one, and it is silent — the rows beyond the cap are never measured, so the
+    /// chokepoint panel reports the cap as though it were a count.
+    /// </para>
+    /// </summary>
+    private static SpatialScaleStanding Standing(SpatialScaleLog log)
+    {
+        var (searches, truncated, largest, cap) = log.Read();
+
+        const string Trigger =
+            "Move to PostGIS when a spatial search returns the full candidate cap. Below it the "
+            + "rectangle narrows and the great-circle distance decides, which is exact. At it, rows "
+            + "the circle would have accepted were never measured, so the answer is a sample "
+            + "presented as a count. Raising the cap trades a wrong answer for a slow one, and no "
+            + "index fixes it: an index can narrow a rectangle and cannot narrow a distance.";
+
+        return new SpatialScaleStanding(searches, truncated, largest, cap, truncated > 0, Trigger);
     }
 
     /// <summary>

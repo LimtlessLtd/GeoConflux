@@ -74,6 +74,11 @@ public static class ServiceCollectionExtensions
         // see the note on the type.
         services.AddSingleton<RetentionLog>();
 
+        // Singleton for the same reason, and it answers a question this sprint was asked to answer
+        // with a number rather than a date: what measurement triggers the move to PostGIS. Written
+        // by every spatial search, read by the operations report.
+        services.AddSingleton<SpatialScaleLog>();
+
         // Bound here rather than beside the hosted service because the operations report states the
         // policy whether or not any host is running it, and a report that could not name the horizon
         // would be reporting a prunable count against an unstated rule.
