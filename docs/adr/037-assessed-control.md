@@ -83,6 +83,24 @@ It follows that:
 Tier A alone can assert on its own authority. Tier B requires corroboration, exactly as a claim about
 an event does. Tier C never asserts alone and only ever supports.
 
+### The model tier is specified and not built
+
+Tiers A and B are built. **Tier C is not**, and it is recorded here in the pattern
+[ADR 025](025-agent-collected-osint.md) established rather than left looking forgotten.
+
+Three reasons, and the first is the one that decides it. **Tier C never asserts on its own** — it only
+ever supports an assertion the other two tiers already reached, so its absence changes no verdict
+this system publishes; it only makes some assessments thinner than they could be. Second, it cannot
+run on a clone: classification needs a provider, the offline stand-in deliberately declines
+judgement calls, and a tier that is inert in every default deployment is a poor place to spend the
+first increment. Third, the deterministic detector turned out to cover the common case well enough
+that the model's marginal contribution is unmeasured — and adding an unmeasured model call to a
+feature whose entire argument is *checkable* would be the wrong order to do things in.
+
+It should be built when there is a deployment with a provider and enough prose volume to measure the
+difference, and the measurement should be the same shape as the conflict-assignment one: how many
+places move from insufficient to assessed, and how many of those a reader would agree with.
+
 ### The model classifies; it does not supply
 
 Tier C is where a language model earns its place, and the boundary is the one this repository has
@@ -160,6 +178,13 @@ generated. That is now too strong in one direction and too weak in another. The 
   derived, with the reasoning visible. This publishes an assessment. The four disciplines above are
   what keep it inside the same standard, and if any one of them is dropped the feature should be
   withdrawn rather than qualified.
+- **The actor an assessment names is the source's wording as this system read it**, which is not the
+  same as the source's wording. Entity extraction produced "Coalition Forces" from prose saying
+  "Northern Coalition Forces" in the integration test that proves the path, and that is visible
+  rather than hidden precisely because the assessment publishes its evidence. An assessment naming a
+  party imprecisely is a thing a reader can catch; the alternative — normalising actor names to
+  register keys — would have produced a tidier name and destroyed the only text the reading could be
+  checked against.
 - **Staleness will be the most common failure mode**, not error. Places assessed once and never
   revisited will accumulate, and the horizon is what stops them reading as current. That horizon is a
   configuration value and choosing it needs the same measure-before-deciding treatment retention got.

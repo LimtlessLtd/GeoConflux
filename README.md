@@ -375,6 +375,14 @@ Full per-class tables, every case where the two disagreed, the labelling rubric,
   times the radius. SpatiaLite was evaluated and rejected on measured grounds — its native library
   ships for Windows only in the NuGet package, and this project builds and publishes on Linux
   ([ADR 017](docs/adr/017-spatial-querying.md)).
+- **Control is assessed from evidence that travels with the assessment, or it is not asserted.** Who
+  holds a place is worked out from reports that are about who holds it — coded territorial change,
+  and corroborated capture claims — never from reports of fighting, because event density says where
+  fighting was reported rather than who holds the ground. Every assessment carries the identifiers of
+  the records behind it and the age of the newest; past thirty days it reads as *last asserted* and
+  says that silence is not evidence it still holds. Nothing is interpolated between assessed places,
+  so there is no front line to mistake for one
+  ([ADR 037](docs/adr/037-assessed-control.md)).
 - **A host left running says what it holds, and deletes only what no incident rests on.** Row counts,
   database size and reclaimable pages are published so a retention policy is chosen against a number;
   retention itself ships off, deletes only duplicates and failures, and never touches evidence behind
@@ -506,6 +514,7 @@ credential is ever read from a committed file.
 | `GET /api/analytics/coverage` | What was placed per theatre and per country, and what the gaps are |
 | `GET /api/analytics/conflicts` | Per-conflict reporting volume, each figure beside the number of sources that produced it |
 | `GET /api/operations` | What this host holds, what it prunes, when it was not running, and whether its spatial search is still complete |
+| `GET /api/control` | Who is assessed to hold each place, the records behind it, and how old they are |
 | `GET /api/health` | Health, including processing-queue depth and saturation |
 | `/hubs/incidents` | SignalR hub for realtime updates |
 | `GET /openapi/v1.json` | OpenAPI document |
@@ -563,6 +572,10 @@ credential is ever read from a committed file.
 | `Backup:Directory` | empty | Where copies go. Empty means none are taken; there is no default, because the only possible default is beside the original. |
 | `Backup:Interval` | 24:00:00 | Measured from the newest copy on disk rather than from start-up |
 | `Backup:Keep` | 7 | Copies kept. Older ones are rotated only after a new one has verified. |
+| `Control:Window` | 90 days | How far back control evidence is read at all |
+| `Control:StaleAfter` | 30 days | After this an assessment reads as *last asserted*, never as *held* |
+| `Control:ContestWindow` | 14 days | How close two actors' claims must be before a place is called contested rather than changed hands |
+| `Control:MinimumClaimSources` | 2 | Independent sources an uncoded claim needs before it asserts anything. Coded evidence is exempt. |
 
 ### Datasets are archives, not feeds
 
@@ -772,7 +785,7 @@ is still verified by loading the page rather than by a test.
 
 ## Not yet implemented
 
-Twelve limitations worth stating plainly:
+Thirteen limitations worth stating plainly:
 
 - **The severity model learned one author's rubric, not geopolitics.** It is trained on 140
   synthetic, author-labelled reports and scores 0.56 accuracy on 45 held-out cases against the
@@ -822,6 +835,12 @@ Twelve limitations worth stating plainly:
   country. Fifty-two countries are held by fewer than twenty names each. See
   [the global coverage assessment](docs/global-coverage-plan.md) for what remains and in what
   order.
+- **Assessed control is built and dormant.** The strongest evidence for it — a coder asserting
+  territory changed hands — arrives only with an ACLED credential, and the claim path needs two
+  independent sources reporting the same capture. A credential-free clone therefore assesses nothing,
+  and the panel says that is a statement about what was collected rather than about the world. The
+  model tier that would read administrative signals out of prose is specified and not built, and
+  recorded as such: it never asserts on its own, so its absence changes no verdict.
 - **Nothing exercises the Windows service installation.** CI runs on Ubuntu, so `tools/service/install.ps1`
   — `sc.exe`, the service control manager, and the registry environment block it writes — is
   documented and unverified by any automated check, the same standing caveat the container build

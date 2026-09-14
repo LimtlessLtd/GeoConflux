@@ -297,6 +297,33 @@ Every figure it produces carries the number of sources that produced it. See
 [ADR 035](adr/035-conflicts-as-first-class-objects.md) for why, and for what the register does not
 mean: a country in a conflict's geography is where its events happened, never an attribution.
 
+## Assessed control
+
+The one place this system publishes a **conclusion** rather than a record or a derivation, which is
+why [ADR 037](adr/037-assessed-control.md) constrains it more tightly than anything else here.
+
+An assessment is a four-part claim and all four parts are published: *as of T, actor A is assessed to
+hold place P, on evidence E, by method M*. E is a list of observation identifiers rather than a
+count, because an assessment a reader cannot trace back to records is a guess wearing one's clothes.
+
+- **Evidence comes from reports about holding a place, never from reports of fighting.** Coded
+  territorial change — three ACLED sub-event types — asserts on its own authority, because a named
+  organisation's coder made the call against published criteria. A capture claim in prose is detected
+  deterministically and needs two independent sources, which is the corroboration gate's number for
+  the corroboration gate's reason.
+- **Silence produces staleness, never a continued assertion.** Past the horizon an assessment reads
+  as *last asserted N days ago* and says that silence is not evidence it still holds.
+- **Contested is a first-class answer.** Two actors claimed inside the contest window means both are
+  shown and neither is preferred; averaging them would manufacture a consensus that does not exist.
+- **Assessment is per place and nothing is interpolated between places.** A polygon through two
+  assessed points asserts control of everything between them. The absence of a front line is a
+  property of the data model rather than a rendering convention, and the map's caveat says that
+  joining the markers up would be the reader's inference rather than this system's.
+
+`ControlSignal` on an observation is set at ingestion, and the per-place assessment is computed on
+demand from those — the same split conflict membership uses, and it means the evidence behind an
+assessment *is* the observation table rather than a copy of it.
+
 ## Spatial queries
 
 Two stages, because a database can index a coordinate but not a distance.

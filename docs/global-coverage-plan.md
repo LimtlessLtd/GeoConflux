@@ -459,6 +459,13 @@ Three tiers, in descending order of defensibility, and they should be built in t
    corroboration gate already governs exactly that shape. The hard part is placement, not policy,
    which makes this dependent on Sprint 10.
 
+**Tiers one and three were built early, 2026-09-14**, as assessed control rather than as an activity
+surface — see [ADR 037](adr/037-assessed-control.md). What was built is not the actor-activity layer
+this tier list describes: that layer answers *where has this actor been coded as active*, which the
+ADR is explicit is evidence about a place rather than a claim to hold it. Assessed control answers
+*who holds this*, from reports that are about holding it. Tier two, the published control geometry,
+is untouched and still waits on the licence question.
+
 Two rules hold across all three:
 
 - **Never render a single merged front line.** Two sources disagreeing about who holds a town is
@@ -494,14 +501,23 @@ honest ceiling is set by things no amount of engineering moves:
   parts need a budget rather than a weekend. One deployment decision moves this a long way: run the
   host on a machine you own with a local model behind [ADR 004](adr/004-ai-provider-abstraction.md),
   and enrichment's marginal cost goes to zero, which is most of what makes Sprint 14 expensive.
-- **Analyst products are not pipeline products.** An assessed control-of-terrain map, a signed
-  judgement of the form *X is likely attempting Y*, and the frame-by-frame geolocation of combat
-  footage are all made by people. A model writes the sentence in a second; what it cannot produce is
+- **Analyst products are not pipeline products** — and this one has been narrowed since it was
+  written. See the correction below. A signed judgement of the form *X is likely attempting Y* and
+  the frame-by-frame geolocation of combat footage are made by people. A model writes the sentence in a second; what it cannot produce is
   the institution standing behind it, and an unaccountable confident sentence is the one artefact
   this architecture has repeatedly decided against publishing. Sprint 19 builds the layer underneath
   the assessment — asserted control, with provenance and disagreement intact — and stops there. If
   the judgement layer is wanted later, the honest route is a named human writing over this data,
   which is what a good aggregation layer is for.
+
+**Corrected, 2026-09-14.** The paragraph above was right that this system cannot produce *ISW's*
+product and was used to conclude more than that: it read as ruling out assessing control at all.
+[ADR 037](adr/037-assessed-control.md) narrows it. The two artefacts differ in where the authority
+sits — an analyst's polygon is authoritative because of who drew it and a reader cannot test it,
+while an assessment that carries its evidence, names its method and states its own age is
+authoritative only as far as its evidence reaches and is therefore checkable. The second is
+buildable, and is built. What remains out of reach is unchanged: the institution standing behind a
+judgement, and the analyst who re-draws it daily.
 
 So the target worth aiming at is not "every conflict". It is **globally tasked, honestly measured,
 and deep where the data supports it** — with the panel saying exactly where it is thin. This project

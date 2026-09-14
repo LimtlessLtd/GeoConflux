@@ -2847,6 +2847,45 @@ rectangle and cannot narrow a distance. And a credential-free clone's downtime l
 **nothing**, because nothing polls — so the panel says it has no record of its own uptime rather than
 reporting no downtime, which is the same distinction as an empty map not meaning peace.
 
+Assessed control (Sprint 20):
+
+Built out of order, because the question it answers — *who holds this place* — turned out to be the
+one thing the register, the gazetteer and the corroboration gate had made reachable without any of
+the sprints between. [ADR 037](docs/adr/037-assessed-control.md) records the design and the
+correction it rests on.
+
+1. **The recorded position was narrowed rather than broken.** An assessed control-of-terrain map was
+   recorded as out of reach because it is an analyst product. That is right about *ISW's* artefact —
+   a polygon authoritative because of who drew it, which a reader cannot test — and it was being used
+   to rule out more than it establishes. An assessment that carries its evidence, names its method
+   and states its own age is checkable, which the analyst product is not, and is a different thing
+   with a different claim attached.
+2. **The strongest evidence was already being discarded.** ACLED codes three sub-event types that are
+   a human asserting territory changed hands. The parser read the field, built a headline from it,
+   and collapsed the rest into `MilitaryMovement` — the same defect Sprint 16 found with
+   `conflict_name`, found the same way.
+3. **Fighting is not control, and silence is not control either.** An actor coded as active somewhere
+   is evidence about that place; event density says where fighting was *reported*, which is a
+   function of where journalists and coders were. So silence produces staleness and never a continued
+   assertion, and past thirty days an assessment says plainly that silence is not evidence it still
+   holds.
+4. **Nothing is interpolated between assessed places.** A polygon through two assessed points asserts
+   control of everything between them, which nothing observed and nobody reported. Assessment is per
+   place, and the absence of a front line is a property of the model rather than a rule somebody has
+   to remember.
+5. **Capture claims are read out of ordinary prose**, deterministically and before any model runs.
+   The work is refusing the near misses — a soldier captured, a shipment seized, an assault abandoned
+   — every one of which would otherwise put a marker on a map claiming somebody holds a town.
+6. **The model tier is specified and not built**, recorded as such. It never asserts alone, so its
+   absence changes no verdict; it cannot run on a clone with no provider; and its marginal
+   contribution is unmeasured.
+
+It ships dormant, like the dataset adapters. Nothing coded reaches a credential-free clone, and the
+panel says that is a statement about what was collected rather than about the world. Three
+integration tests prove the whole path from prose to assessment instead — deliberately in the suite
+rather than in the published replay data, because that data is low-stakes by design and a fabricated
+claim that somebody took a real city is a stronger artefact than anything in it.
+
 ## What is left
 
 **Take Sprint 18 next.** It is what Sprint 17 was the prerequisite for: the downtime periods are now
@@ -2881,8 +2920,10 @@ changed:
 - **The FIRMS cropland mask** ([ADR 028](docs/adr/028-firms-conflict-filtering.md)) — needs a
   land-cover raster that cannot be committed, fetched hermetically, or honestly approximated. Three
   of the four filters exist; FIRMS stays disabled because three of four is not four.
-- **The territorial control layer** — deferred whole while the DeepState licence question is
-  unsettled.
+- **The territorial control layer from a published source** — still deferred while the DeepState
+  licence question is unsettled. What is *no longer* deferred is assessing control from evidence this
+  system already holds: [ADR 037](docs/adr/037-assessed-control.md) records why the two are different
+  artefacts, and the second is built.
 - **Troop movements** ([ADR 027](docs/adr/027-no-troop-movement-mapping.md)) — declined outright.
   No open source supports the claim, and this is a hard "must not" rather than a backlog item.
 
