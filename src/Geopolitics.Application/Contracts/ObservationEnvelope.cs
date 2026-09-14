@@ -69,6 +69,22 @@ public sealed record ObservationEnvelope
     /// </summary>
     public string? DeclaredConflictKey { get; init; }
 
+    /// <summary>
+    /// What the source's own coding says about who <em>holds</em> the place, as distinct from what
+    /// happened there.
+    /// <para>
+    /// Set only by adapters reading a conflict-coding project, for the same reason
+    /// <see cref="DeclaredConflictKey"/> is: a coder asserting that territory changed hands is an
+    /// assessment made by a named organisation against published criteria, and nothing this system
+    /// infers from the same record improves on it. Every other source leaves it null and is
+    /// classified downstream, or not at all.
+    /// </para>
+    /// </summary>
+    public ControlSignal? DeclaredControlSignal { get; init; }
+
+    /// <summary>The actor that signal is about, as the coding names them.</summary>
+    public string? DeclaredControlActor { get; init; }
+
     public EventType? DeclaredEventType { get; init; }
 
     public Severity? DeclaredSeverity { get; init; }

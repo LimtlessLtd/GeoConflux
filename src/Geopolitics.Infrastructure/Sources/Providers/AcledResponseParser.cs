@@ -22,7 +22,9 @@ public sealed record AcledEvent(
     string? LocationName,
     LocationPrecision Precision,
     DateTimeOffset? OccurredAt,
-    int Fatalities);
+    int Fatalities,
+    ControlSignal ControlSignal,
+    string? ControlActor);
 
 /// <param name="Events">The rows this parser could make sense of.</param>
 /// <param name="Truncated">
@@ -145,6 +147,17 @@ public static class AcledResponseParser
             return null;
         }
 
+        // The party the coding names first, which for both territorial sub-types is the one gaining
+        // control: "Government regains territory" and "Non-state actor overtakes territory" both put
+        // the taker in actor1.
+        var actor = Text(element, "actor1");
+
+        // A coded territorial transfer with nobody named is not evidence of control by anybody, so
+        // the signal is dropped rather than stored unattributed.
+        var controlSignal = string.IsNullOrWhiteSpace(actor)
+            ? ControlSignal.None
+            : MapControlSignal(subEventType);
+
         var latitude = Number(element, "latitude");
         var longitude = Number(element, "longitude");
 
@@ -168,7 +181,9 @@ public static class AcledResponseParser
             string.IsNullOrWhiteSpace(location) ? country : location,
             MapPrecision(Number(element, "geo_precision")),
             ParseDate(Text(element, "event_date")),
-            fatalities);
+            fatalities,
+            controlSignal,
+            controlSignal == ControlSignal.None ? null : actor);
     }
 
     /// <summary>
@@ -190,6 +205,40 @@ public static class AcledResponseParser
             var value when value.Contains("civilian", StringComparison.Ordinal) => EventType.Terrorism,
             var value when value.Contains("strategic development", StringComparison.Ordinal) => EventType.MilitaryMovement,
             _ => EventType.Other,
+        };
+    }
+
+    /// <summary>
+    /// Reads the one field in an ACLED record that is about <em>control</em> rather than about an
+    /// event.
+    /// <para>
+    /// Three of ACLED's sub-event types are a coder asserting that a place changed hands, and a
+    /// fourth that an actor established itself there. Until [ADR 037] this parser read the field,
+    /// used it to build a headline, and threw the distinction away at <c>MapEventType</c> — so the
+    /// strongest evidence about control available anywhere in this system was arriving and being
+    /// discarded, which is the same defect Sprint 16 found with <c>conflict_name</c>.
+    /// </para>
+    /// <para>
+    /// Matched on the sub-type alone and by substring, because the parent event type differs between
+    /// them: the two contested transfers are coded under Battles and the non-violent one under
+    /// Strategic developments.
+    /// </para>
+    /// </summary>
+    private static ControlSignal MapControlSignal(string subEventType)
+    {
+        var value = subEventType.ToLowerInvariant();
+
+        return value switch
+        {
+            var text when text.Contains("regains territory", StringComparison.Ordinal)
+                || text.Contains("overtakes territory", StringComparison.Ordinal)
+                || text.Contains("transfer of territory", StringComparison.Ordinal) => ControlSignal.TerritoryTransferred,
+
+            var text when text.Contains("headquarters or base established", StringComparison.Ordinal) => ControlSignal.PresenceEstablished,
+
+            // Everything else, which is nearly everything. An armed clash says where fighting was
+            // reported and says nothing about who holds the ground.
+            _ => ControlSignal.None,
         };
     }
 

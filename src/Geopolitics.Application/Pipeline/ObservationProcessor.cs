@@ -145,6 +145,17 @@ public sealed partial class ObservationProcessor(
             stage.Tag("conflict.basis", observation.ConflictBasis?.ToString() ?? "none");
         }
 
+        // After conflict assignment, because a control signal is only usable as evidence once the
+        // report has been placed and the actors are known. Like membership, it describes the
+        // evidence rather than gating it: an observation carrying one is stored, drawn and
+        // correlated exactly as any other.
+        using (var stage = diagnostics.StartStage(PipelineDiagnostics.Stages.ControlSignal))
+        {
+            RecordControlSignal(envelope, observation);
+            stage.Tag("control.signal", observation.ControlSignal.ToString());
+            stage.Tag("control.basis", observation.ControlBasis?.ToString() ?? "none");
+        }
+
         var incidentCreated = false;
 
         // Null means held: a claim nothing else supports, which is stored and shown and attached to
@@ -604,6 +615,40 @@ public sealed partial class ObservationProcessor(
             assignment.Memberships.Count > 0 ? assignment.Memberships[0].Basis : null,
             assignment.Candidates.Select(membership => membership.ConflictKey),
             assignment.Note);
+    }
+
+    /// <summary>
+    /// Records what this report says about who holds the place, when it says anything at all.
+    /// <para>
+    /// Only the coded path for now, and only the coded path asserts on its own authority: a
+    /// conflict-coding project's own sub-event type is a named organisation's coder stating that
+    /// territory changed hands, against published criteria, with a date and a coordinate. Nothing
+    /// this system could infer from the same record improves on it.
+    /// </para>
+    /// <para>
+    /// Everything else leaves <see cref="ControlSignal.None"/>, which is the correct answer for
+    /// almost every report including almost every report of fighting. An actor being coded as active
+    /// somewhere says where fighting was <em>reported</em>, which is a function of where journalists
+    /// and coders were as much as where soldiers were — so it is evidence about a place and is not a
+    /// claim to hold it. See docs/adr/037-assessed-control.md.
+    /// </para>
+    /// </summary>
+    private static void RecordControlSignal(ObservationEnvelope envelope, RawObservation observation)
+    {
+        if (envelope.DeclaredControlSignal is not { } signal || signal == Domain.ControlSignal.None)
+        {
+            return;
+        }
+
+        // An unattributed transfer is evidence of control by nobody. The adapter already drops one,
+        // and this is the second guard, because the cost of storing one is a row in the assessment
+        // that can never support an assertion and can never be checked.
+        if (string.IsNullOrWhiteSpace(envelope.DeclaredControlActor))
+        {
+            return;
+        }
+
+        observation.RecordControlSignal(signal, envelope.DeclaredControlActor, ControlEvidenceBasis.Coded);
     }
 
     /// <summary>

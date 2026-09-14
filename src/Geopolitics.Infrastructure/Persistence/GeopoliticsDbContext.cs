@@ -292,6 +292,28 @@ public sealed class GeopoliticsDbContext(DbContextOptions<GeopoliticsDbContext> 
         observation.Property(value => value.ConflictNote).HasColumnName("conflict_note").HasMaxLength(500);
         observation.Ignore(value => value.IsAssignedToConflict);
 
+        // What a report says about who holds a place, as distinct from what happened there. Stored
+        // as three columns rather than as a child table because they are read with their row and
+        // never joined against, which is the same reasoning the conflict columns above rest on.
+        observation.Property(value => value.ControlSignal)
+            .HasColumnName("control_signal")
+            .HasConversion<string>()
+            .HasMaxLength(40)
+            .IsRequired();
+        observation.Property(value => value.ControlActor)
+            .HasColumnName("control_actor")
+            .HasMaxLength(RawObservation.MaxControlActorLength);
+        observation.Property(value => value.ControlBasis)
+            .HasColumnName("control_basis")
+            .HasConversion<string>()
+            .HasMaxLength(20);
+        observation.Ignore(value => value.CarriesControlSignal);
+
+        // The assessment's read: every report carrying control evidence, newest first. Signal leads
+        // because it is overwhelmingly the selective half — almost every observation carries None,
+        // so filtering on it first discards nearly the whole table.
+        observation.HasIndex(value => new { value.ControlSignal, value.OccurredAt });
+
         // Deduplication depends on this constraint rather than on the read-then-insert check alone,
         // because concurrent processors can both pass that check for the same payload.
         observation.HasIndex(value => value.Fingerprint)

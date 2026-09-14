@@ -59,6 +59,8 @@ public sealed class PipelineDiagnostics : IDisposable
         public const string ScoreSeverity = "pipeline.score_severity";
         public const string ResolveLocation = "pipeline.resolve_location";
         public const string AssignConflict = "pipeline.assign_conflict";
+
+        public const string ControlSignal = "pipeline.control_signal";
         public const string Correlate = "pipeline.correlate";
         public const string Persist = "pipeline.persist";
         public const string Publish = "pipeline.publish";

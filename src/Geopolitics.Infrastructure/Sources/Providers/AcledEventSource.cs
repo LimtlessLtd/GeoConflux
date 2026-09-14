@@ -222,6 +222,12 @@ internal sealed partial class AcledEventSource : PollingEventSource
             DeclaredPrecision = record.Latitude is null ? null : record.Precision,
             DeclaredCountryCode = CountryCode(record.CountryName),
 
+            // The one coded field that is about control rather than about an event. Three of ACLED's
+            // sub-event types are a coder asserting a place changed hands; this carries that through
+            // instead of letting it dissolve into a headline. See docs/adr/037-assessed-control.md.
+            DeclaredControlSignal = record.ControlSignal,
+            DeclaredControlActor = record.ControlActor,
+
             // Coded by the provider, so stated rather than inferred. The pipeline keeps a declared
             // category over an enriched one, which is what makes this adapter worth having.
             DeclaredEventType = record.EventType,

@@ -241,6 +241,73 @@ public sealed class RawObservation
     public bool IsAssignedToConflict => conflictKeys.Count > 0;
 
     /// <summary>
+    /// What, if anything, this report says about who <em>holds</em> the place it describes.
+    /// <para>
+    /// Almost always <see cref="ControlSignal.None"/>, including for nearly every report of fighting,
+    /// and that is the correct answer rather than a gap: an actor fighting somewhere is evidence
+    /// about that place and is not a claim to hold it. See [ADR 037].
+    /// </para>
+    /// </summary>
+    public ControlSignal ControlSignal { get; private set; }
+
+    /// <summary>
+    /// The actor the control signal is about, as the source named them.
+    /// <para>
+    /// Stored as the source's own wording rather than resolved to a register key. A coding project
+    /// names parties its own way — UCDP writes "Government of Iran" where reporting writes something
+    /// else entirely — and normalising here would throw away the only text a reader could check the
+    /// assertion against.
+    /// </para>
+    /// </summary>
+    public string? ControlActor { get; private set; }
+
+    /// <summary>
+    /// Where the control signal came from, which is what decides the weight it can carry. Null
+    /// exactly when <see cref="ControlSignal"/> is <see cref="ControlSignal.None"/>.
+    /// </summary>
+    public ControlEvidenceBasis? ControlBasis { get; private set; }
+
+    /// <summary>Whether this report is usable as evidence about control at all.</summary>
+    public bool CarriesControlSignal => ControlSignal != ControlSignal.None;
+
+    /// <summary>
+    /// Records what this report says about control, and about whom.
+    /// <para>
+    /// Refuses a signal with no actor. "Territory changed hands" without naming who took it is not
+    /// evidence of control by anybody, and storing it would put a row into the assessment that could
+    /// never support an assertion and could never be checked.
+    /// </para>
+    /// </summary>
+    public void RecordControlSignal(ControlSignal signal, string? actor, ControlEvidenceBasis basis)
+    {
+        if (signal == ControlSignal.None)
+        {
+            ControlSignal = ControlSignal.None;
+            ControlActor = null;
+            ControlBasis = null;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(actor))
+        {
+            throw new DomainException(
+                "A control signal must name the actor it is about; an unattributed one cannot support an assertion.");
+        }
+
+        if (basis == ControlEvidenceBasis.None)
+        {
+            throw new DomainException("A control signal must record where it came from.");
+        }
+
+        ControlSignal = signal;
+        ControlActor = Cap(actor.Trim(), MaxControlActorLength);
+        ControlBasis = basis;
+    }
+
+    /// <summary>Generous enough for a coded party name, which is the longest form these take.</summary>
+    public const int MaxControlActorLength = 200;
+
+    /// <summary>
     /// What the trained severity model thought, or <see langword="null"/> when it was disabled,
     /// unavailable, or not reached.
     /// <para>
