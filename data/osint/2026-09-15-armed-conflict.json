@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-09-15T1206Z-armed-conflict",
+  "collectedAt": "2026-09-15T12:06:43Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "7b87b7d2"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-09-15T12:06:43Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-09-15T12:06:43Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/395488",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-09-15T11:43:02Z",
+      "retrievedAt": "2026-09-15T12:06:43Z",
+      "contentHash": "sha256:bea21f356bec4d0375e2ae2bd9c8ead27ab1ca1c06cf5b17e9397bdc52b8bf49",
+      "excerpt": "Руководитель одной из американских нефтяных компаний Chevron предупреждает о наступлении мирового топливного кризиса на фоне конфликта на Ближнем Востоке. Об этом пишет The Wall Street Journal. Эксперты также заявляют, что из-за продолжающегося конфликта ситуация рискует выйти из под контроля. Цены на дизель в США достигли рекордных $6,23 за галлон, а цены на бензин выросли до $4,32 за галлон, отмечает WSJ.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/395475",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-09-15T10:27:19Z",
+      "retrievedAt": "2026-09-15T12:06:43Z",
+      "contentHash": "sha256:ffed927094d073a960f218e0767704e7eac144c9347bcfa7a6a34951f4a0089f",
+      "excerpt": "Кремль считает хорошей инициативой идею Трампа об энергетическом перемирии, заявил Песков.Главное из заявлений Дмитрия Пескова: ▪️РФ считает, что космос должен быть свободен от любого оружия; ▪️Россия рассчитывает на широкую международную консолидацию в пользу полной демилитаризации космоса; ▪️РФ продолжит продвигать позицию о неразмещении оружия в космосе; ▪️Энергоперемирие позволит РФ насытить внутренний рынок нефтепродуктами, но РФ и так в состоянии стабилизировать рынок; ▪️Обеспечение безопасной работы НПЗ не решает мировой проблемы с вывозом нефтепродуктов на мировые рынки; ▪️Возможное возвращение газа РФ на европейский рынок является коммерческим вопросом; ▪️Для насыщения мирового рынка энергоресурсами Запад должен отменять санкции; ▪️Обсуждать возможное возвращение поставок российского газа в Европу можно только при условии их выгодности для России; ▪️РФ проводит комплексную работу по обеспечению безопасности НПЗ; ▪️Песков не стал комментировать вызов посла России в МИД Дании…",
+      "placeNames": [
+        "Хороше"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mvkerw6l7o2y",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-09-15T10:05:12Z",
+      "retrievedAt": "2026-09-15T12:06:43Z",
+      "contentHash": "sha256:b9cdfa2bd681b1da0b32e084807f44a1722074afc03ac65d3822c37352e2a22a",
+      "excerpt": "Ukraine launches offensive push in north of Donetsk region, senior commander says reut.rs/3UJDIb1",
+      "placeNames": [
+        "Donetsk",
+        "Donets"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mviliuizu62q",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-14T17:00:05Z",
+      "retrievedAt": "2026-09-15T12:06:43Z",
+      "contentHash": "sha256:6adb60b2e630f3341b8b8b4b6c31f74b44aed0316905c70d779287ab36300b30",
+      "excerpt": "B’Tselem says settlement expansion, displacement and curbs are not isolated abuses, but decades-old, coordinated system.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 16,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-09-15T1207Z-maritime-chokepoints",
+  "collectedAt": "2026-09-15T12:07:22Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "004fbc69"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mvkd47mra72p",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-09-15T09:35:10Z",
+      "retrievedAt": "2026-09-15T12:07:22Z",
+      "contentHash": "sha256:1cd8375db35ae107bdc0037771d89c0dca71d2cd77d47df9e3f3b28a403b8d9b",
+      "excerpt": "Most Gulf stocks in red on Houthi attack and Hormuz shipping slump reut.rs/4y2sXiQ",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3mvk5waiu3f2f",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-09-15T08:02:21Z",
+      "retrievedAt": "2026-09-15T12:07:22Z",
+      "contentHash": "sha256:8af862c5d48aee0bf6e72fd31d756d32038bd5d8c241bb4f170a43ace3812ef7",
+      "excerpt": "⛴️ Le Canal de Panama prévoit de réduire encore davantage son trafic maritime en raison de la sécheresse liée au phénomène El Niño, après de premières restrictions ce mois-ci, a annoncé lundi la direction de cette voie maritime.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mvjgd6sqrk2s",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-15T01:00:06Z",
+      "retrievedAt": "2026-09-15T12:07:22Z",
+      "contentHash": "sha256:1789dfd5c69054bc05bebd3743bea083188b569e67477201e9cce1989d25b59a",
+      "excerpt": "CENTCOM disputes the IRGC claim that the Panama-flagged oil tanker El Gaia hit naval mines in the Strait of Hormuz.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 16,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
