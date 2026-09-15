@@ -59,6 +59,15 @@ public sealed class EnrichmentPipelineTests
         Assert.Equal("Meridian Shipping", Assert.Single(observation.Entities).Name);
         Assert.NotNull(observation.SeverityRationale);
 
+        // Both texts are served, and the English is attributed. A reader can compare the translation
+        // with what was actually published, which is the only thing that makes a translated claim
+        // checkable rather than merely readable.
+        Assert.Equal(TranslationState.MachineTranslated, observation.Translation);
+        Assert.Equal("Cargo vessel approached by small craft near Bab-el-Mandeb", observation.TranslatedTitle);
+        Assert.StartsWith("A cargo vessel was approached", observation.TranslatedSummary!, StringComparison.Ordinal);
+        Assert.StartsWith("ai:", observation.TranslationMethod, StringComparison.Ordinal);
+        Assert.Equal(ArabicSubmission, observation.OriginalContent);
+
         // The model named a place; only the deterministic resolver turned it into a position.
         Assert.Equal("Bab-el-Mandeb", observation.LocationName);
         Assert.NotNull(observation.Location);
@@ -102,6 +111,13 @@ public sealed class EnrichmentPipelineTests
         Assert.Equal(ObservationStatus.Uncorroborated, observation.Status);
         Assert.Equal("keyword", observation.ClassificationMethod);
         Assert.NotNull(observation.Location);
+
+        // And it says so about the translation too, rather than letting the Arabic language tag be
+        // read downstream as evidence that a translation happened. The source text is served either
+        // way, so a reader gets the report itself even when nothing could render it into English.
+        Assert.Equal(TranslationState.NotTranslated, observation.Translation);
+        Assert.Null(observation.TranslatedTitle);
+        Assert.Equal(ArabicSubmission, observation.OriginalContent);
 
         // No incident, and the claim is still fully retained — which is the whole distinction
         // between holding a claim and dropping one.

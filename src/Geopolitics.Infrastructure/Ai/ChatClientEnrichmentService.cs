@@ -188,6 +188,8 @@ public sealed partial class ChatClientEnrichmentService(
         {
             schemaVersion = EnrichmentContract.SchemaVersion,
             language = value.Language,
+            translated = value.Translated,
+            titleEnglish = value.TranslatedTitle,
             summary = value.Summary,
             eventType = EnrichmentContract.ToWire(value.EventType),
             severity = EnrichmentContract.ToWire(value.Severity),

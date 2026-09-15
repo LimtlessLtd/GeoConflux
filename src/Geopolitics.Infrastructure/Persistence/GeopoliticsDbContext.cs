@@ -255,6 +255,16 @@ public sealed class GeopoliticsDbContext(DbContextOptions<GeopoliticsDbContext> 
         observation.Property(value => value.DetectedLanguage).HasMaxLength(16);
         observation.Property(value => value.SeverityRationale).HasMaxLength(AiInference.MaxRationaleLength);
 
+        // Stored as its name, like every other enum here, so a row read straight out of the database
+        // says "MachineTranslated" rather than "2". The English text sits beside the source text
+        // rather than replacing it: a reader checking a translated claim needs the original, and the
+        // original is the part that is actually evidence.
+        observation.Property(value => value.Translation).HasConversion<string>().HasMaxLength(20).IsRequired();
+        observation.Property(value => value.TranslatedTitle).HasMaxLength(RawObservation.MaxTranslatedTitleLength);
+        observation.Property(value => value.TranslatedSummary).HasMaxLength(RawObservation.MaxTranslatedSummaryLength);
+        observation.Property(value => value.TranslationMethod).HasMaxLength(60);
+        observation.Ignore(value => value.HasEnglishText);
+
         // Nullable throughout, and meant to be. A null here is "no second opinion was recorded",
         // which is a different fact from any severity value the model could have chosen.
         observation.Property(value => value.ModelSeverity).HasConversion<string>().HasMaxLength(20);

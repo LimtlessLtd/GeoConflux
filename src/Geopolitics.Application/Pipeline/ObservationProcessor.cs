@@ -502,6 +502,12 @@ public sealed partial class ObservationProcessor(
             // nothing about whether the text is Arabic or names a real strait, and those are exactly
             // what lets an unreadable report still be placed on the map.
             observation.ApplyExtractions(accepted.Language, accepted.LocationName, accepted.Entities);
+
+            // The translation is kept here too, for the same reason the extractions are. Uncertainty
+            // about whether a report is piracy or a maritime incident is not uncertainty about the
+            // English the model wrote, and discarding it would leave a reader looking at Arabic on
+            // the one path where a translation had already been performed and paid for.
+            RecordTranslation(observation, accepted, $"ai:{result.Provider}/{result.Model}");
             LogEnrichmentBelowThreshold(logger, observation.Id, accepted.Confidence, enrichment.MinimumAcceptedConfidence);
             observation.MarkValidated();
             return;
@@ -524,9 +530,54 @@ public sealed partial class ObservationProcessor(
             accepted.LocationName,
             accepted.Entities);
 
+        RecordTranslation(observation, accepted, method);
         observation.MarkValidated();
         LogEnriched(logger, observation.Id, result.Provider, accepted.Confidence, result.Attempts);
     }
+
+    /// <summary>
+    /// Stores what the provider says it did about English, rather than what the language tag implies.
+    /// <para>
+    /// The distinction is the whole point. A tag of <c>ar</c> used to be read downstream as proof
+    /// that a translation had happened, when the tag is normally lifted straight off the feed at
+    /// intake and the default provider translates nothing — so a reader was shown untranslated
+    /// Arabic under a label that read "ar to en". Only the provider knows whether it translated, so
+    /// only the provider is asked.
+    /// </para>
+    /// </summary>
+    private static void RecordTranslation(RawObservation observation, ValidatedEnrichment accepted, string method)
+    {
+        if (accepted.Translated)
+        {
+            observation.RecordTranslation(
+                TranslationState.MachineTranslated,
+                accepted.TranslatedTitle,
+                accepted.Summary,
+                method);
+            return;
+        }
+
+        // Nothing was translated. Which of the two reasons applies matters: a source that published
+        // in English is fully readable and needs no warning, while one that did not is a genuine gap
+        // the dashboard has to admit to rather than paper over.
+        observation.RecordTranslation(
+            IsEnglish(accepted.Language ?? observation.DetectedLanguage)
+                ? TranslationState.AlreadyEnglish
+                : TranslationState.NotTranslated,
+            translatedTitle: null,
+            translatedSummary: null,
+            method: null);
+    }
+
+    /// <summary>
+    /// Matches the language subtag rather than the whole tag, so <c>en-GB</c> and <c>en-US</c> count.
+    /// An unstated language is not treated as English: "we do not know" and "it is readable" are
+    /// different answers, and only one of them is safe to assume.
+    /// </summary>
+    private static bool IsEnglish(string? languageTag) =>
+        languageTag is not null
+        && (languageTag.Equals("en", StringComparison.OrdinalIgnoreCase)
+            || languageTag.StartsWith("en-", StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
     /// Writes the audit record. Failing to store it must not fail the observation: the inference is

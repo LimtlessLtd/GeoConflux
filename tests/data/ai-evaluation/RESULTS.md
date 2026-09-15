@@ -4,8 +4,8 @@
 
 - Provider: `Mock` (deterministic in-process stand-in — **not a language model**)
 - Model: `deterministic-stub`
-- Prompt version: `v1`
-- Schema version: `1`
+- Prompt version: `v2`
+- Schema version: `2`
 - Dataset version: `2` (16 labelled cases)
 
 > These figures measure the **offline baseline**: a keyword classifier and a
@@ -26,7 +26,7 @@
 | Severity — macro F1 | 0.74 |
 | Location name — precision / recall / F1 | 1.00 / 0.92 / 0.96 |
 | Entities — precision / recall / F1 | 0.11 / 0.67 / 0.19 |
-| Latency median / p95 | 0.1 ms / 1689.8 ms |
+| Latency median / p95 | 0.1 ms / 2094.1 ms |
 
 Latency is wall-clock time for one enrichment attempt and is the only figure here that
 varies between runs of the deterministic provider — the first call absorbs JIT warm-up, so

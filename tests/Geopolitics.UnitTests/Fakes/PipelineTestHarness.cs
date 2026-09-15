@@ -105,9 +105,13 @@ public sealed class StubEnrichmentService : IEventEnrichmentService
         double confidence = 0.85,
         string? language = "en",
         string? locationName = null,
+        bool translated = false,
+        string? translatedTitle = null,
         IReadOnlyList<ExtractedEntity>? entities = null) => new(
             new ValidatedEnrichment(
                 summary,
+                translated,
+                translatedTitle,
                 eventType,
                 severity,
                 confidence,
@@ -122,7 +126,7 @@ public sealed class StubEnrichmentService : IEventEnrichmentService
             EnrichmentContract.SchemaVersion,
             Attempts: 1,
             LatencyMilliseconds: 12,
-            StructuredOutput: "{\"schemaVersion\":1}",
+            StructuredOutput: "{\"schemaVersion\":2}",
             Error: null);
 
     public static EnrichmentResult Failure(AiInferenceOutcome outcome, string error) => new(

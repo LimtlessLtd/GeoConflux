@@ -2,7 +2,17 @@ using Geopolitics.Domain;
 
 namespace Geopolitics.Application.Contracts;
 
-/// <summary>API and realtime projection of an observation, including its processing outcome.</summary>
+/// <summary>
+/// API and realtime projection of an observation, including its processing outcome.
+/// <para>
+/// It carries both sides of the text on purpose. <see cref="Title"/> and
+/// <see cref="OriginalContent"/> are the source's own words; <see cref="TranslatedTitle"/> and
+/// <see cref="TranslatedSummary"/> are the English rendering, when one exists. A client that showed
+/// only the English would leave a reader no way to check a translated claim, and one that showed
+/// only the original would leave them unable to read half the feed. Which is displayed is the
+/// reader's choice, so both have to arrive.
+/// </para>
+/// </summary>
 public sealed record ObservationResponse(
     Guid Id,
     ObservationKind Kind,
@@ -29,11 +39,29 @@ public sealed record ObservationResponse(
     double ClassificationConfidence,
     string ClassificationMethod,
     string? DetectedLanguage,
+    string? OriginalContent,
+    TranslationState Translation,
+    string? TranslatedTitle,
+    string? TranslatedSummary,
+    string? TranslationMethod,
     string? SeverityRationale,
     IReadOnlyList<EntityResponse> Entities,
     SeverityOpinion? ModelSeverity,
     ConflictMembershipResponse Conflicts)
 {
+    /// <summary>
+    /// How much source text is published. The stored column holds up to 20,000 characters, and four
+    /// hundred observations of that length would be an eight-megabyte payload for a static page —
+    /// most of it tail nobody reads.
+    /// <para>
+    /// Four thousand matches the bound normalisation already applies to a summary built from this
+    /// same text, so the worst case here is no larger than the worst case that shipped before the
+    /// original was exposed at all. Truncation is marked, because text that stops early and does not
+    /// say so is the failure this whole change exists to correct.
+    /// </para>
+    /// </summary>
+    public const int MaxOriginalContentLength = 4000;
+
     public static ObservationResponse FromDomain(RawObservation observation)
     {
         ArgumentNullException.ThrowIfNull(observation);
@@ -71,6 +99,11 @@ public sealed record ObservationResponse(
             observation.ClassificationConfidence,
             observation.ClassificationMethod,
             observation.DetectedLanguage,
+            Excerpt(observation.Content),
+            observation.Translation,
+            observation.TranslatedTitle,
+            observation.TranslatedSummary,
+            observation.TranslationMethod,
             observation.SeverityRationale,
             [.. observation.Entities.Select(entity => new EntityResponse(entity.Name, entity.Type))],
             observation.ModelSeverity is { } predicted
@@ -86,6 +119,11 @@ public sealed record ObservationResponse(
                 observation.ConflictCandidateKeys,
                 observation.ConflictNote));
     }
+
+    private static string Excerpt(string content) =>
+        content.Length <= MaxOriginalContentLength
+            ? content
+            : string.Concat(content.AsSpan(0, MaxOriginalContentLength), "… [truncated]");
 }
 
 /// <summary>A named actor the enrichment step reported. A claim about the text, not a verified fact.</summary>

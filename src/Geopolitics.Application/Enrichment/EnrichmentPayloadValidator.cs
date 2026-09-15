@@ -5,6 +5,8 @@ using Geopolitics.Domain;
 namespace Geopolitics.Application.Enrichment;
 
 /// <param name="Summary">English summary, sanitised and length-bounded.</param>
+/// <param name="Translated">Whether the provider says it rendered the source text into English itself.</param>
+/// <param name="TranslatedTitle">The headline in English, when the provider produced one.</param>
 /// <param name="EventType">Category, mapped from a known wire value.</param>
 /// <param name="Severity">Assessed severity, mapped from a known wire value.</param>
 /// <param name="Confidence">Model-reported certainty, guaranteed to be within 0-1.</param>
@@ -14,6 +16,8 @@ namespace Geopolitics.Application.Enrichment;
 /// <param name="Entities">Named actors, deduplicated and capped.</param>
 public sealed record ValidatedEnrichment(
     string Summary,
+    bool Translated,
+    string? TranslatedTitle,
     EventType EventType,
     Severity Severity,
     double Confidence,
@@ -87,6 +91,11 @@ public static class EnrichmentPayloadValidator
             errors.Add("summary is required and must be non-empty.");
         }
 
+        // Absent rather than rejected when empty. The contract asks for an empty string whenever the
+        // source was already English, which is the majority case, and failing the whole payload over
+        // a field that is legitimately blank would cost the classification to gain nothing.
+        var translatedTitle = Sanitise(payload.TitleEnglish, EnrichmentContract.MaxTitleLength);
+
         if (!EnrichmentContract.TryParseEventType(payload.EventType, out var eventType))
         {
             errors.Add($"eventType '{Describe(payload.EventType)}' is not one of: {string.Join(", ", EnrichmentContract.EventTypeNames)}.");
@@ -122,6 +131,13 @@ public static class EnrichmentPayloadValidator
         return new EnrichmentValidation(
             new ValidatedEnrichment(
                 summary!,
+
+                // A provider claiming a translation it did not perform is the failure this whole
+                // field exists to stop, so the claim is only honoured when English text came with
+                // it. Saying "translated" and supplying nothing leaves the dashboard with the
+                // source's own words and a label insisting otherwise.
+                payload.Translated && (translatedTitle is not null || summary is not null),
+                translatedTitle,
                 eventType,
                 severity,
                 payload.Confidence,

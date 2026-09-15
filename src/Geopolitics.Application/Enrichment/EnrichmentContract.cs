@@ -16,9 +16,22 @@ namespace Geopolitics.Application.Enrichment;
 public static class EnrichmentContract
 {
     /// <summary>Increment when the shape changes in a way a previously stored payload would fail.</summary>
-    public const int SchemaVersion = 1;
+    /// <remarks>
+    /// Raised to 2 when <c>titleEnglish</c> and <c>translated</c> were added. A stored v1 payload has
+    /// neither, and reading one as though it did would report every archived observation as
+    /// untranslated — which is true, and is exactly what the version makes legible rather than
+    /// silent.
+    /// </remarks>
+    public const int SchemaVersion = 2;
 
     public const int MaxSummaryLength = 1200;
+
+    /// <summary>
+    /// Bound on the English headline. Larger than the 300 a source title is held to, because
+    /// translation into English lengthens most of the languages this reads.
+    /// </summary>
+    public const int MaxTitleLength = RawObservation.MaxTranslatedTitleLength;
+
     public const int MaxLocationNameLength = 120;
     public const int MaxLocations = 5;
     public const int MaxEntities = RawObservation.MaxEntities;
@@ -127,10 +140,12 @@ public static class EnrichmentContract
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["schemaVersion", "language", "summary", "eventType", "severity", "confidence", "locations", "entities", "severityRationale"],
+          "required": ["schemaVersion", "language", "translated", "titleEnglish", "summary", "eventType", "severity", "confidence", "locations", "entities", "severityRationale"],
           "properties": {
             "schemaVersion": { "type": "integer" },
             "language": { "type": "string", "description": "BCP-47 tag of the ORIGINAL text, for example ar, ru, en." },
+            "translated": { "type": "boolean", "description": "True only if you rendered the source text into English yourself. False if the source was already English, or if you could not translate it." },
+            "titleEnglish": { "type": "string", "description": "The headline in English. Empty string if the source was already English or you could not translate it." },
             "summary": { "type": "string", "description": "Short factual summary in English." },
             "eventType": { "type": "string", "enum": [__EVENT_TYPES__] },
             "severity": { "type": "string", "enum": [__SEVERITIES__] },
@@ -177,6 +192,17 @@ public sealed record AiEnrichmentPayload
     public int SchemaVersion { get; init; }
 
     public string? Language { get; init; }
+
+    /// <summary>
+    /// The model's own statement that it rendered the text into English, rather than the pipeline
+    /// guessing from the language tag that it must have. Guessing is what produced the defect this
+    /// field closes: a non-English tag was read as proof of a translation, when the tag is usually
+    /// read off the feed at intake and the default provider translates nothing at all.
+    /// </summary>
+    public bool Translated { get; init; }
+
+    /// <summary>The headline in English. Empty or absent when nothing was translated.</summary>
+    public string? TitleEnglish { get; init; }
 
     public string? Summary { get; init; }
 

@@ -200,6 +200,51 @@ public sealed class RawObservation
     public string? DetectedLanguage { get; private set; }
 
     /// <summary>
+    /// Whether the English text on this record is a translation, the source's own English, or
+    /// missing because nothing translated it. Recorded rather than inferred from the language tag;
+    /// see <see cref="TranslationState"/> for why that distinction had to be made explicit.
+    /// </summary>
+    public TranslationState Translation { get; private set; }
+
+    /// <summary>
+    /// The headline in English, when something rendered it. Null whenever <see cref="Translation"/>
+    /// is not <see cref="TranslationState.MachineTranslated"/>.
+    /// <para>
+    /// Kept beside <see cref="Title"/> rather than replacing it. The source's own headline is part
+    /// of the evidence and a reader checking a translated claim has nothing to check it against once
+    /// it is overwritten — which is exactly what happened to the body text before this existed.
+    /// </para>
+    /// </summary>
+    public string? TranslatedTitle { get; private set; }
+
+    /// <summary>
+    /// The body in English, when something rendered it. Null whenever <see cref="Translation"/> is
+    /// not <see cref="TranslationState.MachineTranslated"/>.
+    /// <para>
+    /// Separate from <see cref="Summary"/> on purpose. That field is the summary the pipeline acted
+    /// on — the one correlation compares and the deduplicator reads — and a model that reported low
+    /// confidence in its <em>classification</em> is deliberately not allowed to replace it. But a
+    /// shaky guess at the category says nothing about the quality of the English it produced, and
+    /// throwing that English away would leave a reader with Arabic on the one path where a
+    /// translation had already been paid for.
+    /// </para>
+    /// </summary>
+    public string? TranslatedSummary { get; private set; }
+
+    /// <summary>
+    /// What produced the English text, for example <c>ai:ollama/llama3.2</c>. Null when nothing did.
+    /// Stored for the same reason <see cref="ClassificationMethod"/> is: a reader is entitled to know
+    /// whether the English they are reading came from a model, and from which one.
+    /// </summary>
+    public string? TranslationMethod { get; private set; }
+
+    /// <summary>
+    /// Whether English text is available at all, by either route. False means the dashboard has only
+    /// the source's own language to show, and must say so.
+    /// </summary>
+    public bool HasEnglishText => Translation != TranslationState.NotTranslated;
+
+    /// <summary>
     /// One or two sentences explaining the severity assessment. Bounded on purpose: this is a
     /// concise, structured justification for application use, not a reasoning transcript.
     /// </summary>
@@ -578,6 +623,62 @@ public sealed class RawObservation
     /// was read.
     /// </para>
     /// </summary>
+    /// <summary>Generous enough for a translated headline, which runs longer than the original.</summary>
+    public const int MaxTranslatedTitleLength = 400;
+
+    /// <summary>Matches the bound on the summary the enrichment contract asks for.</summary>
+    public const int MaxTranslatedSummaryLength = 1200;
+
+    /// <summary>
+    /// Records what, if anything, rendered this observation into English.
+    /// <para>
+    /// Refuses a machine translation that names no translator, for the same reason a control signal
+    /// must name its actor: the whole point of storing this is that a reader can tell where the
+    /// English came from, and an unattributed translation of a contested claim is the one form of it
+    /// that cannot be weighed at all.
+    /// </para>
+    /// <para>
+    /// Refuses a machine translation that carries no English text, too. A state saying a translation
+    /// happened while both English fields are empty would put the dashboard back where it started —
+    /// promising English and showing the source's own language.
+    /// </para>
+    /// </summary>
+    public void RecordTranslation(
+        TranslationState state,
+        string? translatedTitle,
+        string? translatedSummary,
+        string? method)
+    {
+        if (state != TranslationState.MachineTranslated)
+        {
+            // Nothing to attribute and nothing to store. Both the "already English" and the
+            // "nothing translated it" cases are answered by the source text alone.
+            Translation = state;
+            TranslatedTitle = null;
+            TranslatedSummary = null;
+            TranslationMethod = null;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(method))
+        {
+            throw new DomainException("A translation must record what produced it.");
+        }
+
+        var title = Cap(translatedTitle, MaxTranslatedTitleLength);
+        var summary = Cap(translatedSummary, MaxTranslatedSummaryLength);
+
+        if (title is null && summary is null)
+        {
+            throw new DomainException("A translation must carry the English text it claims to have produced.");
+        }
+
+        Translation = TranslationState.MachineTranslated;
+        TranslatedTitle = title;
+        TranslatedSummary = summary;
+        TranslationMethod = method.Trim();
+    }
+
     private void AdoptDetectedLanguage(string? detectedLanguage)
     {
         if (!string.IsNullOrWhiteSpace(DeclaredLanguage) || string.IsNullOrWhiteSpace(detectedLanguage))

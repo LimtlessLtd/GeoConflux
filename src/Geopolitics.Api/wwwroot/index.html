@@ -140,8 +140,10 @@
       <div id="feedTab" class="tab-panel" role="tabpanel" hidden>
         <div class="feed-toolbar">
           <p class="feed-hint" id="feedHint">Observations as they arrive. An observation is evidence, not a confirmed incident.</p>
+          <button id="textModeButton" class="text-mode-button" type="button" aria-pressed="false">English</button>
           <button id="replayButton" class="replay-button" type="button" hidden>Replay the recorded run</button>
         </div>
+        <p id="textModeNote" class="feed-hint text-mode-note" hidden></p>
         <div id="feedList" class="feed-list" aria-live="polite"></div>
       </div>
 

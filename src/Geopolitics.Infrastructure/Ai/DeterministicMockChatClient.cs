@@ -180,6 +180,13 @@ public sealed class DeterministicMockChatClient(IEventClassifier classifier) : I
         {
             schemaVersion = EnrichmentContract.SchemaVersion,
             language,
+
+            // Always false, and that is the honest answer rather than a limitation worked around.
+            // This client matches keywords and identifies scripts; it cannot read Arabic, and a
+            // stand-in that claimed otherwise would put fabricated English on the dashboard where a
+            // reader could not tell it from a real model's work.
+            translated = false,
+            titleEnglish = string.Empty,
             summary = BuildSummary(source, title, body, language, classification, place),
             eventType = EnrichmentContract.ToWire(classification.EventType),
             severity = EnrichmentContract.ToWire(classification.Severity),

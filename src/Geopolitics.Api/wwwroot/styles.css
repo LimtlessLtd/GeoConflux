@@ -466,6 +466,71 @@ html, body {
 
 .replay-button:hover { background: rgba(100, 223, 223, .22); }
 
+/* Quieter than the replay button on purpose: this switches how the page reads, it does not start
+   anything, and a second bright control beside the first would read as a second action. */
+.text-mode-button {
+  align-self: flex-start;
+  padding: .3rem .7rem;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  cursor: pointer;
+}
+
+.text-mode-button:hover { border-color: var(--accent); color: var(--accent); }
+
+.text-mode-button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: rgba(100, 223, 223, .1);
+  color: var(--accent);
+}
+
+/* Stated in the open rather than left to be inferred from the chips. A page that reads ten
+   languages and translates none of them should say so where it cannot be missed. */
+.text-mode-note {
+  margin: 0;
+  padding: 0 1rem .2rem;
+  color: var(--muted);
+  font-size: .68rem;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+/* The source body, shown only in source-text mode. dir="auto" on the element lets the browser lay
+   out Arabic and Hebrew right-to-left from the text's own first strong character, which is the one
+   thing that makes untranslated text readable rather than merely present. */
+.feed-source-text,
+.evidence-text {
+  margin-top: .3rem;
+  color: var(--muted);
+  font-size: .72rem;
+  line-height: 1.5;
+}
+
+/* Clamped in the list and unclamped in the drawer. The feed is a scannable index and a wire report
+   pasted into it whole would push the next item off the screen; the drawer is where a reader has
+   asked to look at one thing closely, so nothing is withheld there. */
+.feed-source-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  overflow: hidden;
+}
+
+/* A claim and an admission, and they must not look alike. */
+.lang-translated { border-color: var(--accent); color: var(--accent); }
+
+.lang-untranslated {
+  border-style: dashed;
+  font-style: italic;
+}
+
 .feed-note {
   margin-top: .35rem;
   color: var(--muted);

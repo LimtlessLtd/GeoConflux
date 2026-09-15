@@ -14,7 +14,13 @@ namespace Geopolitics.Application.Enrichment;
 public static class EnrichmentPrompt
 {
     /// <summary>Bump on any wording change. Stored on each <see cref="AiInference"/>.</summary>
-    public const string Version = "v1";
+    /// <remarks>
+    /// v2 asks for the headline in English and for an explicit statement of whether a translation
+    /// was performed. Before it, the prompt asked for an English summary and the pipeline inferred
+    /// the rest — which meant a reader of a non-English report was shown the source's own headline
+    /// under a label promising English.
+    /// </remarks>
+    public const string Version = "v2";
 
     /// <summary>
     /// How much source text is sent. Enrichment cost scales with input, and the opening of a report
@@ -83,6 +89,13 @@ public static class EnrichmentPrompt
         builder.Append("- Set schemaVersion to ").Append(EnrichmentContract.SchemaVersion).AppendLine(".");
         builder.AppendLine("- Identify the language of the original text and report it in `language` as a BCP-47 tag.");
         builder.AppendLine("- Write `summary` in English, factually, in at most two sentences. Translate if needed.");
+        builder.AppendLine("- `titleEnglish` is the report's own headline rendered into English, as a headline rather");
+        builder.AppendLine("  than a paraphrase. Return an empty string if the source is already English, or if the");
+        builder.AppendLine("  text is in a language you cannot translate.");
+        builder.AppendLine("- `translated` is true ONLY if you rendered non-English source text into English yourself.");
+        builder.AppendLine("  It is false when the source was already English, and false when you could not translate.");
+        builder.AppendLine("  Never report true for a translation you did not perform: a reader is told where the");
+        builder.AppendLine("  English came from, and a false claim there is worse than no translation at all.");
         builder.Append("- `eventType` must be exactly one of: ").AppendLine(string.Join(", ", EnrichmentContract.EventTypeNames));
         builder.Append("- `severity` must be exactly one of: ").AppendLine(string.Join(", ", EnrichmentContract.SeverityNames));
         builder.AppendLine("- `confidence` is your certainty in the classification, from 0 to 1. Report low confidence honestly.");

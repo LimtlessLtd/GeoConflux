@@ -56,6 +56,10 @@ import {
 import {
   NOT_A_FRONT_LINE, controlMethod, controlRows, controlSummary, drawablePlaces, hasControl,
 } from './lib/control.js';
+import {
+  TEXT_MODE, TEXT_MODE_STORAGE_KEY, displayText, languageChip, modeLabel, normaliseMode,
+  untranslatedCount,
+} from './lib/translation.js';
 
 (() => {
   'use strict';
@@ -176,6 +180,8 @@ import {
     locatedOnly: document.querySelector('#locatedOnly'),
     replayButton: document.querySelector('#replayButton'),
     feedHint: document.querySelector('#feedHint'),
+    textModeButton: document.querySelector('#textModeButton'),
+    textModeNote: document.querySelector('#textModeNote'),
     aboutModeText: document.querySelector('#aboutModeText'),
     submitForm: document.querySelector('#submitForm'),
     submitSource: document.querySelector('#submitSource'),
@@ -224,6 +230,13 @@ import {
 
   let viewer = null;
   let selectedIncidentId = null;
+
+  /**
+   * Which language the report text is read in. A reader's choice, remembered between visits, and
+   * never a filter: both texts are always present on the record, so switching changes what is
+   * displayed rather than what was loaded.
+   */
+  let textMode = TEXT_MODE.english;
 
   /**
    * The control layer's markers, kept apart from the incident ones on purpose. They answer different
@@ -746,9 +759,73 @@ import {
     dom.typeFilter.value = types.includes(current) ? current : '';
   }
 
+  /** The visitor's last choice, when there was one. English otherwise. */
+  function preferredTextMode() {
+    try {
+      return normaliseMode(window.localStorage?.getItem(TEXT_MODE_STORAGE_KEY));
+    } catch {
+      // Storage can be unavailable (private mode, file://). The English default is a fine outcome.
+      return TEXT_MODE.english;
+    }
+  }
+
+  function rememberTextMode(mode) {
+    try {
+      window.localStorage?.setItem(TEXT_MODE_STORAGE_KEY, mode);
+    } catch {
+      // Not worth reporting: the choice simply will not persist.
+    }
+  }
+
+  /**
+   * Repaints everything that displays report text.
+   *
+   * The evidence drawer is rebuilt as well as the feed. Leaving it alone would show a reader the
+   * English summary of an incident directly above the Arabic feed item it came from, which is the
+   * confusion this control exists to remove rather than to create.
+   */
+  function applyTextMode(mode) {
+    textMode = normaliseMode(mode);
+
+    const label = modeLabel(textMode);
+    dom.textModeButton.textContent = label.text;
+    dom.textModeButton.title = label.title;
+    dom.textModeButton.setAttribute('aria-pressed', String(textMode === TEXT_MODE.original));
+
+    renderFeed();
+
+    if (selectedIncidentId) {
+      selectIncident(selectedIncidentId, false);
+    }
+  }
+
+  /**
+   * States the shortfall once, in the open.
+   *
+   * The published page runs on the deterministic provider, which reports honestly that it cannot
+   * translate. That means most non-English reports have no English to show, and a reader is owed
+   * that as a sentence at the top rather than as an inference drawn from counting chips.
+   */
+  function renderTextModeNote() {
+    const missing = untranslatedCount(feed);
+
+    if (missing === 0) {
+      dom.textModeNote.hidden = true;
+      dom.textModeNote.textContent = '';
+      return;
+    }
+
+    dom.textModeNote.hidden = false;
+    dom.textModeNote.textContent = `${missing} of ${plural(feed.length, 'report')} `
+      + `${missing === 1 ? 'is' : 'are'} shown in the source language: nothing translated `
+      + `${missing === 1 ? 'it' : 'them'}. The configured enrichment provider does not translate, `
+      + 'and inventing English for text it cannot read would be fabrication.';
+  }
+
   function renderFeed() {
     dom.feedCount.textContent = feed.length;
     dom.feedList.replaceChildren();
+    renderTextModeNote();
 
     if (feed.length === 0) {
       const empty = document.createElement('p');
@@ -759,6 +836,7 @@ import {
     }
 
     feed.forEach((observation) => {
+      const shown = displayText(observation, textMode);
       const item = document.createElement('button');
       item.type = 'button';
       // Assigned through className, not innerHTML, so no HTML parsing happens. Escaping here would
@@ -769,7 +847,11 @@ import {
           <span class="feed-source">${escapeHtml(observation.sourceName)}</span>
           <span class="feed-time">${escapeHtml(formatRelative(observation.receivedAt, observation.isDemo))}</span>
         </div>
-        <div class="feed-title">${escapeHtml(observation.title ?? observation.summary ?? 'Untitled observation')}</div>
+        <div class="feed-title"${shown.titleIsOriginal ? ' dir="auto"' : ''}
+          >${escapeHtml(shown.title ?? shown.body ?? 'Untitled observation')}</div>
+        ${textMode === TEXT_MODE.original && shown.body && shown.body !== shown.title
+          ? `<div class="feed-source-text" dir="auto">${escapeHtml(shown.body)}</div>`
+          : ''}
         <div class="feed-meta">
           <span class="pill pill-${escapeHtml(observation.status)}">${escapeHtml(observation.status)}</span>
           <span>${escapeHtml(observation.eventType)}</span>
@@ -782,9 +864,7 @@ import {
         ${observation.status === 'Duplicate'
           ? ''
           : `<div class="feed-conf">${confidenceChip(observation.classificationConfidence, observation.classificationMethod)}
-             ${observation.detectedLanguage && observation.detectedLanguage !== 'en'
-               ? `<span class="lang-chip" title="Language of the original text, identified during enrichment.">${escapeHtml(observation.detectedLanguage)} → en</span>`
-               : ''}</div>`}
+             ${languageChip(observation)}</div>`}
         ${observation.status === 'Duplicate'
           ? '<div class="feed-note">Rejected as an exact re-delivery. Kept for audit.</div>'
           : ''}
@@ -879,12 +959,18 @@ import {
         <h4>Source evidence</h4>
         ${observations.length === 0 ? '<p class="muted">No observations are linked to this incident.</p>' : ''}
         <ul class="evidence-list">
-          ${observations.map((observation) => `
+          ${observations.map((observation) => {
+            const shown = displayText(observation, textMode);
+
+            return `
             <li>
               <span class="evidence-source">${escapeHtml(attributionLine(observation))}</span>
               <span class="pill pill-${escapeHtml(observation.status)}">${escapeHtml(observation.status)}</span>
               ${claimChipFor(observation)}
-              <div>${escapeHtml(observation.title ?? '')}</div>
+              <div${shown.titleIsOriginal ? ' dir="auto"' : ''}>${escapeHtml(shown.title ?? '')}</div>
+              ${shown.body && shown.body !== shown.title
+                ? `<div class="evidence-text" dir="auto">${escapeHtml(shown.body)}</div>`
+                : ''}
               <div class="muted evidence-times">
                 ${statesOwnTime(observation)
                   ? `<span title="The time this source gave for the event.">Reported ${escapeHtml(formatTime(observation.occurredAt))}
@@ -896,9 +982,7 @@ import {
                 ? ''
                 : `<div class="evidence-conf">
                      ${confidenceChip(observation.classificationConfidence, observation.classificationMethod)}
-                     ${observation.detectedLanguage && observation.detectedLanguage !== 'en'
-                       ? `<span class="lang-chip">${escapeHtml(observation.detectedLanguage)} → en</span>`
-                       : ''}
+                     ${languageChip(observation)}
                    </div>`}
               ${observation.severityRationale
                 ? `<div class="rationale">${escapeHtml(observation.severityRationale)}</div>`
@@ -912,7 +996,8 @@ import {
                        `<span class="entity-chip">${escapeHtml(entity.name)}<em>${escapeHtml(entity.type)}</em></span>`).join('')}
                    </div>`
                 : ''}
-            </li>`).join('')}
+            </li>`;
+          }).join('')}
         </ul>`;
     } catch (error) {
       console.error(error);
@@ -2166,6 +2251,15 @@ import {
     dom.showControl.addEventListener('change', syncControlGlobe);
 
     dom.submitForm.addEventListener('submit', submitObservation);
+
+    // Applied before anything renders, so a reader who chose the source text last visit is not shown
+    // a frame of English first.
+    applyTextMode(preferredTextMode());
+    dom.textModeButton.addEventListener('click', () => {
+      const next = textMode === TEXT_MODE.original ? TEXT_MODE.english : TEXT_MODE.original;
+      rememberTextMode(next);
+      applyTextMode(next);
+    });
 
     dom.basemapFilter.value = preferredBasemap();
     dom.basemapFilter.addEventListener('change', () => {

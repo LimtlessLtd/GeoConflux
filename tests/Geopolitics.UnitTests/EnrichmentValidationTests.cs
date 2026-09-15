@@ -14,8 +14,10 @@ public sealed class EnrichmentValidationTests
 {
     private const string ValidPayload = """
     {
-      "schemaVersion": 1,
+      "schemaVersion": 2,
       "language": "en",
+      "translated": false,
+      "titleEnglish": "",
       "summary": "A cargo vessel was approached by small craft.",
       "eventType": "PIRACY",
       "severity": "HIGH",
@@ -62,7 +64,7 @@ public sealed class EnrichmentValidationTests
     [InlineData("")]
     [InlineData("   ")]
     [InlineData("I'm sorry, I can't help with that.")]
-    [InlineData("{\"schemaVersion\": 1, \"summary\": ")]
+    [InlineData("{\"schemaVersion\": 2, \"summary\": ")]
     [InlineData("[]")]
     public void MalformedOutputIsRejectedRatherThanPartiallyRead(string response)
     {
@@ -83,7 +85,7 @@ public sealed class EnrichmentValidationTests
     [Fact]
     public void AResponseFromADifferentSchemaVersionIsRejected()
     {
-        var result = EnrichmentPayloadValidator.Validate(ValidPayload.Replace("\"schemaVersion\": 1", "\"schemaVersion\": 2"));
+        var result = EnrichmentPayloadValidator.Validate(ValidPayload.Replace("\"schemaVersion\": 2", "\"schemaVersion\": 3"));
 
         Assert.False(result.IsValid);
         Assert.Contains("schemaVersion", result.ErrorSummary, StringComparison.Ordinal);

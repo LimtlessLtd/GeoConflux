@@ -98,6 +98,9 @@ Concretely, running the app locally will:
 - place observations using provider coordinates or a local gazetteer, and leave one deliberately
   unmappable report visible without coordinates;
 - show a confidence score and the method that produced it beside every classification;
+- keep each report's own words alongside any English rendering of them, and let you switch the feed
+  between **English** and **Source text** — saying plainly, per report, whether anything translated
+  it rather than assuming a non-English tag means something did;
 - push each result to the browser over SignalR with no page refresh;
 - report what was recorded near each watched maritime chokepoint, with measured distances, in the
   **Chokepoints** tab;
@@ -232,7 +235,7 @@ Enrichment translates, summarises, classifies, assesses severity, extracts named
 | `OpenAI` | `Ai:ApiKey` | |
 | `AzureOpenAI` | `Ai:Endpoint`, `Ai:ApiKey` | |
 
-Three things are true of every path through that stage:
+Four things are true of every path through that stage:
 
 1. **Model output is untrusted input.** The response is validated against a versioned schema --
    enum vocabulary, bounds, counts, control characters, unmapped properties. All errors are
@@ -244,6 +247,10 @@ Three things are true of every path through that stage:
    remember ([ADR 005](docs/adr/005-location-resolution.md)).
 3. **Failure degrades quality, never evidence.** A provider that is down, slow, or wrong leaves the
    deterministic keyword classification in place, and the failure is recorded rather than hidden.
+4. **A translation is recorded, never inferred.** The provider states whether it rendered the text
+   into English, and that statement is honoured only when English text actually arrived with it. The
+   source's own title and body are kept beside the translation rather than replaced by it, so a
+   reader can compare the two ([ADR 039](docs/adr/039-translation-is-recorded-not-inferred.md)).
 
 Every attempt writes an `AiInference` row — provider, model, prompt version, schema version,
 outcome, confidence, attempt count, latency — so any classification on the dashboard is traceable
@@ -259,6 +266,11 @@ script it cannot read, it says so and reports what it can establish instead
 
 The value of it is that the offline path is the *real* path — same prompt, schema, validator,
 repair loop, telemetry, and audit record. Only the responder differs.
+
+The visible cost is that the published dashboard mostly cannot show you English. It says so: a
+report nothing translated carries an `ar · not translated` chip rather than the `ar → en` one, and
+the feed states the shortfall in a sentence — *N of M reports are shown in the source language*.
+Configure a real provider and the same machinery produces real translations with no other change.
 
 It also makes the geolocation rule visible without a credential. Submit an Arabic report mentioning
 Bab-el-Mandeb and the stand-in reports the language, *names* the place, and honestly declines to

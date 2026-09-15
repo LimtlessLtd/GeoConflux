@@ -21,8 +21,10 @@ public sealed class EnrichmentServiceTests
 {
     private const string ValidResponse = """
     {
-      "schemaVersion": 1,
+      "schemaVersion": 2,
       "language": "ru",
+      "translated": true,
+      "titleEnglish": "Convoy movement reported near the Kerch Strait",
       "summary": "A convoy movement was reported near the Kerch Strait.",
       "eventType": "MILITARY_MOVEMENT",
       "severity": "MEDIUM",
@@ -184,6 +186,7 @@ public sealed class EnrichmentServiceTests
         [
             "confidence", "entities", "eventType", "language", "locationName",
             "schemaVersion", "severity", "severityRationale", "summary",
+            "titleEnglish", "translated",
         ];
 
         Assert.Equal(expected, properties);

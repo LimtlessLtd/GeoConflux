@@ -20,8 +20,10 @@ public sealed class CapableChatClient : IChatClient
 {
     private const string Response = """
     {
-      "schemaVersion": 1,
+      "schemaVersion": 2,
       "language": "ar",
+      "translated": true,
+      "titleEnglish": "Cargo vessel approached by small craft near Bab-el-Mandeb",
       "summary": "A cargo vessel was approached by small craft near Bab-el-Mandeb. No injuries were reported.",
       "eventType": "PIRACY",
       "severity": "MEDIUM",
