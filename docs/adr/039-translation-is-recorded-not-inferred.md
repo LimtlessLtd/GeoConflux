@@ -62,6 +62,20 @@ actually arrived with it, and the domain refuses a `MachineTranslated` state tha
 or carries no English. A record asserting a translation it does not hold would put the page back
 exactly where it started.
 
+### Which language tag decides is the one the record already settled
+
+`AlreadyEnglish` is answered from the observation's resolved language, not from the language the
+provider reported. The two differ, and preferring the provider's is wrong for the same reason it is
+wrong everywhere else here: a language the source stated is a fact about the record, and a language
+a model inferred is a reading of it.
+
+This was not hypothetical. The deterministic provider identifies the *script* and nothing finer — it
+says so in its own documentation, and Arabic script alone does not separate Arabic from Persian — so
+it answers `en` for anything written in Latin letters. The first deploy of this change read the
+provider's answer first and stored 74 French and Spanish reports as needing no translation.
+`RawObservation.AdoptDetectedLanguage` already encodes the correct precedence, so the state is read
+back off the observation rather than decided a second time in the processor.
+
 ### The source text is evidence and is never overwritten
 
 `Title` and `Content` remain the source's own words for the life of the record. The English goes to

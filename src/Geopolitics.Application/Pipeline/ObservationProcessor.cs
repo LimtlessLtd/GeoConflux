@@ -560,8 +560,14 @@ public sealed partial class ObservationProcessor(
         // Nothing was translated. Which of the two reasons applies matters: a source that published
         // in English is fully readable and needs no warning, while one that did not is a genuine gap
         // the dashboard has to admit to rather than paper over.
+        //
+        // Read off the observation rather than off the model's answer, because the observation has
+        // already applied the precedence rule and the model's answer has not. A declared language
+        // outranks an inferred one, and the difference is not academic: the deterministic provider
+        // identifies scripts, so it calls French and Spanish "en" and would have had 74 records of
+        // the published run assert that a Latin-script report needed no translation.
         observation.RecordTranslation(
-            IsEnglish(accepted.Language ?? observation.DetectedLanguage)
+            IsEnglish(observation.DetectedLanguage)
                 ? TranslationState.AlreadyEnglish
                 : TranslationState.NotTranslated,
             translatedTitle: null,

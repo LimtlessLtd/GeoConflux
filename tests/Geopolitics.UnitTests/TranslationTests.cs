@@ -173,6 +173,37 @@ public sealed class TranslationTests
     }
 
     [Fact]
+    public async Task ASourceThatDeclaredItsLanguageIsNotOverruledByAProviderThatOnlyReadsScripts()
+    {
+        // Found on the published run, which stored 74 French and Spanish reports as needing no
+        // translation. The deterministic provider identifies the script and nothing finer, so it
+        // answers "en" for anything in Latin letters. A language the source stated is a fact about
+        // the record and outranks that guess, which is the precedence AdoptDetectedLanguage already
+        // applies -- so the state is read back off the observation rather than decided again here.
+        var harness = new PipelineTestHarness();
+        harness.ResolveAllTo(12.585, 43.334, "Bab-el-Mandeb");
+        harness.EnrichmentService.Behaviour = _ => StubEnrichmentService.Success(
+            language: "en",
+            translated: false);
+
+        var processor = harness.BuildProcessor();
+        var envelope = PipelineTestHarness.Envelope(
+            "Un navire de charge a été approché par de petites embarcations.",
+            sourceIdentifier: "a-1") with
+        {
+            DeclaredLanguage = "fr",
+        };
+
+        await processor.ProcessAsync(envelope, CancellationToken.None);
+
+        var stored = harness.Observations.Committed[0];
+
+        Assert.Equal("fr", stored.DetectedLanguage);
+        Assert.Equal(TranslationState.NotTranslated, stored.Translation);
+        Assert.False(stored.HasEnglishText);
+    }
+
+    [Fact]
     public async Task ALowConfidenceClassificationStillKeepsTheTranslationItPaidFor()
     {
         // Uncertainty about whether a report is piracy or a maritime incident is not uncertainty
