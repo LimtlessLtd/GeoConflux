@@ -285,8 +285,25 @@ English in about three minutes on a consumer GPU — for example
 *Moscow Endorses Trump's Energy Truce Idea*. If the daemon is not running, enrichment fails cleanly
 and the keyword classification stands; nothing breaks.
 
-The published page is a separate problem: a GitHub-hosted runner has no GPU, so the deploy still runs
-the stand-in and still labels the untranslated reports honestly.
+### Translating on the published page
+
+A GitHub-hosted runner has four cores, no GPU, and a fresh machine every run, so the deploy cannot
+run a language model and the published page still labels foreign-language reports as untranslated.
+
+Moving that job onto a machine that *does* have one is three repository settings and no code change:
+
+1. Register this machine as a self-hosted runner (*Settings → Actions → Runners → New self-hosted
+   runner*) and make sure `ollama serve` is running with `qwen3.5:4b` pulled.
+2. Set repository **variables** `PIPELINE_RUNNER` to the runner's label, `AI_PROVIDER` to `Ollama`,
+   and `AI_MODEL` to `qwen3.5:4b`.
+3. Push, or run the workflow manually.
+
+Set the runner and the provider together. Pointing `AI_PROVIDER` at Ollama while the job still runs
+on a hosted runner would fail every enrichment call and publish a page with no AI at all — worse than
+the stand-in, which at least summarises.
+
+A hosted provider works the same way: `AI_PROVIDER=OpenAI` with the `AI_API_KEY` secret set, and no
+runner change. A fork with none of these configured builds and publishes exactly as it does today.
 
 It also makes the geolocation rule visible without a credential. Submit an Arabic report mentioning
 Bab-el-Mandeb and the stand-in reports the language, *names* the place, and honestly declines to

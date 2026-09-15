@@ -26,7 +26,16 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # GitHub-hosted unless this repository says otherwise. The one thing a hosted runner cannot do is
+    # run a language model: four cores, no GPU, and a fresh machine every time. Enrichment therefore
+    # falls back to the deterministic stand-in here, which cannot translate, which is why the
+    # published page labels foreign-language reports as untranslated (ADR 039, ADR 041).
+    #
+    # Setting the repository variable PIPELINE_RUNNER to a self-hosted label moves this job onto a
+    # machine that has Ollama and a GPU, and AI_PROVIDER/AI_MODEL below then produce real
+    # translations on the published page. Set them together: pointing the provider at Ollama on a
+    # runner without it would fail every enrichment call and publish a page with no AI at all.
+    runs-on: ${{ vars.PIPELINE_RUNNER || 'ubuntu-latest' }}
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
@@ -140,6 +149,14 @@ jobs:
           Providers__Ucdp__AccessToken: ${{ secrets.UCDP_ACCESS_TOKEN }}
           Providers__Ucdp__MaxItemsPerPoll: "500"
           Providers__Ucdp__MaxRequestsPerPoll: "6"
+
+          # Mock unless this repository says otherwise, on the same principle as the credentials
+          # above: a fork with nothing configured builds and publishes exactly as before. Set
+          # AI_PROVIDER to Ollama on a self-hosted runner that has the daemon, or to OpenAI with
+          # AI_API_KEY set, and the same pipeline starts translating.
+          Ai__Provider: ${{ vars.AI_PROVIDER || 'Mock' }}
+          Ai__Model: ${{ vars.AI_MODEL || 'qwen3.5:4b' }}
+          Ai__ApiKey: ${{ secrets.AI_API_KEY }}
         run: >
           dotnet run --project src/Geopolitics.Workers --configuration Release --no-build
           --no-launch-profile -- --export "${{ github.workspace }}/dist/data"
