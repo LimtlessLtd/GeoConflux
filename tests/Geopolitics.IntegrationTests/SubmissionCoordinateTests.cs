@@ -110,7 +110,13 @@ public sealed class SubmissionCoordinateTests
     {
         // The endpoint answers 202 before processing, so the read model is polled rather than assumed
         // ready. Bounded so a genuine failure fails the test rather than hanging it.
-        for (var attempt = 0; attempt < 50; attempt++)
+        //
+        // Thirty seconds, not the five this used to allow. Five is ample once the host is warm and
+        // is not ample for the first submission of a run on a shared runner, where the queue, the
+        // processor, SQLite and the gazetteer are all starting cold — it failed a publish that way
+        // while CI passed on the identical commit. The rest of the suite already waits thirty, and
+        // a bound that only holds on an idle machine is not a bound.
+        for (var attempt = 0; attempt < 300; attempt++)
         {
             var observations = await client.GetFromJsonAsync<JsonElement>("/api/observations?take=50");
 

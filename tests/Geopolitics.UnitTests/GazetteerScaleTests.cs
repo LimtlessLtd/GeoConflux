@@ -74,30 +74,75 @@ public sealed class GazetteerScaleTests(ITestOutputHelper output)
             + "the slowest part of the pipeline.");
     }
 
+    /// <summary>
+    /// Resolution is a hash lookup rather than a search, asserted against a linear scan measured on
+    /// the same machine in the same moment rather than against a fixed number of milliseconds.
+    /// <para>
+    /// It used to assert <c>perLookup &lt; 0.1 ms</c>, and that is the wrong shape of claim for the
+    /// same reason the scan test below says so: the figure describes the runner as much as the code.
+    /// A hash lookup here costs on the order of a ten-thousandth of a millisecond, so the bound had
+    /// four orders of magnitude of headroom and still failed a publish — 0.13218 ms on a loaded
+    /// GitHub runner, where contention rather than the lookup was being measured. CI passed on the
+    /// identical commit minutes earlier.
+    /// </para>
+    /// <para>
+    /// Comparing against a scan removes the machine from the answer entirely. Both figures absorb
+    /// whatever load is present, so the ratio between them stays honest on hardware of any speed,
+    /// and the property asserted is the one the test is named for.
+    /// </para>
+    /// </summary>
     [Fact]
     public void ResolvingANameByLookupDoesNotDependOnHowLargeTheLexiconIs()
     {
+        var haystack = Enumerable.Range(0, 20_000).Select(index => $"place-{index}").ToArray();
+        var needle = haystack[^1];
+
         for (var index = 0; index < 50; index++)
         {
             Gazetteer.TryResolve("Odesa", out _);
         }
 
+        var lookupCost = Measure(() => Gazetteer.TryResolve("Odesa", out _));
+
+        // The worst case of the thing a hash lookup replaced: every entry compared before the answer.
+        var scanCost = Measure(() =>
+        {
+            foreach (var candidate in haystack)
+            {
+                if (string.Equals(candidate, needle, StringComparison.OrdinalIgnoreCase))
+                {
+                    break;
+                }
+            }
+        });
+
+        var advantage = scanCost / lookupCost;
+
+        output.WriteLine(
+            $"TryResolve: {lookupCost:F6} ms. Linear scan of {haystack.Length:N0}: {scanCost:F6} ms. "
+            + $"Lookup is {advantage:F0}x cheaper.");
+
+        // Twenty is far below the thousandfold a real hash lookup shows and far above anything a
+        // scan could reach, so it separates the two implementations without pretending to measure
+        // the machine.
+        Assert.True(
+            advantage > 20,
+            $"A lookup was only {advantage:F1}x cheaper than scanning {haystack.Length:N0} entries, "
+            + "which is not the cost profile of a hash lookup.");
+    }
+
+    /// <summary>Per-operation cost over <see cref="Iterations"/> runs, in milliseconds.</summary>
+    private static double Measure(Action operation)
+    {
         var stopwatch = Stopwatch.StartNew();
 
         for (var index = 0; index < Iterations; index++)
         {
-            Gazetteer.TryResolve("Odesa", out _);
+            operation();
         }
 
         stopwatch.Stop();
-
-        var perLookup = stopwatch.Elapsed.TotalMilliseconds / Iterations;
-        output.WriteLine($"TryResolve: {perLookup:F5} ms per lookup over {Iterations} iterations.");
-
-        // This is the path every real placement takes — the resolver, and both coded-event adapters.
-        // It is a hash lookup, so the assertion is really that it has not quietly become something
-        // else.
-        Assert.True(perLookup < 0.1, $"A single lookup took {perLookup:F5} ms, which is not a hash lookup.");
+        return stopwatch.Elapsed.TotalMilliseconds / Iterations;
     }
 
     /// <summary>
