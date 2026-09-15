@@ -10,10 +10,11 @@ namespace Geopolitics.Infrastructure.Ai;
 /// <summary>
 /// Builds the configured <see cref="IChatClient"/>.
 /// <para>
-/// Three of the four providers share one SDK. Ollama exposes an OpenAI-compatible endpoint, so
-/// pointing the OpenAI client at the local daemon covers local development without a second client
-/// library to keep current; Azure OpenAI needs its own client because it authenticates and routes
-/// differently, and pretending otherwise would make the Azure option a claim rather than a feature.
+/// OpenAI and Azure OpenAI share one SDK; Azure needs its own client because it authenticates and
+/// routes differently, and pretending otherwise would make the Azure option a claim rather than a
+/// feature. Ollama used to be pointed at the same OpenAI client through its compatibility shim, and
+/// now has its own: the shim cannot turn off a local model's reasoning pass, which costs an order of
+/// magnitude on this workload. See <see cref="OllamaChatClient"/>.
 /// </para>
 /// </summary>
 public static class ChatClientFactory
@@ -21,11 +22,6 @@ public static class ChatClientFactory
     /// <summary>Activity source for GenAI spans, registered with the OpenTelemetry tracer provider.</summary>
     public const string ActivitySourceName = "Geopolitics.Ai";
 
-    /// <summary>
-    /// Ollama ignores the bearer token entirely, but the OpenAI client requires a non-empty
-    /// credential to construct. This placeholder is not a secret and grants nothing.
-    /// </summary>
-    private const string OllamaPlaceholderCredential = "ollama-local";
 
     public static IChatClient Create(AiProviderOptions options, IServiceProvider services)
     {
@@ -37,7 +33,7 @@ public static class ChatClientFactory
         var inner = options.Provider switch
         {
             AiProviderKind.Mock => services.GetRequiredService<DeterministicMockChatClient>(),
-            AiProviderKind.Ollama => CreateOpenAICompatible(options, OllamaPlaceholderCredential),
+            AiProviderKind.Ollama => CreateOllama(options, services),
             AiProviderKind.OpenAI => CreateOpenAICompatible(options, RequireApiKey(options, "OpenAI")),
             AiProviderKind.AzureOpenAI => CreateAzure(options),
             _ => throw new InvalidOperationException($"Unsupported AI provider '{options.Provider}'."),
@@ -48,6 +44,21 @@ public static class ChatClientFactory
             .UseOpenTelemetry(loggerFactory, ActivitySourceName)
             .Build(services);
     }
+
+    /// <summary>
+    /// Builds the local client over a plain <see cref="HttpClient"/>. Deliberately not the screened
+    /// handler the OSINT adapters use: that one refuses to connect to a private address, which is
+    /// exactly what a daemon on localhost is.
+    /// </summary>
+    private static OllamaChatClient CreateOllama(AiProviderOptions options, IServiceProvider services)
+    {
+        var client = services.GetRequiredService<IHttpClientFactory>().CreateClient(OllamaClientName);
+        client.BaseAddress = new Uri(OllamaChatClient.ResolveBase(options));
+        return new OllamaChatClient(client, options);
+    }
+
+    /// <summary>Named client for the local daemon, registered without the public-internet screen.</summary>
+    public const string OllamaClientName = "ollama";
 
     private static IChatClient CreateOpenAICompatible(AiProviderOptions options, string apiKey)
     {

@@ -9,7 +9,9 @@ public enum AiProviderKind
     /// </summary>
     Mock = 0,
 
-    /// <summary>A local Ollama daemon, reached through its OpenAI-compatible endpoint.</summary>
+    /// <summary>
+    /// A local Ollama daemon, reached through its own API. No credential, no network egress.
+    /// </summary>
     Ollama,
 
     /// <summary>The OpenAI platform.</summary>
@@ -65,10 +67,21 @@ public sealed class AiProviderOptions
     /// <summary>Caps the response size, which bounds both latency and spend on a runaway generation.</summary>
     public int MaxOutputTokens { get; set; } = 800;
 
+    /// <summary>
+    /// Whether a local model that can reason before answering should be allowed to. Ollama only.
+    /// <para>
+    /// Off, because for this task the reasoning is pure cost. Measured on one Arabic report: 27
+    /// seconds and 1,484 completion tokens with it, 2.5 seconds and 80 without, for an answer that
+    /// was no better — the non-thinking run returned a correct <c>ar</c> tag where the thinking run
+    /// returned "Arabic". Turn it on for a model whose deliberation is worth nine minutes a run.
+    /// </para>
+    /// </summary>
+    public bool EnableThinking { get; set; }
+
     /// <summary>The endpoint actually used, applying the per-provider default where none is set.</summary>
     public string? ResolveEndpoint() => Provider switch
     {
-        AiProviderKind.Ollama => string.IsNullOrWhiteSpace(Endpoint) ? "http://localhost:11434/v1" : Endpoint.Trim(),
+        AiProviderKind.Ollama => string.IsNullOrWhiteSpace(Endpoint) ? OllamaChatClient.DefaultEndpoint : Endpoint.Trim(),
         _ => string.IsNullOrWhiteSpace(Endpoint) ? null : Endpoint.Trim(),
     };
 }

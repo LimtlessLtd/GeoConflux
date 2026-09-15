@@ -188,6 +188,13 @@ public static class ServiceCollectionExtensions
         // The mock client is registered unconditionally so that switching Ai:Provider back to Mock
         // is a configuration change, and so tests can resolve it without rebuilding the container.
         services.AddSingleton<DeterministicMockChatClient>();
+
+        // A plain client, and deliberately so: the screened handler the OSINT adapters use refuses
+        // to connect to a private address, which is what a daemon on localhost is. Nothing leaves the
+        // machine on this one. The timeout is generous because a cold model load is a first-call cost
+        // of a minute or more, and failing that would look like the daemon being down.
+        services.AddHttpClient(ChatClientFactory.OllamaClientName, client =>
+            client.Timeout = TimeSpan.FromMinutes(5));
         services.AddSingleton(provider => ChatClientFactory.Create(
             provider.GetRequiredService<IOptions<AiProviderOptions>>().Value,
             provider));

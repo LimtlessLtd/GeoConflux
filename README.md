@@ -231,7 +231,7 @@ Enrichment translates, summarises, classifies, assesses severity, extracts named
 | `Ai:Provider` | Needs | Notes |
 | --- | --- | --- |
 | `Mock` *(default)* | nothing | Deterministic in-process stand-in. **Not a language model.** |
-| `Ollama` | a local daemon | Reached through its OpenAI-compatible endpoint |
+| `Ollama` | a local daemon | Reached through Ollama's own API, with the model's reasoning pass off. **No credential.** See [ADR 041](docs/adr/041-local-model-over-ollamas-own-api.md) |
 | `OpenAI` | `Ai:ApiKey` | |
 | `AzureOpenAI` | `Ai:Endpoint`, `Ai:ApiKey` | |
 
@@ -270,7 +270,23 @@ repair loop, telemetry, and audit record. Only the responder differs.
 The visible cost is that the published dashboard mostly cannot show you English. It says so: a
 report nothing translated carries an `ar · not translated` chip rather than the `ar → en` one, and
 the feed states the shortfall in a sentence — *N of M reports are shown in the source language*.
-Configure a real provider and the same machinery produces real translations with no other change.
+
+**Locally, that is already fixed.** `appsettings.Development.json` selects Ollama, so `dotnet run`
+translates with a local model and no credential of any kind:
+
+```powershell
+ollama pull qwen3.5:4b      # once
+dotnet run --project src/Geopolitics.Api
+```
+
+A run over the committed collection bundles translated nine Russian, French and Arabic reports into
+English in about three minutes on a consumer GPU — for example
+*Кремль считает хорошей инициативой идею Трампа об энергетическом перемирии* →
+*Moscow Endorses Trump's Energy Truce Idea*. If the daemon is not running, enrichment fails cleanly
+and the keyword classification stands; nothing breaks.
+
+The published page is a separate problem: a GitHub-hosted runner has no GPU, so the deploy still runs
+the stand-in and still labels the untranslated reports honestly.
 
 It also makes the geolocation rule visible without a credential. Submit an Arabic report mentioning
 Bab-el-Mandeb and the stand-in reports the language, *names* the place, and honestly declines to
