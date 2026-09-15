@@ -44,6 +44,14 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
 
+    <!-- The workflow files, linted for the rule that makes a self-hosted runner safe on a public
+         repository: nothing a stranger can trigger may run on one. Copied rather than located by
+         walking up from the test assembly, for the same reason the project files below are. -->
+    <Content Include="..\..\.github\workflows\*.yml">
+      <Link>workflows\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+
     <!-- The two host project files, linted for what a project has to declare to be run rather than
          merely built. Copied rather than located by walking up from the test assembly, because that
          walk breaks the moment the output path changes and the failure looks like a missing file

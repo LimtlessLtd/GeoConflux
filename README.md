@@ -305,6 +305,41 @@ the stand-in, which at least summarises.
 A hosted provider works the same way: `AI_PROVIDER=OpenAI` with the `AI_API_KEY` secret set, and no
 runner change. A fork with none of these configured builds and publishes exactly as it does today.
 
+#### Why a self-hosted runner is safe here
+
+GitHub warns that self-hosted runners are not recommended on public repositories, because "forks of
+your public repository can potentially run dangerous code on your self-hosted runner by creating a
+pull request". That warning describes one mechanism, and it does not reach this workflow.
+
+`pages.yml` — the only job that can move to a self-hosted runner — triggers on `push` to `main`,
+`workflow_dispatch`, and `schedule`. A fork can do none of those: pushing to `main` needs write
+access, dispatching a workflow needs write access, and a schedule runs from this repository's own
+default branch. What a stranger *can* do is open a pull request, and the workflow that builds pull
+requests is `ci.yml`, which is pinned to `ubuntu-latest`. `pull_request_target` — which would run a
+fork's code with this repository's secrets — is used nowhere.
+
+That property used to hold by accident of how the triggers happened to be written. `WorkflowRunnerTests`
+now enforces it: any workflow carrying a pull-request trigger must pin a GitHub-hosted runner,
+`pull_request_target` is banned outright, and every third-party action must be pinned to a commit
+SHA. Adding `pull_request:` to `pages.yml` fails the build rather than quietly handing arbitrary
+code execution to anyone with a GitHub account.
+
+Three things are still worth doing on the machine itself, because the runner does execute whatever
+is on `main` — your own code, and every dependency it restores:
+
+- Register it with `--ephemeral`, so the process handles one job and de-registers rather than
+  staying resident between runs.
+- Run it as a dedicated low-privilege account, not the one holding your SSH keys and browser
+  profile.
+- In *Settings → Actions → General*, set **Fork pull request workflows from outside collaborators**
+  to *Require approval for all outside collaborators*. That is belt and braces for `ci.yml`, which
+  is hosted anyway.
+
+If you would rather have no inbound execution on your machine at all, the alternative is to invert
+it: run the export locally on a schedule and push the result, so the machine only ever makes
+outbound commits. That is the same trust model as the committed collection bundles, at the cost of
+the published data being committed output rather than a fresh CI run.
+
 It also makes the geolocation rule visible without a credential. Submit an Arabic report mentioning
 Bab-el-Mandeb and the stand-in reports the language, *names* the place, and honestly declines to
 classify text it cannot read — so the observation is placed at 12.585, 43.334 by the gazetteer while
