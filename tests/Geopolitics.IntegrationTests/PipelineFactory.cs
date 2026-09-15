@@ -23,6 +23,11 @@ namespace Geopolitics.IntegrationTests;
 /// Replaces the configured provider. Supplied when a test needs a provider that can read the text
 /// it is given, which the offline stand-in deliberately cannot.
 /// </param>
+/// <param name="scriptedStream">
+/// Registers <see cref="ScriptedEventSource"/> as an ingestion source. Off by default, and
+/// deliberately explicit: the application ships with no source that can produce a synthetic
+/// observation, so a test that wants one has to say so (ADR 040).
+/// </param>
 /// <param name="configureServices">
 /// Applied last, after every default registration. Tests that need to make a real dependency
 /// misbehave — a save that fails, a model that throws — substitute it here rather than reaching for
@@ -33,6 +38,7 @@ public sealed class PipelineFactory(
     bool runSources,
     IReadOnlyDictionary<string, string?>? settings = null,
     IChatClient? chatClient = null,
+    bool scriptedStream = false,
     Action<IServiceCollection>? configureServices = null) : WebApplicationFactory<Program>
 {
     private readonly string databasePath = Path.Combine(
@@ -51,10 +57,6 @@ public sealed class PipelineFactory(
             {
                 ["ConnectionStrings:Geopolitics"] = $"Data Source={databasePath}",
 
-                // Recorded delays are removed so the test finishes in milliseconds while still
-                // exercising the real ordering of the recorded stream.
-                ["Replay:SpeedFactor"] = "0",
-                ["Replay:Loop"] = "false",
                 ["Pipeline:SourcesEnabled"] = runSources ? "true" : "false",
                 ["Pipeline:ProcessorEnabled"] = runPipeline ? "true" : "false",
 
@@ -62,7 +64,7 @@ public sealed class PipelineFactory(
                 // read-then-write race two workers have when simultaneous reports describe one event.
                 ["Pipeline:ProcessorConcurrency"] = "1",
 
-                // Off by default so a test asserting on the recorded stream sees the recorded stream.
+                // Off by default so a test asserting on a known stream sees only that stream.
                 // Collection bundles ship with the build, so leaving this on would mean every bundle
                 // committed from now on silently changed the expected counts of unrelated tests — and
                 // the failure would look like a pipeline regression rather than new data. A test that
@@ -89,6 +91,12 @@ public sealed class PipelineFactory(
             {
                 services.RemoveAll<IChatClient>();
                 services.AddSingleton(chatClient);
+            }
+
+            if (scriptedStream)
+            {
+                services.AddSingleton<IEventSource>(provider =>
+                    new ScriptedEventSource(provider.GetRequiredService<TimeProvider>()));
             }
 
             configureServices?.Invoke(services);

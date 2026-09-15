@@ -23,10 +23,10 @@ public sealed class RetentionBoundaryTests
     [Fact]
     public async Task PruningNeverRemovesEvidenceAnIncidentRestsOn()
     {
-        using var factory = new PipelineFactory(runPipeline: true, runSources: true);
+        using var factory = new PipelineFactory(runPipeline: true, runSources: true, scriptedStream: true);
         using var client = factory.CreateClient();
 
-        await WaitForTheRecordedRunToFinishAsync(factory);
+        await WaitForTheScriptedRunToFinishAsync(factory);
 
         using var scope = factory.Services.CreateScope();
         var database = scope.ServiceProvider.GetRequiredService<GeopoliticsDbContext>();
@@ -46,7 +46,7 @@ public sealed class RetentionBoundaryTests
         var incidents = await database.Incidents.AsNoTracking().ToListAsync(CancellationToken.None);
 
         Assert.NotEmpty(incidents);
-        Assert.True(linkedBefore > 0, "the replay run should have produced observations linked to incidents");
+        Assert.True(linkedBefore > 0, "the scripted run should have produced observations linked to incidents");
 
         var retention = scope.ServiceProvider.GetRequiredService<IRetentionRepository>();
         var result = await retention.PruneAsync(DateTimeOffset.UtcNow - Horizon, CancellationToken.None);
@@ -137,13 +137,10 @@ public sealed class RetentionBoundaryTests
         return observation;
     }
 
-    /// <summary>The recorded stream, which does not loop here. See replay-observations.json.</summary>
-    private const int ReplayObservations = 11;
-
     /// <summary>
-    /// Waits for the whole recorded run to be stored, which is determinate because the stream is
-    /// finite and <c>Replay:Loop</c> is false in this factory: once eleven observations exist there
-    /// is nothing left for the pump to add.
+    /// Waits for the whole scripted run to be stored, which is determinate because the fixture is
+    /// finite and emits once: when every record it holds has been stored there is nothing left for
+    /// the pump to add.
     /// <para>
     /// This used to wait for the first incident to appear and called that determinate. It is not.
     /// The condition is satisfied while the rest of the stream is still being ingested, so the
@@ -153,7 +150,7 @@ public sealed class RetentionBoundaryTests
     /// the race was gone outlived the race being gone, which is the more useful half of the lesson.
     /// </para>
     /// </summary>
-    private static async Task WaitForTheRecordedRunToFinishAsync(PipelineFactory factory)
+    private static async Task WaitForTheScriptedRunToFinishAsync(PipelineFactory factory)
     {
         var deadline = DateTimeOffset.UtcNow.AddMinutes(2);
         var stored = 0;
@@ -165,7 +162,7 @@ public sealed class RetentionBoundaryTests
 
             stored = await database.Observations.AsNoTracking().CountAsync(CancellationToken.None);
 
-            if (stored >= ReplayObservations
+            if (stored >= ScriptedEventSource.RecordCount
                 && await database.Observations.AsNoTracking().AnyAsync(o => o.IncidentId != null, CancellationToken.None))
             {
                 return;
@@ -175,7 +172,7 @@ public sealed class RetentionBoundaryTests
         }
 
         Assert.Fail(
-            $"the replay run stored {stored} of {ReplayObservations} observations within two minutes, "
+            $"the scripted run stored {stored} of {ScriptedEventSource.RecordCount} observations within two minutes, "
             + "so there is no settled state to assert against");
     }
 }

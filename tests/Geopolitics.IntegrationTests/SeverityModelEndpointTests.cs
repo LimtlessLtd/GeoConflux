@@ -126,7 +126,7 @@ public sealed class SeverityModelEndpointTests
     [Fact]
     public async Task ProcessedObservationsCarryTheModelsOpinionThroughTheApi()
     {
-        using var factory = new PipelineFactory(runPipeline: true, runSources: true);
+        using var factory = new PipelineFactory(runPipeline: true, runSources: true, scriptedStream: true);
         using var client = factory.CreateClient();
 
         var observations = await WaitForObservationsAsync(client);
@@ -158,7 +158,8 @@ public sealed class SeverityModelEndpointTests
         using var factory = new PipelineFactory(
             runPipeline: true,
             runSources: true,
-            settings: new Dictionary<string, string?> { ["SeverityModel:Enabled"] = "false" });
+            settings: new Dictionary<string, string?> { ["SeverityModel:Enabled"] = "false" },
+            scriptedStream: true);
         using var client = factory.CreateClient();
 
         var observations = await WaitForObservationsAsync(client);
@@ -170,13 +171,11 @@ public sealed class SeverityModelEndpointTests
 
     private static async Task<List<ObservationRow>> WaitForObservationsAsync(HttpClient client)
     {
-        const int RecordedObservations = 11;
-
         for (var attempt = 0; attempt < 300; attempt++)
         {
             var observations = await client.GetFromJsonAsync<List<ObservationRow>>("/api/observations?take=200", Json);
 
-            if (observations is { Count: >= RecordedObservations })
+            if (observations is not null && observations.Count >= ScriptedEventSource.RecordCount)
             {
                 return observations;
             }
@@ -184,7 +183,7 @@ public sealed class SeverityModelEndpointTests
             await Task.Delay(50);
         }
 
-        throw new InvalidOperationException("The recorded stream did not finish processing within the timeout.");
+        throw new InvalidOperationException("The scripted stream did not finish processing within the timeout.");
     }
 
     private sealed record ModelRow(bool Ready, string Version, string? Method, string Notice);

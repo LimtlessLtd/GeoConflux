@@ -189,7 +189,7 @@ public sealed class ControlAssessmentTests
 
         var place = Assert.Single(report.Places);
         Assert.True(place.EvidenceIsDemo);
-        Assert.Contains("synthetic replay data", place.Statement, StringComparison.Ordinal);
+        Assert.Contains("Every record behind this is synthetic", place.Statement, StringComparison.Ordinal);
         Assert.Contains("describes nothing real", place.Statement, StringComparison.Ordinal);
     }
 

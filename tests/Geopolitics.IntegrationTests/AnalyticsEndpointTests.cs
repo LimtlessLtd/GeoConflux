@@ -26,7 +26,7 @@ public sealed class AnalyticsEndpointTests
     [Fact]
     public async Task TheDefaultWindowSummarisesWhatThePipelineProduced()
     {
-        using var factory = new PipelineFactory(runPipeline: true, runSources: true);
+        using var factory = new PipelineFactory(runPipeline: true, runSources: true, scriptedStream: true);
         using var client = factory.CreateClient();
 
         await WaitForIncidentsAsync(client);
@@ -57,7 +57,7 @@ public sealed class AnalyticsEndpointTests
     [Fact]
     public async Task RegionalActivityIsGroupedByResolvedPlaceRatherThanCollapsedIntoOneBucket()
     {
-        using var factory = new PipelineFactory(runPipeline: true, runSources: true);
+        using var factory = new PipelineFactory(runPipeline: true, runSources: true, scriptedStream: true);
         using var client = factory.CreateClient();
 
         await WaitForIncidentsAsync(client);
@@ -84,7 +84,7 @@ public sealed class AnalyticsEndpointTests
     [Fact]
     public async Task TheActivityScoreArrivesWithItsFormulaAndItsCaveat()
     {
-        using var factory = new PipelineFactory(runPipeline: true, runSources: true);
+        using var factory = new PipelineFactory(runPipeline: true, runSources: true, scriptedStream: true);
         using var client = factory.CreateClient();
 
         await WaitForIncidentsAsync(client);
@@ -105,7 +105,7 @@ public sealed class AnalyticsEndpointTests
     [Fact]
     public async Task MaritimeActivityCountsProximitiesRatherThanClaimingDistinctIncidents()
     {
-        using var factory = new PipelineFactory(runPipeline: true, runSources: true);
+        using var factory = new PipelineFactory(runPipeline: true, runSources: true, scriptedStream: true);
         using var client = factory.CreateClient();
 
         await WaitForIncidentsAsync(client);
@@ -127,7 +127,7 @@ public sealed class AnalyticsEndpointTests
     [Fact]
     public async Task AWiderWindowNeverReportsFewerIncidentsThanANarrowerOne()
     {
-        using var factory = new PipelineFactory(runPipeline: true, runSources: true);
+        using var factory = new PipelineFactory(runPipeline: true, runSources: true, scriptedStream: true);
         using var client = factory.CreateClient();
 
         await WaitForIncidentsAsync(client);
@@ -175,7 +175,7 @@ public sealed class AnalyticsEndpointTests
         using var factory = new PipelineFactory(
             runPipeline: false,
             runSources: false,
-            settings: new Dictionary<string, string?> { ["Seed:Enabled"] = "false" });
+            settings: null);
         using var client = factory.CreateClient();
 
         var report = await client.GetFromJsonAsync<AnalyticsReportRow>("/api/analytics", Json);

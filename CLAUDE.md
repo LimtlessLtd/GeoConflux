@@ -6,7 +6,11 @@
 
 - Target .NET 10 and preserve `Domain -> Application -> Infrastructure -> API/Workers` dependency direction.
 - The domain project has no framework or infrastructure references.
-- Demo/replay data is explicitly labelled and must not be presented as live reporting.
+- **The system carries real reporting only.** Nothing in the application may produce a synthetic
+  observation or incident — not behind a flag, not as a seeder, not as a fallback when a feed is
+  down. See `docs/adr/040-real-reporting-only.md`. The provenance labelling (`Recorded`, `IsDemo`,
+  the demo banner) stays as a safety net and must not be removed; a fabricated record must only ever
+  be able to fail *towards* being labelled synthetic. Crafted fixtures belong in `tests/`.
 - Treat AI outputs and all external payloads as untrusted input. Never let an LLM authoritatively set coordinates.
 - Build, test, and format after meaningful changes. Do not bypass failures.
 - Dashboard logic that does not need a browser belongs in `wwwroot/lib` and must be tested; `app.js`

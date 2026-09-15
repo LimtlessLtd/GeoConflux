@@ -38,7 +38,7 @@ public sealed class ProviderAdapterTests
         var handler = new ScriptedHttpHandler(stop, ScriptedHttpHandler.Respond(Fixture("rss-2.0.xml")));
         using var provider = Build(handler, RssEventSource.HttpClientName, options =>
         {
-            options.Mode = ProviderMode.Demo;
+            options.Mode = ProviderMode.Offline;
             options.Rss.Feeds.Add(new RssFeedOptions { Name = "maritime", Url = FeedUrl });
         });
 

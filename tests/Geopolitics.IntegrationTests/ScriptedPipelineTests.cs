@@ -8,11 +8,17 @@ using Geopolitics.Domain;
 namespace Geopolitics.IntegrationTests;
 
 /// <summary>
-/// Drives the recorded replay stream through the real host — queue, background processor, SQLite,
-/// and realtime publication — and asserts on what the API then serves. This is the Sprint 2
-/// definition of done: an ingested event reaches the dashboard without a page refresh.
+/// Drives a scripted stream through the real host — queue, background processor, SQLite, and
+/// realtime publication — and asserts on what the API then serves. This is the Sprint 2 definition
+/// of done: an ingested event reaches the dashboard without a page refresh.
+/// <para>
+/// The stream is a test fixture registered by the factory, not a source the application contains.
+/// It used to be a shipped <c>ReplayEventSource</c>, which meant the product itself could emit
+/// fabricated observations into its own read model; ADR 040 removed that and left the fixture here,
+/// where it can still cover the cases real feeds cannot be relied upon to contain on a given day.
+/// </para>
 /// </summary>
-public sealed class ReplayPipelineTests
+public sealed class ScriptedPipelineTests
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
     {
@@ -20,15 +26,15 @@ public sealed class ReplayPipelineTests
     };
 
     [Fact]
-    public async Task TheRecordedStreamIsIngestedCorrelatedAndServedByTheApi()
+    public async Task TheScriptedStreamIsIngestedCorrelatedAndServedByTheApi()
     {
-        using var factory = new PipelineFactory(runPipeline: true, runSources: true);
+        using var factory = new PipelineFactory(runPipeline: true, runSources: true, scriptedStream: true);
         using var client = factory.CreateClient();
 
-        var observations = await WaitForObservationsAsync(client, expected: 11);
+        var observations = await WaitForObservationsAsync(client, expected: ScriptedEventSource.RecordCount);
 
-        // Every recorded record is accounted for, including the deliberate redelivery.
-        Assert.Equal(11, observations.Count);
+        // Every scripted record is accounted for, including the deliberate redelivery.
+        Assert.Equal(ScriptedEventSource.RecordCount, observations.Count);
 
         var duplicate = Assert.Single(observations, value => value.Status == ObservationStatus.Duplicate);
         Assert.NotNull(duplicate.DuplicateOfObservationId);
@@ -51,17 +57,18 @@ public sealed class ReplayPipelineTests
         Assert.NotNull(satellite.Location);
         Assert.Equal(12.61, satellite.Location.Latitude, precision: 2);
 
-        // Nothing from replay may present itself as live reporting.
+        // Nothing fabricated may present itself as live reporting, inside a test least of all: an
+        // assertion that passed because a fixture looked real would be worse than no assertion.
         Assert.All(observations, observation => Assert.True(observation.IsDemo));
     }
 
     [Fact]
     public async Task RealtimePublicationHappensOnlyAfterStateIsCommitted()
     {
-        using var factory = new PipelineFactory(runPipeline: true, runSources: true);
+        using var factory = new PipelineFactory(runPipeline: true, runSources: true, scriptedStream: true);
         using var client = factory.CreateClient();
 
-        await WaitForObservationsAsync(client, expected: 11);
+        await WaitForObservationsAsync(client, expected: ScriptedEventSource.RecordCount);
 
         Assert.NotEmpty(factory.Notifier.Created);
 
@@ -106,20 +113,20 @@ public sealed class ReplayPipelineTests
     }
 
     [Fact]
-    public async Task ManualSubmissionStillWorksAfterTheRecordedSourcesHaveFinished()
+    public async Task ManualSubmissionStillWorksAfterTheScriptedSourcesHaveFinished()
     {
-        using var factory = new PipelineFactory(runPipeline: true, runSources: true);
+        using var factory = new PipelineFactory(runPipeline: true, runSources: true, scriptedStream: true);
         using var client = factory.CreateClient();
 
-        // Let the finite replay stream run to exhaustion first.
-        await WaitForObservationsAsync(client, expected: 11);
+        // Let the finite scripted stream run to exhaustion first.
+        await WaitForObservationsAsync(client, expected: ScriptedEventSource.RecordCount);
 
         var response = await client.PostAsJsonAsync(
             new Uri("/api/observations", UriKind.Relative),
             new
             {
                 sourceName = "analyst-desk",
-                title = "Submitted after replay finished",
+                title = "Submitted after the scripted stream finished",
                 content = "An analyst recorded a vessel detained near the Strait of Hormuz.",
                 locationName = "Strait of Hormuz",
             },
@@ -129,8 +136,8 @@ public sealed class ReplayPipelineTests
         // broke this endpoint even though the host was still running normally.
         Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
 
-        // The eleven recorded records plus this submission.
-        var observations = await WaitForObservationsAsync(client, expected: 12);
+        // The scripted records plus this submission.
+        var observations = await WaitForObservationsAsync(client, expected: ScriptedEventSource.RecordCount + 1);
         Assert.Contains(observations, value => value.SourceName == "manual:analyst-desk");
     }
 
@@ -162,7 +169,7 @@ public sealed class ReplayPipelineTests
     [Fact]
     public async Task TheHostShutsDownCleanlyWhileThePipelineIsRunning()
     {
-        var factory = new PipelineFactory(runPipeline: true, runSources: true);
+        var factory = new PipelineFactory(runPipeline: true, runSources: true, scriptedStream: true);
         using var client = factory.CreateClient();
 
         // Start work, then tear the host down mid-flight. Disposal must complete rather than hang on

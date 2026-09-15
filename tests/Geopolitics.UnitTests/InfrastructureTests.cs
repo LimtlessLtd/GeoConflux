@@ -167,67 +167,6 @@ public sealed class ChannelObservationBufferTests
     }
 }
 
-public sealed class ReplayEventSourceTests
-{
-    [Fact]
-    public async Task TheRecordedStreamIsEmittedAndLabelledAsDemoData()
-    {
-        var source = BuildSource();
-
-        var envelopes = await CollectAsync(source);
-
-        Assert.NotEmpty(envelopes);
-
-        // Nothing from the replay source may ever be mistaken for live reporting.
-        Assert.All(envelopes, envelope => Assert.Equal(ObservationProvenance.Recorded, envelope.Provenance));
-        Assert.All(envelopes, envelope => Assert.StartsWith("replay:", envelope.SourceName, StringComparison.Ordinal));
-    }
-
-    [Fact]
-    public async Task ReplayIsDeterministicAcrossRuns()
-    {
-        var first = await CollectAsync(BuildSource());
-        var second = await CollectAsync(BuildSource());
-
-        Assert.Equal(
-            first.Select(envelope => envelope.SourceIdentifier),
-            second.Select(envelope => envelope.SourceIdentifier));
-    }
-
-    [Fact]
-    public async Task TheRecordedStreamExercisesDeduplicationAndCorrelation()
-    {
-        var envelopes = await CollectAsync(BuildSource());
-
-        // A byte-identical redelivery, so the deduplication path is covered by the demo itself.
-        var identifiers = envelopes.Select(envelope => envelope.SourceIdentifier).ToArray();
-        Assert.NotEqual(identifiers.Length, identifiers.Distinct(StringComparer.Ordinal).Count());
-
-        // At least one record carries provider coordinates and one names an unmappable place.
-        Assert.Contains(envelopes, envelope => envelope.DeclaredLatitude is not null);
-        Assert.Contains(envelopes, envelope => envelope.DeclaredLocationName == "Somewhere Unmapped");
-    }
-
-    private static ReplayEventSource BuildSource() => new(
-        TimeProvider.System,
-
-        // SpeedFactor 0 removes the recorded delays so tests do not wait on wall-clock time.
-        Options.Create(new ReplayOptions { SpeedFactor = 0, Loop = false }),
-        NullLogger<ReplayEventSource>.Instance);
-
-    private static async Task<List<Application.Contracts.ObservationEnvelope>> CollectAsync(ReplayEventSource source)
-    {
-        var envelopes = new List<Application.Contracts.ObservationEnvelope>();
-
-        await foreach (var envelope in source.ReadAsync(CancellationToken.None))
-        {
-            envelopes.Add(envelope);
-        }
-
-        return envelopes;
-    }
-}
-
 public sealed class ObservationIngestionServiceTests
 {
     [Fact]

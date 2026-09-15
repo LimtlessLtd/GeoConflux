@@ -26,7 +26,6 @@ public sealed class CollectedBundlePipelineTests
         {
             ["Providers:AgentBriefs:Enabled"] = "true",
             ["Providers:AgentBriefs:MaxBundleAge"] = "3650.00:00:00",
-            ["Replay:Enabled"] = "false",
         });
 
     [Fact]

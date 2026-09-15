@@ -31,9 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Recorded demo data is embedded so the replay source works from a published single file. -->
-    <EmbeddedResource Include="Sources/Data/replay-observations.json" />
-
     <!-- The severity model is trained from this corpus at runtime rather than loaded from a
          committed binary, so the dataset has to travel with the assembly. -->
     <EmbeddedResource Include="Ml/Data/severity-dataset.json" />

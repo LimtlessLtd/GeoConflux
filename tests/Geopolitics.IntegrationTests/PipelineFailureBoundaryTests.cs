@@ -30,7 +30,7 @@ public sealed class PipelineFailureBoundaryTests
         using var factory = new PipelineFactory(
             runPipeline: false,
             runSources: false,
-            settings: new Dictionary<string, string?> { ["Seed:Enabled"] = "false" });
+            settings: null);
 
         using var client = factory.CreateClient();
 

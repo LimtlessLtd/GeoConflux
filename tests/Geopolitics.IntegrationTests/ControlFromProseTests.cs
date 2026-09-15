@@ -32,7 +32,7 @@ public sealed class ControlFromProseTests
         using var factory = new PipelineFactory(
             runPipeline: true,
             runSources: true,
-            settings: new Dictionary<string, string?> { ["Replay:Enabled"] = "false" },
+            settings: null,
             configureServices: services => services.AddSingleton<IEventSource>(new ClaimSource(
                 [
                     ("wire-service-alpha", $"{Actor} captured {Place} after a night of fighting."),
@@ -79,7 +79,7 @@ public sealed class ControlFromProseTests
         using var factory = new PipelineFactory(
             runPipeline: true,
             runSources: true,
-            settings: new Dictionary<string, string?> { ["Replay:Enabled"] = "false" },
+            settings: null,
             configureServices: services => services.AddSingleton<IEventSource>(new ClaimSource(
                 [("wire-service-alpha", $"{Actor} captured {Place} after a night of fighting.")])));
 
@@ -107,7 +107,7 @@ public sealed class ControlFromProseTests
         using var factory = new PipelineFactory(
             runPipeline: true,
             runSources: true,
-            settings: new Dictionary<string, string?> { ["Replay:Enabled"] = "false" },
+            settings: null,
             configureServices: services => services.AddSingleton<IEventSource>(new ClaimSource(
                 [
                     ("wire-service-alpha", $"Heavy shelling was reported in {Place} overnight by {Actor}."),

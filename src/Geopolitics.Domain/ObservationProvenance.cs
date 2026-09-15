@@ -13,11 +13,18 @@ namespace Geopolitics.Domain;
 public enum ObservationProvenance
 {
     /// <summary>
-    /// The recorded replay stream. Synthetic, and labelled as such everywhere it travels.
+    /// Synthetic, and labelled as such everywhere it travels.
+    /// <para>
+    /// Nothing in the application produces this any more. The recorded stream that did was removed
+    /// by ADR 040, and the value is kept for two reasons: rows written before that still carry it,
+    /// and it is the safety net. An adapter that forgets to state its provenance gets this one, so a
+    /// fabricated record can only ever fail towards being labelled synthetic — never away from it.
+    /// The deploy fails the build if a published snapshot contains one.
+    /// </para>
     /// <para>
     /// Zero so that a record written before this property existed reads as the safer of the two
-    /// wrong answers: mislabelling real reporting as a demo understates the dashboard, where the
-    /// reverse would misrepresent synthetic data as fact.
+    /// wrong answers: mislabelling real reporting as synthetic understates the dashboard, where the
+    /// reverse would misrepresent invented data as fact.
     /// </para>
     /// </summary>
     Recorded = 0,

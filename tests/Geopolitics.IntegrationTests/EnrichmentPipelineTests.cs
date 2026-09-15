@@ -162,7 +162,7 @@ public sealed class EnrichmentPipelineTests
     {
         // The dashboard must never be able to show a category without saying how much to trust it,
         // so the contract is checked across the whole recorded stream rather than on one record.
-        using var factory = new PipelineFactory(runPipeline: true, runSources: true);
+        using var factory = new PipelineFactory(runPipeline: true, runSources: true, scriptedStream: true);
         using var client = factory.CreateClient();
 
         var observations = await WaitForObservationsAsync(client, expected: 8);
@@ -191,7 +191,7 @@ public sealed class EnrichmentPipelineTests
     {
         // ADR 005 asserted against the served payload. A located observation must name a place the
         // gazetteer knows or have been handed coordinates by its source; nothing else may be placed.
-        using var factory = new PipelineFactory(runPipeline: true, runSources: true);
+        using var factory = new PipelineFactory(runPipeline: true, runSources: true, scriptedStream: true);
         using var client = factory.CreateClient();
 
         var observations = await WaitForObservationsAsync(client, expected: 8);

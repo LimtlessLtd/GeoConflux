@@ -12,7 +12,7 @@ namespace Geopolitics.Application.Contracts;
 /// </remarks>
 public sealed record ObservationEnvelope
 {
-    /// <summary>Human-readable name of the originating source, e.g. <c>replay:reuters</c>.</summary>
+    /// <summary>Human-readable name of the originating source, e.g. <c>rss:un-news</c>.</summary>
     public required string SourceName { get; init; }
 
     public required ObservationKind Kind { get; init; }

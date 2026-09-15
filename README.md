@@ -6,28 +6,28 @@ trustworthy asynchronous processing pipeline rather than just a map.
 
 **Live dashboard: [limtlessltd.github.io/GeoConflux](https://limtlessltd.github.io/GeoConflux/)**
 
-> The dashboard runs on **synthetic replay data**. It is labelled as demo data in the API, in the
-> exported snapshot, and in the UI. It is not live reporting and describes no real-world events.
+> The dashboard carries **real reporting only**. Nothing in the application can produce a synthetic
+> observation ([ADR 040](docs/adr/040-real-reporting-only.md)) — the headlines are as published, and
+> the categories, severities, and correlations beside them are this system's assessments, not the
+> sources'.
 
 ## Live data
 
-The published dashboard is built by polling four public feeds — UN News, ReliefWeb, BBC World, and
-Al Jazeera — on every deploy and on a weekly schedule. No credential is involved; the feeds are
-public and are read as RSS is meant to be read. A recent run ingested 95 real reports, placed 86% of
-them, and correlated several across outlets.
+The published dashboard is built by polling ten public feeds — UN News in four languages, ReliefWeb,
+BBC World, BBC Arabic, Al Jazeera and others — on every deploy and on a weekly schedule, and by
+reading the collection bundles committed under `data/osint`. No credential is involved; the feeds are
+public and are read as RSS is meant to be read. A recent run ingested 225 real reports across four
+languages and correlated several across outlets.
 
 Real headlines are shown with this system's own assessments beside them, and the two are never
-conflated: categories, severities, and correlations are GeoConflux's, not the publishers'. The
-recorded demo stream is still ingested alongside, so the page cannot go blank if a feed is
-unreachable, and every record is labelled individually as live or demo — the banner counts them
-rather than asserting a blanket label.
+conflated: categories, severities, and correlations are GeoConflux's, not the publishers'. Every
+record is labelled individually as polled or collected, and the banner counts them rather than
+asserting a blanket label.
 
-That labelling reaches the timestamps too. A live report is aged against the reader's own clock,
-because a real publisher really did put it out four hours ago and that stays true however long after
-the run the page is opened. A demo record is aged against the recorded run instead, because its
-timestamp is invented and measuring it against now would stamp a fabricated event on a real strait as
-though it had happened this afternoon. So the list shows "4hr ago" beside "35m before the run", and
-the difference is the point rather than an inconsistency.
+There is deliberately no synthetic stream underneath it. A recorded one used to be ingested alongside
+so the page could not go blank if a feed were unreachable; that is gone, and a deploy that reads
+nothing real now fails and leaves the previous page up. A stale page that was true yesterday beats a
+fresh one padded with invented records.
 
 What real data makes obvious, and the page does not hide: the default enrichment provider is a
 deterministic keyword stand-in rather than a language model, and it cannot categorise most real
@@ -41,7 +41,8 @@ is a *static snapshot*. GitHub Pages serves files only, so no .NET process, data
 runs there. What you see was produced by a genuine run of the pipeline during the build and exported
 to JSON — the same queue, deduplicator, gazetteer, and correlator the application uses. The globe,
 filters, incident drawer, and source evidence all work, and the **Replay the recorded run** button in
-the Feed tab plays the observations back in order so you can watch incidents form and correlate.
+the Feed tab plays the snapshot's own observations back in order so you can watch incidents form and
+correlate.
 
 **Running it locally** starts the real thing: the bounded queue, background workers, SQLite
 persistence, and live SignalR updates.
@@ -79,14 +80,13 @@ are configured; all three ship disabled.
 
 ```text
 IEventSource -> validation -> bounded Channel -> background processor
-(replay, RSS,    -> normalise -> deduplicate -> AI enrich -> validate
+(RSS, bundles,   -> normalise -> deduplicate -> AI enrich -> validate
  FIRMS, ACLED,   -> resolve location -> correlate -> persist -> SignalR -> dashboard
  manual)
 ```
 
 Concretely, running the app locally will:
 
-- ingest eleven recorded observations from five synthetic sources, with realistic arrival delays;
 - reject one byte-identical redelivery as a duplicate, while keeping it for audit, and skip
   enrichment for it rather than paying for work about to be discarded;
 - send every other observation through enrichment, validate the response against a versioned schema,
@@ -115,7 +115,7 @@ pipeline.
 
 ## Live OSINT providers
 
-Three live adapters exist alongside the recorded replay stream. Every one of them is **off** in the
+Three live adapters exist, and they are the only way observations enter. Every one of them is **off** in the
 configuration committed here, and a test asserts that under this configuration the application makes
 no outbound HTTP request at all.
 
@@ -127,7 +127,7 @@ no outbound HTTP request at all.
 | UCDP GED | `ucdp` | `Providers:Ucdp:AccessToken` | coordinates and their stated precision, category, death-derived severity |
 
 A provider polls only when `Providers:Mode` is `Live` **and** its own `Enabled` is `true`. One switch
-would be too easy to flip by copying an example config into a demo deployment.
+would be too easy to flip by copying an example config into an offline deployment.
 
 What each adapter is allowed to declare follows from what its provider actually knows:
 
@@ -191,7 +191,7 @@ calling it a live feed a lie in the other:
 
 | Provenance | Meaning | Shown as |
 | --- | --- | --- |
-| `Recorded` | The synthetic replay stream | `DEMO` |
+| `Recorded` | Synthetic. Nothing produces this any more; retained as the labelling safety net | `DEMO` |
 | `Polled` | An adapter reached its provider during this run | no chip |
 | `Collected` | An agent gathered it into a bundle | `COLLECTED`, with the collection date |
 
@@ -508,7 +508,9 @@ dotnet restore GeopoliticsDashboard.sln
 dotnet run --project src/Geopolitics.Api
 ```
 
-Open the URL printed by ASP.NET. The replay stream begins immediately; watch the **Live feed** tab to
+Open the URL printed by ASP.NET. With no provider configured the dashboard starts empty, because
+there is no synthetic stream to fall back on; enable an adapter under `Providers` and watch the
+**Live feed** tab to
 see observations arrive and the globe update without a refresh.
 
 No credentials of any kind are required — the default AI provider runs in-process. To use a real
@@ -562,7 +564,7 @@ credential is ever read from a committed file.
 | `Ai:Model` | llama3.2 | Model or deployment name |
 | `Ai:Endpoint` | none | Required for `AzureOpenAI`; defaults to the local daemon for `Ollama` |
 | `Ai:ApiKey` | none | **Never put this in a file.** Use environment variables or user secrets. |
-| `Providers:Mode` | Demo | `Demo` makes no external call; `Live` allows individually enabled adapters to poll |
+| `Providers:Mode` | Offline | `Offline` makes no external call, and therefore ingests nothing; `Live` allows individually enabled adapters to poll |
 | `Providers:Rss:Enabled` | false | Whether configured feeds are polled |
 | `Providers:Rss:Feeds` | empty | `Name` and `Url` per feed; no publisher is baked into the code |
 | `Providers:NasaFirms:Enabled` | false | Whether thermal detections are polled |
@@ -730,9 +732,6 @@ comparison, [ADR 026](docs/adr/026-gazetteer-sourcing.md) the collision rules, a
 attribution GeoNames requires.
 | `Providers:*:PollInterval` | 15 min / 1 h / 6 h | Per-provider polling cadence |
 | `Providers:*:MaxItemsPerPoll` | 25 / 50 / 50 | Ceiling on envelopes emitted from one poll |
-| `Replay:Enabled` | true | Whether the recorded demo stream runs |
-| `Replay:SpeedFactor` | 1 | Multiplier on recorded delays; `0` removes them |
-| `Replay:Loop` | false | Restart the recorded stream for an unattended demo |
 
 To run the pipeline headless, with no realtime layer at all:
 
@@ -793,7 +792,7 @@ counters); a throughput run of 400 observations through the real database that a
 does not grow as the table fills; a cancellation run that asserts processing stops promptly and
 leaves nothing half-committed; and the evaluation harnesses above.
 
-A further **81 tests cover the dashboard client**, which is JavaScript and so is a separate suite and
+A further **196 tests cover the dashboard client**, which is JavaScript and so is a separate suite and
 a separate command. They cover the escaping that stops a hostile feed title becoming markup, the
 fallback from a live backend to the exported snapshot, the time basis that keeps a replayed record
 from reading as though it happened today, the fail-safe rule that decides whether the demo-data

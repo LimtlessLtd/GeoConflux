@@ -41,7 +41,7 @@ public sealed class PipelineThroughputTests(ITestOutputHelper output)
         using var factory = new PipelineFactory(
             runPipeline: false,
             runSources: false,
-            settings: new Dictionary<string, string?> { ["Seed:Enabled"] = "false" });
+            settings: null);
 
         // A client is created so the host actually builds and the database is initialised, which is
         // the same startup path the application uses.
@@ -111,7 +111,7 @@ public sealed class PipelineThroughputTests(ITestOutputHelper output)
         using var factory = new PipelineFactory(
             runPipeline: false,
             runSources: false,
-            settings: new Dictionary<string, string?> { ["Seed:Enabled"] = "false" });
+            settings: null);
         using var client = factory.CreateClient();
 
         var ingestion = factory.Services.GetRequiredService<IObservationIngestionService>();

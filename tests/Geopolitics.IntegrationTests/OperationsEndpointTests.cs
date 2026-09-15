@@ -18,7 +18,7 @@ public sealed class OperationsEndpointTests
     [Fact]
     public async Task TheHostReportsWhatItHoldsRatherThanEstimatingIt()
     {
-        using var factory = new PipelineFactory(runPipeline: true, runSources: true);
+        using var factory = new PipelineFactory(runPipeline: true, runSources: true, scriptedStream: true);
         using var client = factory.CreateClient();
 
         var response = await client.GetAsync(new Uri("/api/operations", UriKind.Relative), CancellationToken.None);

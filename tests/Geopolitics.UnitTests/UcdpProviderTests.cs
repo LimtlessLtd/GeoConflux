@@ -295,7 +295,7 @@ public sealed class UcdpProviderTests
         var handler = new ScriptedHttpHandler(stop, Events());
         using var provider = Build(handler, options =>
         {
-            options.Mode = ProviderMode.Demo;
+            options.Mode = ProviderMode.Offline;
             options.Ucdp.AccessToken = "test-ucdp-token";
         });
 

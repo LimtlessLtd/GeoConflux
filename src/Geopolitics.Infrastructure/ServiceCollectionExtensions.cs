@@ -38,8 +38,6 @@ public static class ServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection AddGeopoliticsInfrastructure(this IServiceCollection services)
     {
-        services.AddOptions<SeedOptions>().BindConfiguration(SeedOptions.SectionName);
-
         // The connection string is read when the context is resolved rather than captured here.
         // Reading it eagerly would freeze whatever value existed at registration time and silently
         // ignore configuration sources added later in the host build.
@@ -123,7 +121,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IConflictNarrator, ChatClientConflictNarrator>();
         services.AddScoped<IConflictNarrativeService, ConflictNarrativeService>();
         services.AddScoped<IObservationQueryService, ObservationQueryService>();
-        services.AddScoped<DemoDataSeeder>();
         services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();
         services.TryAddSingleton(TimeProvider.System);
         return services;
@@ -143,10 +140,6 @@ public static class ServiceCollectionExtensions
     {
         services.AddOptions<PipelineOptions>()
             .Bind(configuration.GetSection(PipelineOptions.SectionName))
-            .ValidateOnStart();
-
-        services.AddOptions<ReplayOptions>()
-            .Bind(configuration.GetSection(ReplayOptions.SectionName))
             .ValidateOnStart();
 
         services.AddOptions<EnrichmentOptions>()
@@ -209,12 +202,12 @@ public static class ServiceCollectionExtensions
         // runs end to end and simply announces nothing.
         services.TryAddSingleton<IIncidentNotifier, NullIncidentNotifier>();
 
-        // Registered unconditionally; the source itself honours Replay:Enabled when it runs, so the
-        // setting stays live rather than being baked into the container at startup.
-        services.AddSingleton<IEventSource, ReplayEventSource>();
-
-        // Live adapters, on the same footing as the recorded one. Each stays dormant unless its own
-        // configuration turns it on, so this call adds capability without adding any network traffic.
+        // Every source this host can register reads something real. There is deliberately no
+        // recorded or synthetic one: a fabricated observation has no way in, rather than being
+        // switched off by a setting somebody could switch back on (ADR 040).
+        //
+        // Each adapter stays dormant unless its own configuration turns it on, so this call adds
+        // capability without adding any network traffic.
         services.AddOsintProviders();
 
         // First, so the lexicon is built before anything can ask it a question. Hosted services start

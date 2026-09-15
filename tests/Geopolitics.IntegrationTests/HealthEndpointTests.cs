@@ -24,8 +24,19 @@ public sealed class HealthEndpointTests : IClassFixture<WebApplicationFactory<Pr
         Assert.Contains("Healthy", body, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// A host that has ingested nothing serves an empty collection, rather than failing or filling
+    /// the gap.
+    /// <para>
+    /// This used to assert that the endpoint returned seeded demo incidents, which a first run wrote
+    /// into an empty database so the globe had something on it. Those records were fabricated, and
+    /// nothing in this system may present fabricated records as reporting, so the seeder is gone and
+    /// an empty first run is the correct answer (ADR 040). The assertion is on the shape rather than
+    /// on emptiness because the default host reads whatever database file is already on disk.
+    /// </para>
+    /// </summary>
     [Fact]
-    public async Task IncidentEndpointReturnsSeededDemoRecords()
+    public async Task IncidentEndpointServesAJsonCollectionWithNothingIngested()
     {
         using var client = factory.CreateClient();
 
@@ -33,6 +44,8 @@ public sealed class HealthEndpointTests : IClassFixture<WebApplicationFactory<Pr
         var body = await response.Content.ReadAsStringAsync();
 
         Assert.True(response.IsSuccessStatusCode, body);
-        Assert.Contains("isDemo", body, StringComparison.Ordinal);
+
+        using var document = System.Text.Json.JsonDocument.Parse(body);
+        Assert.Equal(System.Text.Json.JsonValueKind.Array, document.RootElement.ValueKind);
     }
 }

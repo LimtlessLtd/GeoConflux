@@ -7,6 +7,12 @@ public enum ObservationKind
     Satellite,
     ExternalEvent,
     Manual,
+
+    /// <summary>
+    /// A record from a scripted stream. No source in the application emits this since ADR 040; it
+    /// survives for stored rows and for the integration fixture that drives the host through cases
+    /// real feeds cannot be relied upon to contain.
+    /// </summary>
     Replay,
 }
 

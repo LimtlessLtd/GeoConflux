@@ -24,7 +24,7 @@ public sealed class SpatialEndpointTests
     [Fact]
     public async Task IncidentsNearAPointComeBackWithMeasuredDistances()
     {
-        using var factory = new PipelineFactory(runPipeline: true, runSources: true);
+        using var factory = new PipelineFactory(runPipeline: true, runSources: true, scriptedStream: true);
         using var client = factory.CreateClient();
 
         await WaitForIncidentsAsync(client);
@@ -50,7 +50,7 @@ public sealed class SpatialEndpointTests
     [Fact]
     public async Task ATightRadiusExcludesWhatAWideOneIncluded()
     {
-        using var factory = new PipelineFactory(runPipeline: true, runSources: true);
+        using var factory = new PipelineFactory(runPipeline: true, runSources: true, scriptedStream: true);
         using var client = factory.CreateClient();
 
         await WaitForIncidentsAsync(client);
@@ -85,7 +85,7 @@ public sealed class SpatialEndpointTests
     [Fact]
     public async Task ChokepointAnalysisReportsEveryWatchedPassage()
     {
-        using var factory = new PipelineFactory(runPipeline: true, runSources: true);
+        using var factory = new PipelineFactory(runPipeline: true, runSources: true, scriptedStream: true);
         using var client = factory.CreateClient();
 
         await WaitForIncidentsAsync(client);

@@ -39,7 +39,6 @@ public sealed class ConcurrentCorrelationTests
 
                 // No demo seed records, so "how many incidents exist" is a question about what this
                 // test produced rather than about what the host shipped with.
-                ["Seed:Enabled"] = "false",
             });
 
         // Realises the host and runs database initialisation before any scope is resolved.
@@ -77,7 +76,7 @@ public sealed class ConcurrentCorrelationTests
         using var factory = new PipelineFactory(
             runPipeline: false,
             runSources: false,
-            settings: new Dictionary<string, string?> { ["Seed:Enabled"] = "false" });
+            settings: null);
 
         using var client = factory.CreateClient();
 

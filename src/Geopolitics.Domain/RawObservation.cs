@@ -139,8 +139,11 @@ public sealed class RawObservation
     public DateTimeOffset? CollectedAt { get; private set; }
 
     /// <summary>
-    /// True only for the recorded replay stream. Derived rather than stored, so it cannot drift out
-    /// of agreement with <see cref="Provenance"/> — which is exactly what two columns would do.
+    /// True only for a synthetic record. Nothing in the application can produce one since ADR 040,
+    /// so this should always be false in a running system; it is kept because the labelling is the
+    /// safety net and a net that is removed once it stops catching anything is not a net. Derived
+    /// rather than stored, so it cannot drift out of agreement with <see cref="Provenance"/> —
+    /// which is exactly what two columns would do.
     /// </summary>
     public bool IsDemo => Provenance == ObservationProvenance.Recorded;
 

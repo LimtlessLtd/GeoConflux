@@ -3,8 +3,17 @@ namespace Geopolitics.Infrastructure.Sources.Providers;
 /// <summary>Whether the host is allowed to reach external networks for observations.</summary>
 public enum ProviderMode
 {
-    /// <summary>Recorded data only. No external call is made, and no credential is required.</summary>
-    Demo = 0,
+    /// <summary>
+    /// No external call is made and no credential is required, so a clone of this repository runs
+    /// without reaching the network.
+    /// <para>
+    /// Named for what it does rather than what it used to be for. This was <c>Demo</c>, back when
+    /// declining to poll still left a recorded synthetic stream to show; with that stream gone the
+    /// old name promised data this mode does not produce, and an empty dashboard is the honest
+    /// result of asking a system for real reporting while forbidding it to fetch any (ADR 040).
+    /// </para>
+    /// </summary>
+    Offline = 0,
 
     /// <summary>Individually enabled live adapters may poll their upstream providers.</summary>
     Live,
@@ -15,8 +24,8 @@ public enum ProviderMode
 /// <para>
 /// Two switches must agree before any network call happens: the deployment must be in
 /// <see cref="ProviderMode.Live"/> and the individual provider must be enabled. A single global
-/// switch would make it too easy for a demo deployment to start reaching the internet because one
-/// provider block was copied in from an example; requiring both means the default configuration
+/// switch would make it too easy for an offline deployment to start reaching the internet because
+/// one provider block was copied in from an example; requiring both means the default configuration
 /// shipped in this repository cannot call out no matter which provider section is filled in.
 /// </para>
 /// </summary>
@@ -25,10 +34,10 @@ public sealed class ProviderOptions
     public const string SectionName = "Providers";
 
     /// <summary>
-    /// Demo by default, so a clone of this repository runs offline with no credentials, exactly as
-    /// the specification requires.
+    /// Offline by default, so a clone of this repository makes no external call and needs no
+    /// credentials, exactly as the specification requires.
     /// </summary>
-    public ProviderMode Mode { get; set; } = ProviderMode.Demo;
+    public ProviderMode Mode { get; set; } = ProviderMode.Offline;
 
     public RssProviderOptions Rss { get; set; } = new();
 

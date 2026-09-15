@@ -152,8 +152,8 @@ public sealed class ControlAssessmentService(
     private static PlaceControl Label(PlaceControl place) => place.EvidenceIsDemo
         ? place with
         {
-            Statement = $"{place.Statement} Every record behind this is synthetic replay data, so "
-                + "this assessment demonstrates the method and describes nothing real.",
+            Statement = $"{place.Statement} Every record behind this is synthetic, so this "
+                + "assessment demonstrates the method and describes nothing real.",
         }
         : place;
 

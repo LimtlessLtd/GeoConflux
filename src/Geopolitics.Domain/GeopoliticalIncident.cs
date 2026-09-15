@@ -73,7 +73,10 @@ public sealed class GeopoliticalIncident
     /// <summary>Which intake path the evidence behind this incident came by.</summary>
     public ObservationProvenance Provenance { get; private set; }
 
-    /// <summary>True only when this was assembled from the recorded replay stream.</summary>
+    /// <summary>
+    /// True only when this was assembled from synthetic evidence, which nothing in the application
+    /// produces since ADR 040. Retained as the labelling safety net.
+    /// </summary>
     public bool IsDemo => Provenance == ObservationProvenance.Recorded;
 
     public DateTimeOffset CreatedAt { get; private set; }

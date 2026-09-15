@@ -49,8 +49,6 @@ public sealed class SnapshotExportTests
             runSources: false,
             settings: new Dictionary<string, string?>
             {
-                ["Seed:Enabled"] = "false",
-                ["Replay:Enabled"] = "false",
                 ["Pipeline:QueueCapacity"] = QueueCapacity.ToString(System.Globalization.CultureInfo.InvariantCulture),
             },
             configureServices: services =>

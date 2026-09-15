@@ -25,9 +25,6 @@ if (isExport)
         ["ConnectionStrings:Geopolitics"] = $"Data Source={Path.Combine(Path.GetTempPath(), $"geoconflux-export-{Guid.NewGuid():N}.db")}",
         ["Pipeline:SourcesEnabled"] = "false",
         ["Pipeline:ProcessorEnabled"] = "false",
-        ["Seed:Enabled"] = "false",
-        ["Replay:SpeedFactor"] = "0",
-        ["Replay:Loop"] = "false",
     });
 }
 

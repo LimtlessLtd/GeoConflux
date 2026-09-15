@@ -7,7 +7,7 @@ namespace Geopolitics.Application.Pipeline;
 
 /// <summary>
 /// The one gate every observation passes through before reaching the queue, whether it comes from a
-/// polling adapter, a replay file, or the public submission endpoint. Validation lives here so that
+/// polling adapter, a collection bundle, or the public submission endpoint. Validation lives here so that
 /// no ingestion path can enqueue an envelope the processor cannot handle.
 /// </summary>
 public sealed partial class ObservationIngestionService(

@@ -158,8 +158,8 @@ public static partial class SnapshotExporter
     }
 
     /// <summary>
-    /// Reads a finite source to exhaustion. Only used for sources that genuinely end, such as the
-    /// recorded replay stream.
+    /// Reads a finite source to exhaustion. Only used for sources that genuinely end, such as a
+    /// collection bundle read from disk.
     /// </summary>
     private static async Task<IReadOnlyList<ObservationEnvelope>> ReadToEndAsync(
         IEventSource source,
@@ -358,8 +358,11 @@ public static partial class SnapshotExporter
     {
         if (polled + collected == 0)
         {
-            return "Synthetic replay data produced by a real run of the GeoConflux pipeline. "
-                + "It is not live reporting and describes no real-world events.";
+            // Reachable only if a run produced nothing real. There is no synthetic stream to
+            // describe instead, and the deploy fails on an empty export rather than publishing
+            // this, so it exists to be true rather than to be read (ADR 040).
+            return "This run ingested no reporting. Nothing here is synthetic, because this system "
+                + "contains no synthetic source; the snapshot is simply empty.";
         }
 
         var parts = new List<string>(3);
@@ -376,13 +379,16 @@ public static partial class SnapshotExporter
 
         if (demo > 0)
         {
-            parts.Add($"{demo} replayed from the recorded demo stream");
+            // Should be unreachable: nothing in the application can emit a synthetic observation.
+            // Described rather than dropped, because a count that exists and is not shown is worse
+            // than one that is — and the deploy fails the build on it besides.
+            parts.Add($"{demo} synthetic, which should not be possible and is a defect");
         }
 
         return $"Observations in this snapshot: {string.Join("; ", parts)}. "
             + "Headlines and quotations are as published; the categories, severities, and "
             + "correlations shown beside them are this system's assessments, not the sources'. "
-            + "Every record is individually labelled with which of the three it is.";
+            + "Every record is individually labelled with where it came from.";
     }
 
     [LoggerMessage(Level = LogLevel.Error, Message = "No ingestion sources are registered, so there is nothing to export.")]

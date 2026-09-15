@@ -32,11 +32,11 @@ provider, and the severity model be swapped, disabled, or faked without the pipe
 
 ## Ingestion adapters
 
-Every source, recorded or live, implements `IEventSource` and emits the same `ObservationEnvelope`.
-Nothing downstream of the queue knows which adapter produced an item.
+Every source implements `IEventSource` and emits the same `ObservationEnvelope`. Nothing downstream
+of the queue knows which adapter produced an item. Every one of them reads something real: there is
+no recorded or synthetic source, and no setting that adds one (ADR 040).
 
 ```text
-ReplayEventSource      recorded, deterministic, always demo-labelled     (ADR 007)
 RssEventSource         configured feeds; declares nothing                (ADR 015)
 NasaFirmsEventSource   thermal detections; declares its own coordinates  (ADR 015)
 AcledEventSource       coded events; declares coordinates and category   (ADR 015)

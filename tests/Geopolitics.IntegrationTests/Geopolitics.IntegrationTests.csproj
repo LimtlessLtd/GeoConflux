@@ -21,6 +21,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The scripted stream ScriptedEventSource reads. A file rather than objects built in a test,
+         for the same reason the provider payloads are: the shape is a contract, and pinning it to a
+         file keeps the fixture reviewable as data instead of buried in setup code. -->
+    <Content Include="..\data\pipeline\*.json">
+      <Link>pipeline\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Geopolitics.Api\Geopolitics.Api.csproj" />
 
     <!-- The snapshot exporter is what builds the published dashboard, and it lives in the worker

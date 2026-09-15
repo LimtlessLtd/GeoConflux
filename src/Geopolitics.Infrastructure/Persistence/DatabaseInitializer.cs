@@ -5,7 +5,6 @@ namespace Geopolitics.Infrastructure.Persistence;
 
 public sealed partial class DatabaseInitializer(
     GeopoliticsDbContext dbContext,
-    DemoDataSeeder demoDataSeeder,
     ILogger<DatabaseInitializer> logger) : IDatabaseInitializer
 {
     public async Task InitializeAsync(CancellationToken cancellationToken)
@@ -24,7 +23,9 @@ public sealed partial class DatabaseInitializer(
 
         await EnableWriteAheadLoggingAsync(cancellationToken);
 
-        await demoDataSeeder.SeedAsync(cancellationToken);
+        // Nothing is seeded. An empty database stays empty until a source reads something real,
+        // because illustrative records written to make a first run look populated are exactly the
+        // fabricated data this system must not contain (ADR 040).
         LogDatabaseInitialized(logger);
     }
 
