@@ -1,7 +1,7 @@
 # Standing collection brief: armed conflict
 
 - **id:** `armed-conflict`
-- **revision:** 1
+- **revision:** 2
 - **since:** 2026-09-14
 
 The second standing brief, and the first that is not about water. The maritime brief beside it reads
@@ -60,6 +60,19 @@ what English publishes.
 The obvious English words are deliberately absent. *Attack* matches a heart attack, *killed* matches
 a road accident, and *strike* matches industrial action. A term list that over-collects is worse than
 a short one, because the bundle then claims to have looked for something it did not.
+
+**Revision 2 found that this rule has a second half the first revision missed.** A term is matched as
+a substring against every language the brief reads, so an English word can be a false friend in one
+of the others. *Militants* was: in French and Spanish it means activist, and the term's only match in
+revision 1 was an AFP report of Turkish police raiding gay bars and the homes of *militants LGBT+* —
+a policing operation with no armed-group party, and explicitly out of scope above.
+
+Substrings cannot be conditioned on language, so the fix is collocation. English conflict usage
+qualifies the word before it — *armed militants*, *suspected militants*, *militant group* — while the
+French sense is followed by the cause instead, so the multi-word forms carry one and not the other.
+Almost nothing is lost, because *armed group*, *insurgents*, *rebels*, *gunmen* and *paramilitary*
+already cover an irregular armed party between them. *Militants* was simply the only one of them that
+meant something else somewhere else.
 
 ## Source diversity
 

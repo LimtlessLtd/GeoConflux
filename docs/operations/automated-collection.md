@@ -64,6 +64,16 @@ git log --oneline -- data/osint                     # rounds that found somethin
 `git log data/osint` is a record of rounds that collected, not of rounds that ran — a quiet round
 commits nothing deliberately. To see whether the job is running at all, use `gh run list`.
 
+**A round that has not appeared yet is usually not a failed round.** GitHub queues scheduled
+workflows and runs them when there is capacity, and the delay is routinely hours rather than minutes.
+The only scheduled run this repository had before collection was automated — the weekly Pages
+rebuild, due at 05:17 — actually started at 10:45, five and a half hours late. A missing bundle at
+08:00 is therefore not evidence of anything.
+
+The cadence is set with that in mind: daily against a fourteen-day expiry means the schedule can slip
+most of a day, or drop a run entirely, without anything published going stale. If you need a round
+*now*, dispatch one rather than waiting for the cron.
+
 ## Changing it
 
 **The cadence** is the `cron:` line in `.github/workflows/collect.yml`. Daily sits inside both

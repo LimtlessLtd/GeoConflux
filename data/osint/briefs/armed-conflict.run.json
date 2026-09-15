@@ -1,7 +1,7 @@
 {
   "$comment": "The executable half of armed-conflict.md beside it. Committed so a run is reproducible and so a reader can see exactly which channels the dashboard was and was not looking at. Run with: python tools/collect/collect.py --run data/osint/briefs/armed-conflict.run.json --out data/osint/<date>-armed-conflict.json",
   "brief": "armed-conflict",
-  "revision": 1,
+  "revision": 2,
   "caps": {
     "$comment": "Looser than the maritime brief's, because the scope is wider rather than because the restraint matters less. A conflict brief that capped at three per channel would take three headlines from a wire service publishing forty relevant ones and call that a picture. Per-platform still binds hardest: one busy platform must not stand in for the world.",
     "perChannel": 5,
@@ -9,6 +9,7 @@
     "total": 60
   },
   "termsNote": "Each concept is carried in every language the brief covers, because searching in English finds what English publishes and a conflict is reported in the language it happens in. Terms are matched as substrings, which is why the obvious words are absent: 'attack' matches a heart attack and a panic attack, 'killed' matches a road accident, and 'strike' matches industrial action. A term list that over-collects makes the bundle misrepresent what was looked for, which is the one thing a committed brief must not do.",
+  "$revision2": "Revision 1 carried a bare 'militants', and the danger of a term list this one had already identified in English turned out to apply across languages too. French and Spanish 'militant' means activist: the term's only match in revision 1 was an AFP report of Turkish police raiding gay bars and the homes of 'militants LGBT+', which is a policing operation with no armed-group party and explicitly out of scope. Substrings cannot be conditioned on language, so the fix is collocation. English conflict usage qualifies the word before it -- armed, suspected, militant group -- while the French sense is followed by a cause, so the multi-word forms carry the conflict sense and drop the other. Little is lost: armed group, insurgents, rebels, gunmen and paramilitary already cover an irregular armed party, and 'militants' was the only one of them that was a false friend.",
   "terms": [
     "armed clash",
     "armed clashes",
@@ -25,7 +26,10 @@
     "ceasefire",
     "cease-fire",
     "insurgents",
-    "militants",
+    "armed militants",
+    "suspected militants",
+    "militant group",
+    "militant groups",
     "rebels",
     "gunmen",
     "ambush",

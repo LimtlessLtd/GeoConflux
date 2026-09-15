@@ -26,7 +26,7 @@ public sealed class RetentionBoundaryTests
         using var factory = new PipelineFactory(runPipeline: true, runSources: true);
         using var client = factory.CreateClient();
 
-        await WaitForIncidentsAsync(factory);
+        await WaitForTheRecordedRunToFinishAsync(factory);
 
         using var scope = factory.Services.CreateScope();
         var database = scope.ServiceProvider.GetRequiredService<GeopoliticsDbContext>();
@@ -137,20 +137,35 @@ public sealed class RetentionBoundaryTests
         return observation;
     }
 
+    /// <summary>The recorded stream, which does not loop here. See replay-observations.json.</summary>
+    private const int ReplayObservations = 11;
+
     /// <summary>
-    /// Waits for a determinate condition — incidents existing — rather than for the pipeline going
-    /// quiet, which is a heuristic that races.
+    /// Waits for the whole recorded run to be stored, which is determinate because the stream is
+    /// finite and <c>Replay:Loop</c> is false in this factory: once eleven observations exist there
+    /// is nothing left for the pump to add.
+    /// <para>
+    /// This used to wait for the first incident to appear and called that determinate. It is not.
+    /// The condition is satisfied while the rest of the stream is still being ingested, so the
+    /// counts the caller then takes are a snapshot of a run in progress — and the assertion that
+    /// pruning leaves the linked count unchanged failed whenever one more observation happened to
+    /// be linked between the two reads. Observed failing two runs in three. The comment asserting
+    /// the race was gone outlived the race being gone, which is the more useful half of the lesson.
+    /// </para>
     /// </summary>
-    private static async Task WaitForIncidentsAsync(PipelineFactory factory)
+    private static async Task WaitForTheRecordedRunToFinishAsync(PipelineFactory factory)
     {
         var deadline = DateTimeOffset.UtcNow.AddMinutes(2);
+        var stored = 0;
 
         while (DateTimeOffset.UtcNow < deadline)
         {
             using var scope = factory.Services.CreateScope();
             var database = scope.ServiceProvider.GetRequiredService<GeopoliticsDbContext>();
 
-            if (await database.Incidents.AsNoTracking().AnyAsync(CancellationToken.None)
+            stored = await database.Observations.AsNoTracking().CountAsync(CancellationToken.None);
+
+            if (stored >= ReplayObservations
                 && await database.Observations.AsNoTracking().AnyAsync(o => o.IncidentId != null, CancellationToken.None))
             {
                 return;
@@ -159,6 +174,8 @@ public sealed class RetentionBoundaryTests
             await Task.Delay(100, CancellationToken.None);
         }
 
-        Assert.Fail("the replay run produced no incident within two minutes, so there is no evidence to protect");
+        Assert.Fail(
+            $"the replay run stored {stored} of {ReplayObservations} observations within two minutes, "
+            + "so there is no settled state to assert against");
     }
 }
