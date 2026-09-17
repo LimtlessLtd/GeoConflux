@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-09-17T1204Z-maritime-chokepoints",
+  "collectedAt": "2026-09-17T12:04:55Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "1609adee"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mvpelszne527",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-09-17T09:45:06Z",
+      "retrievedAt": "2026-09-17T12:04:55Z",
+      "contentHash": "sha256:6940cf27e201617c7c7f3f8ca2381e871711be2ca156751c6c7a7ce771d177fc",
+      "excerpt": "Number of ships transiting Strait of Hormuz falls to three on Wednesday, data shows reut.rs/4AiG2pu",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mvmxiaadig2z",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-09-16T10:45:08Z",
+      "retrievedAt": "2026-09-17T12:04:55Z",
+      "contentHash": "sha256:f3befc71f7c44c2412548dc71ee4f711bf26173445e8c96acea7e208a70d1d29",
+      "excerpt": "Yemen's Iranian-backed Houthi rebels continued to expand their threat to Saudi shipping routes out of the Red Sea by capturing the strategic islands of Greater and Lesser Hanish, government and Houthi officials said Monday.But, who exactly are the Houthis — and how did they get here?",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3mvk5waiu3f2f",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-09-15T08:02:21Z",
+      "retrievedAt": "2026-09-17T12:04:55Z",
+      "contentHash": "sha256:8af862c5d48aee0bf6e72fd31d756d32038bd5d8c241bb4f170a43ace3812ef7",
+      "excerpt": "⛴️ Le Canal de Panama prévoit de réduire encore davantage son trafic maritime en raison de la sécheresse liée au phénomène El Niño, après de premières restrictions ce mois-ci, a annoncé lundi la direction de cette voie maritime.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3mvphmrgp6o2u",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-09-17T10:39:19Z",
+      "retrievedAt": "2026-09-17T12:04:55Z",
+      "contentHash": "sha256:aab26acd579dea64701b2f8174ccfdb4d35b45a41a6eb64fb5def2548bffe1c5",
+      "excerpt": "Asian nations began pilot voyages over a decade ago to find routes to Europe and the Middle East that were faster and less vulnerable to chokepoints. The ongoing war has added impetus to those efforts. n.pr/4yID0JG",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 17,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
