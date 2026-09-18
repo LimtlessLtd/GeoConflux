@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-09-18T1148Z-armed-conflict",
+  "collectedAt": "2026-09-18T11:48:07Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "0dd305fd"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-09-18T11:48:07Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-09-18T11:48:07Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mvs2nhje5q2p",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-09-18T11:25:03Z",
+      "retrievedAt": "2026-09-18T11:48:07Z",
+      "contentHash": "sha256:20d1f91afe992b6325dcc5aa8e4999b2c76dc7cba3508f2097266cffe99fb075",
+      "excerpt": "EXCLUSIVE: US gives UN more time to end support for Somalia peacekeepers reut.rs/4gZTyH5",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mvrpht6ask2q",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-09-18T08:05:03Z",
+      "retrievedAt": "2026-09-18T11:48:07Z",
+      "contentHash": "sha256:12c583993bbd8c5babd8fb08c969cb3b929609c2f87045533696680e3e67d9ca",
+      "excerpt": "Protests erupt in Nigeria after 33 miners die in custody of paramilitary agency reut.rs/46rBG1N",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mvs36x6vcr2y",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-09-18T11:34:50Z",
+      "retrievedAt": "2026-09-18T11:48:07Z",
+      "contentHash": "sha256:60be4844f0cdcd2064f3f499c9d54bf6609431ae8920489dd3758186e4d50b4c",
+      "excerpt": "The deadly collapse of a multi-story building in Gaza has drawn new attention to the hardships facing Palestinians without homes, nearly a year after a fragile ceasefire between Israel and Hamas promised to kickstart reconstruction.But as talks faltered, plans for rebuilding stalled.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3mvmkvvwzea2a",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-09-16T07:00:08Z",
+      "retrievedAt": "2026-09-18T11:48:07Z",
+      "contentHash": "sha256:c0e50ee4a03ff03026268209ad411de7da6432eca5046aae7e6d63610342e8b7",
+      "excerpt": "🇾🇪 La coalition militaire menée par l'Arabie saoudite a accusé mercredi les Houthis du Yémen d'avoir mené une attaque de drone contre la ville sainte de La Mecque, ce que ces rebelles pro-iraniens ont démenti.➡️ u.afp.com/SjBL",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mvrp6wxneu2b",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-18T08:00:05Z",
+      "retrievedAt": "2026-09-18T11:48:07Z",
+      "contentHash": "sha256:196d75cdfd66ade956eef7a0c3d6626c83ba814f72f7f8c91fde6f20f0a53c97",
+      "excerpt": "Drone attacks by Colombian armed groups more than double in early 2026 https://aje.news/mt0ozj",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}

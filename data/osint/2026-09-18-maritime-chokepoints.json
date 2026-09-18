@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-09-18T1148Z-maritime-chokepoints",
+  "collectedAt": "2026-09-18T11:48:42Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "9ea23c97"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/396013",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-09-18T10:39:01Z",
+      "retrievedAt": "2026-09-18T11:48:42Z",
+      "contentHash": "sha256:06b16870c455c7438a1daf4cc5d406309d0521adf267b053937ff66a22df6145",
+      "excerpt": "▶️ БПЛА \"Герань-4\" нанесли удар по сухогрузу в порту Южный в Одесской области, на судне возник пожар, сообщили в МО РФ. Видео: Минобороны России/ТАСС ✔️ Подпишись на ТАСС в \"Максе\"",
+      "placeNames": [
+        "Южный"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3mvphmrgp6o2u",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-09-17T10:39:19Z",
+      "retrievedAt": "2026-09-18T11:48:42Z",
+      "contentHash": "sha256:aab26acd579dea64701b2f8174ccfdb4d35b45a41a6eb64fb5def2548bffe1c5",
+      "excerpt": "Asian nations began pilot voyages over a decade ago to find routes to Europe and the Middle East that were faster and less vulnerable to chokepoints. The ongoing war has added impetus to those efforts. n.pr/4yID0JG",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
