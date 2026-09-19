@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-09-19T1131Z-maritime-chokepoints",
+  "collectedAt": "2026-09-19T11:31:52Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "f35fdd98"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/396181",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-09-19T09:26:00Z",
+      "retrievedAt": "2026-09-19T11:31:52Z",
+      "contentHash": "sha256:4ec8454729899ba65ff979fdbffeba49c4f05a43dc388f5b195539e22c9e2451",
+      "excerpt": "▶️ ВС РФ \"Геранями-4 сикер\" поразили танкер в порту Одесса и сухогруз в акватории Черного моря. Оба судна использовались в интересах ВСУ, сообщили в МО РФ. Видео: Минобороны России/ТАСС ✔ Подпишись на ТАСС в \"Максе\"",
+      "placeNames": [
+        "Одесса"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3mvsplst6cc2r",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-09-18T17:39:57Z",
+      "retrievedAt": "2026-09-19T11:31:52Z",
+      "contentHash": "sha256:dddd1ab4b7186003271cbb085638f070923c6b6c5e95323e713d4d622a687198",
+      "excerpt": "The Houthis' biggest land grab in years reignited Yemen's 12-year civil war and pushed up global fuel prices, extending their reach to a key maritime chokepoint and threatening Saudi Arabia's oil exports. n.pr/4jgts3U",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}

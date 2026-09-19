@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-09-19T1131Z-armed-conflict",
+  "collectedAt": "2026-09-19T11:31:14Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "f5d6f229"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-09-19T11:31:14Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-09-19T11:31:14Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mvs36x6vcr2y",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-09-18T11:34:50Z",
+      "retrievedAt": "2026-09-19T11:31:14Z",
+      "contentHash": "sha256:60be4844f0cdcd2064f3f499c9d54bf6609431ae8920489dd3758186e4d50b4c",
+      "excerpt": "The deadly collapse of a multi-story building in Gaza has drawn new attention to the hardships facing Palestinians without homes, nearly a year after a fragile ceasefire between Israel and Hamas promised to kickstart reconstruction.But as talks faltered, plans for rebuilding stalled.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mvti6tqgul2b",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-19T01:00:05Z",
+      "retrievedAt": "2026-09-19T11:31:14Z",
+      "contentHash": "sha256:179ee33f5c8473dbe7ccbee203ed2452c3a32963e37d5fc95881959382c70602",
+      "excerpt": "Two injured by Israeli shelling as troops advance in southern Lebanon https://aje.news/woyyx8",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mvtd5vb2nb2c",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-18T23:30:04Z",
+      "retrievedAt": "2026-09-19T11:31:14Z",
+      "contentHash": "sha256:38d92ff25291ba77553893c52af2ac2874888b7786a26bee1566c861820a24ae",
+      "excerpt": "Russia strikes Ukraine’s border crossings with Poland and Moldova as its offensives peter out in the east.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mvsz42smqn2e",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-18T20:30:05Z",
+      "retrievedAt": "2026-09-19T11:31:14Z",
+      "contentHash": "sha256:a7252dfb7b6a196a3cb740f35d42800b6076748b657ac2a93f75b0fa4ea599a5",
+      "excerpt": "More than 112,000 displaced by Yemen fighting; thousands flee to Djibouti https://aje.news/6mj1xl",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 3,
+        "collected": 3
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
