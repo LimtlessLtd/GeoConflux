@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-09-20T1148Z-armed-conflict",
+  "collectedAt": "2026-09-20T11:48:11Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "23a373ba"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-09-20T11:48:11Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-09-20T11:48:11Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/396337",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-09-20T08:11:58Z",
+      "retrievedAt": "2026-09-20T11:48:11Z",
+      "contentHash": "sha256:bff6c5da621dd43be7e3baf358c021455c1aab0788466bef26018e935da2a382",
+      "excerpt": "❗️Ведутся боевые действия по расширению зоны контроля в районах Петропавловки, Польной, Новоалександровки, Приколотного в Харьковской области, заявили в МО РФ.Главное из нового брифинга Минобороны России: ▪️Подразделения группировки \"Север\" в Харьковской области сжимают кольцо окружения и расширяют внешнюю зону контроля; ▪️За сутки потери блокированных формирований ВСУ составили более 30 военнослужащих; ▪️Средства ПВО РФ сбили 4 реактивных снаряда HIMARS, 8 ракет \"Фламинго\" и 1 951 беспилотник самолетного типа ВСУ; ▪️ВС РФ нанесли поражение объектам транспортной инфраструктуры, складам боеприпасов и военно-технического имущества; ▪️Потери ВСУ за сутки составили порядка 1 395 военнослужащих на всех направлениях СВО. ✔️ Подпишись на ТАСС в \"Максе\"",
+      "placeNames": [
+        "Харьков"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mvvjcx4ly52k",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-09-19T20:25:36Z",
+      "retrievedAt": "2026-09-20T11:48:11Z",
+      "contentHash": "sha256:d4f50016477b8bc765fe6c1f69cac18403cc986d9a8d4c82b9f8959275497e2f",
+      "excerpt": "Saudi Arabia has confirmed that Yemen’s Houthi rebels tried to attack its capital with a ballistic missile.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3mvuo5pof3626",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-09-19T12:19:29Z",
+      "retrievedAt": "2026-09-20T11:48:11Z",
+      "contentHash": "sha256:53df469da702bf2cfcdf9aa65790e9c692184bc76b83b353055dc6cb87fd5c8b",
+      "excerpt": "🇸🇦 Les habitants de Ryad ont été réveillés dans la nuit de samedi à dimanche par une alerte de risque d'attaque suivie de deux fortes explosions, une première dans la capitale saoudienne depuis la reprise des affrontements avec les Houthis du Yémen.➡️ u.afp.com/Sjr9",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mvvynqw7ee24",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-20T01:00:05Z",
+      "retrievedAt": "2026-09-20T11:48:11Z",
+      "contentHash": "sha256:da2de37247f4d7396e8b6afd35b37152512ae11e48196053337ed454f729c942",
+      "excerpt": "50,000 frontline staff to receive a jab for a different Ebola strain, with 20,000 enrolled in a one-year clinical trial.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3mvwicb7dsk2c",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-09-20T05:39:59Z",
+      "retrievedAt": "2026-09-20T11:48:11Z",
+      "contentHash": "sha256:3cfaa97261075bec0e34e253bb906c609ac1c01f97ad3743b3cc915a6077ed4d",
+      "excerpt": "Saudi Arabia on Saturday said that Yemen's Houthi rebels tried to attack Riyadh with a ballistic missile, the first time the Saudi capital has been targeted since the escalation in fighting with the Iran-backed rebels opened a new front in the Iran war. n.pr/4ho1xwK",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3mvvgqdweaf2x",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-09-19T19:39:23Z",
+      "retrievedAt": "2026-09-20T11:48:11Z",
+      "contentHash": "sha256:273c6a0acabe8d761172390cd50ef6d5db8c0490ed766c3d496a9ac81c4143b4",
+      "excerpt": "The U.N. expanded the United Nations Interim Force in Lebanon's mandate 20 years ago to include monitoring adherence to a ceasefire in fighting between Israel and Lebanon's Iran-backed Hezbollah — the militant group created in 1982 to counter a second Israeli invasion. n.pr/47cnoSM",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
