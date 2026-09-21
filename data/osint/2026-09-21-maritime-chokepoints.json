@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-09-21T1321Z-maritime-chokepoints",
+  "collectedAt": "2026-09-21T13:21:00Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "602c8322"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mvzgqifqkj2d",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-09-21T09:50:08Z",
+      "retrievedAt": "2026-09-21T13:21:00Z",
+      "contentHash": "sha256:a3f3e8c41717ee020a4c2f148d5b8f1db7bf29d8be5534c5b803cfbe9a418013",
+      "excerpt": "Trafigura launches Volare tanker arm, plans Oslo listing reut.rs/3Vmhk7G",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3mvsplst6cc2r",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-09-18T17:39:57Z",
+      "retrievedAt": "2026-09-21T13:21:00Z",
+      "contentHash": "sha256:dddd1ab4b7186003271cbb085638f070923c6b6c5e95323e713d4d622a687198",
+      "excerpt": "The Houthis' biggest land grab in years reignited Yemen's 12-year civil war and pushed up global fuel prices, extending their reach to a key maritime chokepoint and threatening Saudi Arabia's oil exports. n.pr/4jgts3U",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 15,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
