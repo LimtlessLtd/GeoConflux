@@ -1,0 +1,199 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-09-22T1202Z-armed-conflict",
+  "collectedAt": "2026-09-22T12:02:11Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "843df6c9"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-09-22T12:02:11Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-09-22T12:02:11Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mw2c4wrci526",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-09-21T18:00:17Z",
+      "retrievedAt": "2026-09-22T12:02:11Z",
+      "contentHash": "sha256:64a25fa3ea79be72181560804db68b379e9e04f364ecc646af71ac610aadd1ff",
+      "excerpt": "Two games into the season, the returns aren’t promising for the Chargers and quarterback Justin Herbert under new offensive coordinator Mike McDaniel.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mvzy334jze2c",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-09-21T15:00:17Z",
+      "retrievedAt": "2026-09-22T12:02:11Z",
+      "contentHash": "sha256:ef1e4a2aab9f9eb777f3fc51bfa75ae02c78a2c04b1f599600339fa6c0fd02a0",
+      "excerpt": "Pakistani jet fighters carried out airstrikes Monday on what security officials described as suspected militant hideouts in eastern Afghanistan, and claimed 28 of them were killed. Authorities in Kabul said at least three people were killed.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mvzupwojr62t",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-09-21T14:00:22Z",
+      "retrievedAt": "2026-09-22T12:02:11Z",
+      "contentHash": "sha256:4a456b2e81bb69fa3d20a93202715ace76ec62ccf1177ad84d85432fc39acb87",
+      "excerpt": "Diving operators are reporting growing interest in the ancient ruins beneath the Mediterranean off Tyre, Lebanon. The city, known for its Roman and Phoenician history, is seeing a rise in visitors exploring the underwater archaeological sites after a ceasefire in the Israel-Hezbollah conflict.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3mvuo5pof3626",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-09-19T12:19:29Z",
+      "retrievedAt": "2026-09-22T12:02:11Z",
+      "contentHash": "sha256:53df469da702bf2cfcdf9aa65790e9c692184bc76b83b353055dc6cb87fd5c8b",
+      "excerpt": "🇸🇦 Les habitants de Ryad ont été réveillés dans la nuit de samedi à dimanche par une alerte de risque d'attaque suivie de deux fortes explosions, une première dans la capitale saoudienne depuis la reprise des affrontements avec les Houthis du Yémen.➡️ u.afp.com/Sjr9",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mw2zlmfbq72q",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-22T01:00:05Z",
+      "retrievedAt": "2026-09-22T12:02:11Z",
+      "contentHash": "sha256:61f89ad11e9fab10612711c6a79213786c4f2d014cf6b4309726bb837ea496bd",
+      "excerpt": "The 66th anniversary comes as armed groups expand their reach and the government struggles to secure key supply routes.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mvzszrxqds24",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-21T13:30:05Z",
+      "retrievedAt": "2026-09-22T12:02:11Z",
+      "contentHash": "sha256:0cdc2f5c684203276d819f60b29e9052fead900b07e7c201ff61814a9440ad04",
+      "excerpt": "Israeli attacks on Palestinians continue in Gaza despite a 'ceasefire' signed in October.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3mvwicb7dsk2c",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-09-20T05:39:59Z",
+      "retrievedAt": "2026-09-22T12:02:11Z",
+      "contentHash": "sha256:3cfaa97261075bec0e34e253bb906c609ac1c01f97ad3743b3cc915a6077ed4d",
+      "excerpt": "Saudi Arabia on Saturday said that Yemen's Houthi rebels tried to attack Riyadh with a ballistic missile, the first time the Saudi capital has been targeted since the escalation in fighting with the Iran-backed rebels opened a new front in the Iran war. n.pr/4ho1xwK",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 3,
+        "collected": 3
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
