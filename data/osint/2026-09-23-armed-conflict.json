@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-09-23T1207Z-armed-conflict",
+  "collectedAt": "2026-09-23T12:07:57Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "938dd52b"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-09-23T12:07:57Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-09-23T12:07:57Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mw6jw4zslk2x",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-09-23T10:30:17Z",
+      "retrievedAt": "2026-09-23T12:07:57Z",
+      "contentHash": "sha256:ac519cb20b35e9d6724d5a03cbe4176c29c62827fb8d1f4c36d4817d4ae5b6d1",
+      "excerpt": "The lightning advance of Yemen's Houthi rebels down the Red Sea coast was aided by Iranian advisers on the front lines, according to people familiar with the offensive. That marks Iran’s most direct intervention in favor of its longtime ally since Yemen’s civil war erupted in 2014.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mw5k2qpg2e2i",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-09-23T01:00:12Z",
+      "retrievedAt": "2026-09-23T12:07:57Z",
+      "contentHash": "sha256:8b8da219f6db42c69e97930f3295a3ad67d994c8283a19f5124968df6c0354be",
+      "excerpt": "Scamming is now one of the largest and most lucrative crimes in the world, fueled by huge advances in AI and cryptocurrency.In a project by The Associated Press and FRONTLINE explain the world of scams, what can be done about them and how to protect yourself.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mw4gty7njs2i",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-22T14:30:04Z",
+      "retrievedAt": "2026-09-23T12:07:57Z",
+      "contentHash": "sha256:c364a81e712aa6d93dc8ab9940661b8e9d247b46084b166f4022e4b8ec2eed0b",
+      "excerpt": "Hundreds flee homes in Far North Cameroon after armed group raid kills 15 https://aje.news/ndj10h",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
