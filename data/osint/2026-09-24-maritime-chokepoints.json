@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-09-24T1211Z-maritime-chokepoints",
+  "collectedAt": "2026-09-24T12:11:56Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "92387c20"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mwawqitbqy2c",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-09-24T09:25:06Z",
+      "retrievedAt": "2026-09-24T12:11:56Z",
+      "contentHash": "sha256:1a9cef656d5524c482d768758c23d58aa78bd5e294ecf80710cf1771906ba5b6",
+      "excerpt": "Shipping traffic via Strait of Hormuz stays lower than 10-day average, data shows reut.rs/4AwAXtV",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mwazhvcudi2p",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-09-24T10:13:59Z",
+      "retrievedAt": "2026-09-24T12:11:56Z",
+      "contentHash": "sha256:80646850d464c44aa4202e0393cb31fae7241f012d8e5839cb097ab2274380e6",
+      "excerpt": "It took Houthi rebels less than 48 hours to seize Yemen’s Red Sea coast from pro-government forces.But the Houthis didn’t do it alone. Iranian Revolutionary Guard advisers were in the field helping direct the battle, people familiar with the offensive told The Associated Press.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mw6jw4zslk2x",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-09-23T10:30:17Z",
+      "retrievedAt": "2026-09-24T12:11:56Z",
+      "contentHash": "sha256:ac519cb20b35e9d6724d5a03cbe4176c29c62827fb8d1f4c36d4817d4ae5b6d1",
+      "excerpt": "The lightning advance of Yemen's Houthi rebels down the Red Sea coast was aided by Iranian advisers on the front lines, according to people familiar with the offensive. That marks Iran’s most direct intervention in favor of its longtime ally since Yemen’s civil war erupted in 2014.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mw7i3dm3352i",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-23T19:30:04Z",
+      "retrievedAt": "2026-09-24T12:11:56Z",
+      "contentHash": "sha256:e2d2752472ffe5448a43b9437a45e984e572e2ca58c313566814c08b6f04e628",
+      "excerpt": "Pezeshkian leaves door open for negotiations, while calling out US blockade against Iran in Strait of Hormuz.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
