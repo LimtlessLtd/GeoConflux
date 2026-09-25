@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-09-25T1213Z-maritime-chokepoints",
+  "collectedAt": "2026-09-25T12:13:20Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "e3574f52"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mwdfsrd4vt2f",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-09-25T09:00:08Z",
+      "retrievedAt": "2026-09-25T12:13:20Z",
+      "contentHash": "sha256:6f4a61ae47b00c44cb994124b073a8a1489ec0753e1ae77eb572805ae62ed66a",
+      "excerpt": "Yemen's internationally recognized government has pressed world leaders for help in defeating the Iran-backed Houthi rebels. The Houthis stormed down Yemen's coast this month and seized the crucial port city of Mokha and key Red Sea islands.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mwchnm5nsd2i",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-09-25T00:00:23Z",
+      "retrievedAt": "2026-09-25T12:13:20Z",
+      "contentHash": "sha256:036a9c6ef73505e443b83ba086c716e07e882a5106f4fed6994d95dfbc145261",
+      "excerpt": "U2 is set to release their first full-length album of new material in nine years, titled “Carnaval De Luz.”",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mwbg54aidc2z",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-09-24T14:00:35Z",
+      "retrievedAt": "2026-09-25T12:13:20Z",
+      "contentHash": "sha256:de87684bbcacaa026170653bf3c29732731910136fbe97137868438eb3256182",
+      "excerpt": "Indonesia's navy has commissioned its first aircraft carrier after acquiring the former Italian vessel to strengthen its maritime defenses and disaster response.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mwdo6v6jmx23",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-25T11:30:04Z",
+      "retrievedAt": "2026-09-25T12:13:20Z",
+      "contentHash": "sha256:cfd9f8a1615843442b2e775fdfc63da95fe49aebb79b65d38688160c1ff8434c",
+      "excerpt": "What’s in Iran’s seven-day plan to reopen the Strait of Hormuz? https://aje.news/nraz1n",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 19,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 4,
+        "collected": 3
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
