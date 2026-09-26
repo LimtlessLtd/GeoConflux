@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-09-26T1146Z-maritime-chokepoints",
+  "collectedAt": "2026-09-26T11:46:30Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "18923c10"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mwdfsrd4vt2f",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-09-25T09:00:08Z",
+      "retrievedAt": "2026-09-26T11:46:30Z",
+      "contentHash": "sha256:6f4a61ae47b00c44cb994124b073a8a1489ec0753e1ae77eb572805ae62ed66a",
+      "excerpt": "Yemen's internationally recognized government has pressed world leaders for help in defeating the Iran-backed Houthi rebels. The Houthis stormed down Yemen's coast this month and seized the crucial port city of Mokha and key Red Sea islands.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mwffj5lwe72k",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-26T04:00:04Z",
+      "retrievedAt": "2026-09-26T11:46:30Z",
+      "contentHash": "sha256:1b8d99c90486ea5c740166d756bb59c09574dd4fca73610443772609ca6af4e8",
+      "excerpt": "Rashad al-Alimi pledges amnesty for Houthi defectors in first speech since losing ground on the western Red Sea coast.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mwf54w7uhv2y",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-26T01:30:04Z",
+      "retrievedAt": "2026-09-26T11:46:30Z",
+      "contentHash": "sha256:11bfcc680bbdfdeb8e68d8a06862c0a47f7cbc5cceb3aebd78b1d86803686ad2",
+      "excerpt": "Iran's FM says the \"choice rests with the US\" to approve the proposed seven-day proposal to reopen Hormuz.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}

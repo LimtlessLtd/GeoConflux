@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-09-26T1145Z-armed-conflict",
+  "collectedAt": "2026-09-26T11:45:56Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "8c1f0f40"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-09-26T11:45:56Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-09-26T11:45:56Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/397452",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-09-26T09:57:01Z",
+      "retrievedAt": "2026-09-26T11:45:56Z",
+      "contentHash": "sha256:2939330d288a2bf237ea61d91f0827fa0cffd30b5da71ec2ae511b9e569be5b5",
+      "excerpt": "Потери Украины в военном конфликте уже приобрели необратимый характер, заявил депутат Верховной рады Дубинский. По его словам, ежемесячно Украина теряет убитыми и ранеными 25-27 тыс. человек, дефицит бюджета увеличился до €30 млрд. Он также отметил, что еще в мае 2025 года Зеленский требовал безусловного прекращения огня, а спустя полтора года просит помочь Трампа \"организовать хоть бы энергетическое или морское перемирие\".",
+      "placeNames": [
+        "Морское"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mwdfsrd4vt2f",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-09-25T09:00:08Z",
+      "retrievedAt": "2026-09-26T11:45:56Z",
+      "contentHash": "sha256:6f4a61ae47b00c44cb994124b073a8a1489ec0753e1ae77eb572805ae62ed66a",
+      "excerpt": "Yemen's internationally recognized government has pressed world leaders for help in defeating the Iran-backed Houthi rebels. The Houthis stormed down Yemen's coast this month and seized the crucial port city of Mokha and key Red Sea islands.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mwcwpy6gfy2l",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-09-25T04:30:08Z",
+      "retrievedAt": "2026-09-26T11:45:56Z",
+      "contentHash": "sha256:63914fc1bf4165fa829df2ab479f98921a85f6187cf64aaad7393ba3ed54641f",
+      "excerpt": "The NFL fined San Francisco 49ers All-Pro fullback Kyle Juszczyk for what it deemed an \"offensive\" celebration similar to one he had been doing for several years with no issues.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mweccmllqb2t",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-25T17:30:05Z",
+      "retrievedAt": "2026-09-26T11:45:56Z",
+      "contentHash": "sha256:04a03e7d72eda9b56329203bffdd62f1bf25e19f8b8d10a19e7ccefed641434e",
+      "excerpt": "Lebanese Prime Minister Nawaf Salam wants a US-brokered ceasefire to be consolidated and for Israel to retreat.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
