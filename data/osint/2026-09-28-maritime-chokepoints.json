@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-09-28T1428Z-maritime-chokepoints",
+  "collectedAt": "2026-09-28T14:28:06Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "b58dfabe"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mwlcwwtgex2o",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-28T12:30:04Z",
+      "retrievedAt": "2026-09-28T14:28:06Z",
+      "contentHash": "sha256:3ccf202fef019278650c20bace8ab4eb968cf3904cd181fc6d51bfca7978190f",
+      "excerpt": "France's maritime police ‌‌said they received a distress call from an inflatable dinghy carrying 105 people https://aje.news/xoaucm",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mwk2phc53b2q",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-28T00:30:04Z",
+      "retrievedAt": "2026-09-28T14:28:06Z",
+      "contentHash": "sha256:57ed33c91e1d461f28d106cdd94b55e76634bbb576a0b8938b056020de051439",
+      "excerpt": "Iran war live: Tehran says it’s fully prepared for war amid Hormuz tensions https://aje.news/ufryyz",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mwj4jurb6j23",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-27T15:30:04Z",
+      "retrievedAt": "2026-09-28T14:28:06Z",
+      "contentHash": "sha256:8f0941743f3d216cc290b72632563a0864983d19cbe3cc8ff0622a4ad73477bc",
+      "excerpt": "Strait of Hormuz tensions linger as Iran and US move further from a deal https://aje.news/gw3nq0",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3mwhbdksfel2e",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-09-26T21:50:42Z",
+      "retrievedAt": "2026-09-28T14:28:06Z",
+      "contentHash": "sha256:54fe69e2cecc45997e1e67628a95047d2977e1699ed8f396462e9cecd1b3da9e",
+      "excerpt": "President Trump said he was rejecting an Iranian plan to reopen the Strait of Hormuz. The Iranian proposal is similar to a memorandum of understanding agreed upon by the U.S. and Iran back in June. n.pr/4ynJVZ8",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 3,
+        "collected": 3
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
