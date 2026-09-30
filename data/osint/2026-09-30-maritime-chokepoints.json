@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-09-30T1300Z-maritime-chokepoints",
+  "collectedAt": "2026-09-30T13:00:24Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "f6f49f95"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mwqatecz7s2p",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-09-30T11:35:36Z",
+      "retrievedAt": "2026-09-30T13:00:24Z",
+      "contentHash": "sha256:c5db2df54a94574a9146cdd4f761afda5dca45f40dbad5d5e5dccc730acc5512",
+      "excerpt": "Reuters was given rare access to the USS George Washington in the Strait of Hormuz as it conducts military operations against Iranian targets. Here’s what we found reut.rs/4AHcHFk",
+      "placeNames": [],
+      "relatedTo": [],
+      "language": "en"
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mwomkx5t3a2b",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-09-29T20:00:19Z",
+      "retrievedAt": "2026-09-30T13:00:24Z",
+      "contentHash": "sha256:d2cb5f5c0baf0ce17a4262ed9c4f1ec517dc8fa4557032bf34a4aebc3e09e840",
+      "excerpt": "Iraqi fuel trucks are loading gasoline at a Syrian port to meet surging global energy demand as the critical Strait of Hormuz remains closed and mediators work with Iran and the United States to end the war.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mwqdupuk4f2q",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-09-30T12:30:03Z",
+      "retrievedAt": "2026-09-30T13:00:24Z",
+      "contentHash": "sha256:79be4914e627a5c2b12420dda48815be98c2f3018ee29132522efa601f9e453a",
+      "excerpt": "Crude flows through Hormuz have recovered, but tanker insurance costs and geopolitical risks remain barriers to a return to normality.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
