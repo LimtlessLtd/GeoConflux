@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-01T1353Z-maritime-chokepoints",
+  "collectedAt": "2026-10-01T13:53:58Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "fb5e9f4c"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mwstdmpofs2p",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-01T12:12:08Z",
+      "retrievedAt": "2026-10-01T13:53:58Z",
+      "contentHash": "sha256:5bb998fe6d1f87ba660a5b31d81da8fcecb1c425020b5e1f7d2a7756acb44c8a",
+      "excerpt": "🔊 ‘This is what an aircraft carrier looks like when it's operating in an active conflict.’ Ed Ou got rare access to the USS George Washington in the Strait of Hormuz. Listen to the Reuters World News podcast for more reut.rs/4xYMmQL",
+      "placeNames": [],
+      "relatedTo": [],
+      "language": "en"
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mws4uoeu6w2i",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-01T05:30:04Z",
+      "retrievedAt": "2026-10-01T13:53:58Z",
+      "contentHash": "sha256:7c6c0ebee4a7edfb51414e831f5ccbee8b1d1d55d3af39c45480df0878019418",
+      "excerpt": "Moscow claims that NATO is preparing an air and naval blockade in the Baltic Sea.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 19,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
