@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-02T1309Z-armed-conflict",
+  "collectedAt": "2026-10-02T13:09:35Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "12de2e06"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-10-02T13:09:35Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-10-02T13:09:35Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mwu7wijq232k",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-02T01:30:06Z",
+      "retrievedAt": "2026-10-02T13:09:35Z",
+      "contentHash": "sha256:26bfefed8d31712e47dafcb6359fe94174d20c3e8e081ad966e59c62d46f2bbe",
+      "excerpt": "1,439 Palestinians have been killed in Gaza and 5,052 injured since the 'ceasefire' began in October 2025.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mwtsjb7tvk24",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-01T21:30:03Z",
+      "retrievedAt": "2026-10-02T13:09:35Z",
+      "contentHash": "sha256:afb06ed4c7740a91b7ea376f630376682b211ab5573ed3f32be9234acfbd0c48",
+      "excerpt": "Air strikes and difficult terrain have prevented the Houthis from turning coastal gains into a wider breakthrough.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
