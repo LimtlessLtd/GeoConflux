@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-03T1201Z-maritime-chokepoints",
+  "collectedAt": "2026-10-03T12:01:35Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "29188c6a"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/398621",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-10-03T09:29:55Z",
+      "retrievedAt": "2026-10-03T12:01:35Z",
+      "contentHash": "sha256:490fb386b258e8d3e42df19ae0db8daf7abacf8dd4039fbf784d699237e8f0ab",
+      "excerpt": "Арестованный в Индии танкер Unity с российским экипажем на борту пережил сильный шторм, угрозы жизни моряков нет, сообщило генконсульство РФ. Решение суда о репатриации российского экипажа ожидается на следующей неделе. ✔ Подпишись на ТАСС в \"Максе\"РФ работает над решением ситуации с россиянами на арестованном Индией танкере, сообщила ТАСС Мария Захарова. На борту арестованного судна 20 граждан РФ. По этой ситуации в МИД Индии посольством России было направлено шесть вербальных нот, отметила дипломат. ✔ Подпишись на ТАСС в \"Максе\"",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mwwkazobgr2h",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-02T23:40:16Z",
+      "retrievedAt": "2026-10-03T12:01:35Z",
+      "contentHash": "sha256:6fc3192c61159b921b7de75925d393cca227d76107b87e149b0dbe8290609717",
+      "excerpt": "Crude oil tanker struck by unknown projectile off Oman, UKMTO says reut.rs/3Vf6sst",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 16,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}

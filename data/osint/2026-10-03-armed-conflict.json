@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-03T1200Z-armed-conflict",
+  "collectedAt": "2026-10-03T12:00:57Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "927b2c52"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-10-03T12:00:57Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-10-03T12:00:57Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/398616",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-10-03T08:53:28Z",
+      "retrievedAt": "2026-10-03T12:00:57Z",
+      "contentHash": "sha256:5ae44f4ed357353851de2e6ab382972f92e3aba98e48de1757ace23e6da9fb5a",
+      "excerpt": "⚡️ВС РФ взяли под контроль Новую Казачью в Харьковской области, сообщили в Минобороны России.Главное из нового брифинга Минобороны России: ▪️Подразделения 76-й десантно-штурмовой дивизии, наступая западнее Доброполья, уничтожили позицию ВСУ и овладели участком лесополосы; ▪️Бойцы \"Севера\" ведут бои за освобождение населенных пунктов Варваровка, Лобановка и Резниково; ▪️В течение суток российские средства ПВО сбили шесть управляемых авиабомб и 680 БПЛА противника; ▪️ВС РФ в Доброполье вели наступление в северо-западной, восточной и центральной частях города; ▪️Потери ВСУ в результате действий российских группировок войск составили порядка 1 325 военных за сутки; ▪️Потери ВСУ за сутки в кольце окружения в Харьковской области составили до 35 военнослужащих и бронемашина; ▪️Бойцы \"Севера\" уничтожают силы ВСУ в районах населенных пунктов Николаевка, Нефедовка, Купино и Черное Харьковской области; ▪️В течение суток в Доброполье освобождены 70 зданий, уничтожено более 20 боевиков ВСУ. ✔…",
+      "placeNames": [
+        "Николаевка",
+        "Доброполье",
+        "Варваровка",
+        "Николаев",
+        "Харьков"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mwxf3aq6gm2j",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-03T07:40:13Z",
+      "retrievedAt": "2026-10-03T12:00:57Z",
+      "contentHash": "sha256:519ba55b27008690da2e642ec200c8257c34f3fdbd0648d129cc2c18736de293",
+      "excerpt": "Philippines voices concern over Myanmar airstrike deaths, injuries reut.rs/4dhdBhX",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mwxrwcglwh2s",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-03T11:30:06Z",
+      "retrievedAt": "2026-10-03T12:00:57Z",
+      "contentHash": "sha256:6b01a7f3fb4eafe70dc263168f60cf72b56c744a2176e37977a8d0de96383f00",
+      "excerpt": "Ethiopia’s government forces retake airport from Tigray rebels in Mekelle https://aje.news/0zlshl",
+      "placeNames": [
+        "Mekelle"
+      ],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 16,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
