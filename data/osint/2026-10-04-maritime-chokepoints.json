@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-04T1251Z-maritime-chokepoints",
+  "collectedAt": "2026-10-04T12:51:18Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "ca3bf76c"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mwzx7jgdqv2d",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-04T08:10:04Z",
+      "retrievedAt": "2026-10-04T12:51:18Z",
+      "contentHash": "sha256:372b5989922bbda569dd8f9de3c24b93550e0c591b919821c1b363401699d633",
+      "excerpt": "Iran says Strait of Hormuz will not reopen until conditions are met reut.rs/4yuuwpD",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mwyqwvlsqj2j",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-03T20:45:12Z",
+      "retrievedAt": "2026-10-04T12:51:18Z",
+      "contentHash": "sha256:61e831e3b91f27e43fd0e0f94b1527f1abf90c85b56193d2e1940cbf1927bee6",
+      "excerpt": "Iraq says it transported 2 million barrels of crude through Strait of Hormuz reut.rs/4jmlAOL",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mx2e2sg3al2j",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-04T12:00:04Z",
+      "retrievedAt": "2026-10-04T12:51:18Z",
+      "contentHash": "sha256:6c32429dcdc58ec22548f0a6e11645f81e7430c89168fa07919945ce3e8fd4c1",
+      "excerpt": "Iran says Hormuz to remain closed until US meets conditions https://aje.news/psoh4p",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mwyeec6cjv2x",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-03T17:00:03Z",
+      "retrievedAt": "2026-10-04T12:51:18Z",
+      "contentHash": "sha256:4737252820813cfbfb20bf6f916131e11c703582a1ff7bd8766a9eb1e97a65cd",
+      "excerpt": "In exclusive Al Jazeera interview, President Hassan Sheikh Mohamud says Israel planning a naval base in Berbera.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3mx22yuy3du2t",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-10-04T09:17:56Z",
+      "retrievedAt": "2026-10-04T12:51:18Z",
+      "contentHash": "sha256:4da00d9c17dedc3c7a6c3ed418244581b0b1101538eabf029e10a24c430bd8bb",
+      "excerpt": "Arizona Republican candidate for Congress Mark Lamb has been accused of sexual misconduct while sheriff. His controversy is turning many voters away as Democrats see an opportunity in the red seat. n.pr/3VhRUbw",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
