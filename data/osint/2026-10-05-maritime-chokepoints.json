@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-05T1516Z-maritime-chokepoints",
+  "collectedAt": "2026-10-05T15:16:18Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "05a1bb99"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/398882",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-10-05T14:43:41Z",
+      "retrievedAt": "2026-10-05T15:16:18Z",
+      "contentHash": "sha256:592add45334e3c9c588784f64e8c139a725556bb0891557da0d31f17db4b1d92",
+      "excerpt": "Мировые запасы нефти стали \"пугающе малы\", заявил глава Saudi Aramco. Это создает риск ухудшения ситуации на рынках в случае, если судоходство в Ормузском проливе не будет возобновлено, пишет Bloomberg. На момент начала конфликта между США и Ираном мировые запасы нефти составляли около 10 млрд баррелей, а сейчас сократились до менее чем 6 млрд. Около 10% из них практически недоступны из-за технических ограничений.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mx4rlnagvi25",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-10-05T11:07:27Z",
+      "retrievedAt": "2026-10-05T15:16:18Z",
+      "contentHash": "sha256:f0d3ddc605d94176d201d3d88335338c32654b13575eb16d3d04c13cf8ce8bcc",
+      "excerpt": "A Saudi-led coalition fighting the Iran-backed Houthi rebels said that an air campaign was underway against the rebels in Yemen along the Red Sea coastline. The announcement came just after the rebels said they had captured more territory in the southwestern part of Yemen.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mx4afywtti2j",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-05T06:00:04Z",
+      "retrievedAt": "2026-10-05T15:16:18Z",
+      "contentHash": "sha256:0eb8ef59335851dcf0c50038c86de473501b632c2a6697f6d792272f5944f386",
+      "excerpt": "IRGC commander says oil flows through US-supervised route in Hormuz are ‘negligible’.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3mx22yuy3du2t",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-10-04T09:17:56Z",
+      "retrievedAt": "2026-10-05T15:16:18Z",
+      "contentHash": "sha256:4da00d9c17dedc3c7a6c3ed418244581b0b1101538eabf029e10a24c430bd8bb",
+      "excerpt": "Arizona Republican candidate for Congress Mark Lamb has been accused of sexual misconduct while sheriff. His controversy is turning many voters away as Democrats see an opportunity in the red seat. n.pr/3VhRUbw",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}

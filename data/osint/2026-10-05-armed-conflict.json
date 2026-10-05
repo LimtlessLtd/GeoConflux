@@ -1,0 +1,199 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-05T1515Z-armed-conflict",
+  "collectedAt": "2026-10-05T15:15:42Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "6d4597a5"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-10-05T15:15:42Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-10-05T15:15:42Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mx4ztkpm3e2m",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-05T13:35:03Z",
+      "retrievedAt": "2026-10-05T15:15:42Z",
+      "contentHash": "sha256:7451fc64f23d1c3a017b157e7b06658c9a054c510fbd183bcc0fc8777216220f",
+      "excerpt": "Airstrikes and artillery hit north Ethiopia after Tigray capital's fall, aid sources say reut.rs/3TDsFQq",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mx4rlnagvi25",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-10-05T11:07:27Z",
+      "retrievedAt": "2026-10-05T15:15:42Z",
+      "contentHash": "sha256:f0d3ddc605d94176d201d3d88335338c32654b13575eb16d3d04c13cf8ce8bcc",
+      "excerpt": "A Saudi-led coalition fighting the Iran-backed Houthi rebels said that an air campaign was underway against the rebels in Yemen along the Red Sea coastline. The announcement came just after the rebels said they had captured more territory in the southwestern part of Yemen.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3mx4nom2ctx2u",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-10-05T09:57:32Z",
+      "retrievedAt": "2026-10-05T15:15:42Z",
+      "contentHash": "sha256:3907175fba6b94da3f433cf2b2f4eedacc4cd72e6fedb85530ac90b8e04ac208",
+      "excerpt": "🇸🇦🇾🇪 Yémen: la coalition militaire dirigée par Ryad a annoncé lundi rejoindre l'offensive lancée la veille par le gouvernement yéménite contre les combattants pro-iraniens houthis, en mobilisant 100 avions de combat pour mener des frappes à l'aube ⤵️",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3mx23evdcfw2u",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-10-04T09:24:39Z",
+      "retrievedAt": "2026-10-05T15:15:42Z",
+      "contentHash": "sha256:86eb00e63e534bb28e6eebfc4835184de0f98f1ef9237026bcb490e64ddf1600",
+      "excerpt": "🇫🇷 Deux personnes ont été interpellées et placées en garde à vue suite au passage à tabac d'un policier vendredi lors d'affrontements entre manifestants et forces de l'ordre à Belfort en marge du mouvement lycéen, a indiqué le procureur, Paul-Édouard Lallois.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mx4isbgqhv2m",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-05T08:30:06Z",
+      "retrievedAt": "2026-10-05T15:15:42Z",
+      "contentHash": "sha256:a2ac9b0a29cfb19a4f03e1c52cd2bc94332a9717aa38bc6f18a0476f4b0d449b",
+      "excerpt": "Strung several metres overhead, the nets are a low-cost solution in sensitive areas prone to attacks by armed groups.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mx3rd7cf5v2h",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-05T01:30:04Z",
+      "retrievedAt": "2026-10-05T15:15:42Z",
+      "contentHash": "sha256:bfab96ac17659db7b7ddddf9c8052e3b98886d6b20583b2e277f50576fcc77ef",
+      "excerpt": "The capture of Tigray’s regional capital revives fears of another prolonged conflict, displacement and crisis.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3mx4wrnwymx2e",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-10-05T12:40:18Z",
+      "retrievedAt": "2026-10-05T15:15:42Z",
+      "contentHash": "sha256:1678387520ec2bd0ec3b7d003ec0fbff9078a587f55e70cc41ca62cbb504ac2c",
+      "excerpt": "The frontline in the Russia-Ukraine war stretches more than 700 miles and has barely moved in four years. Yet straddling this line is the Kill Zone, dominated by constantly evolving drone technology. n.pr/3W8svBd",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
