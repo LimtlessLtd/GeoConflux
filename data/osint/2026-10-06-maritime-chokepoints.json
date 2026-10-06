@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-06T1337Z-maritime-chokepoints",
+  "collectedAt": "2026-10-06T13:37:17Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "62686ce8"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/399048",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-10-06T12:24:02Z",
+      "retrievedAt": "2026-10-06T13:37:17Z",
+      "contentHash": "sha256:817ef7af6eb3ee72fa5a51858d2d17f0d103ce8c7e182c76b0e77d10dd417a30",
+      "excerpt": "Хуситы утверждают, что нанесли ракетный удар по международному аэропорту Абха в Саудовской Аравии. Они призвали международные авиакомпании прекратить полеты в воздушном пространстве Саудовской Аравии, заявив, что оно стало зоной проведения военных операций…✈️ Международный аэропорт Абха в Саудовской Аравии приостановил свою работу, ориентировочно, на три часа, сообщил ТАСС источник в авиадиспетчерских службах Ближнего Востока.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mx7bwanxm62z",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-06T11:05:02Z",
+      "retrievedAt": "2026-10-06T13:37:17Z",
+      "contentHash": "sha256:dfe64b3c883399f9005828dcee70d17d1456148ddcd64d14dec9a7d9781c771c",
+      "excerpt": "Attacks on civilian shipping in Black Sea are unacceptable, EU's von der Leyen says reut.rs/4hKO6XS",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mx73rlwx7o2w",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-10-06T09:15:04Z",
+      "retrievedAt": "2026-10-06T13:37:17Z",
+      "contentHash": "sha256:c7b95e5b1ad0d9af823d4faa5006a4f38521cbd60c72e2d4dfceec134ab6f5f8",
+      "excerpt": "Bulgarian Prime Minister Rumen Radev said two commercial vessels were hit by drones in the country’s Exclusive Economic Zone.This was the first attack on shipping in the NATO member’s economic zone in the Black Sea. The origin of the drones was not immediately established.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mx64r7dokv2m",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-06T00:00:05Z",
+      "retrievedAt": "2026-10-06T13:37:17Z",
+      "contentHash": "sha256:7071f9c327e66a2e0377aa5f5d8edc98205f562918544e0c80af32d5ec49c791",
+      "excerpt": "Neighbouring countries say coastal states must govern Red Sea as fighting escalates in northern Ethiopia.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mx5dmjovst2i",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-05T16:30:04Z",
+      "retrievedAt": "2026-10-06T13:37:17Z",
+      "contentHash": "sha256:f8b52e951cefcfc25a4b472e75a78627005c69f3a4575c027f83b50ddcd831ba",
+      "excerpt": "Crude exports bypassing Hormuz surged in September, yet oil prices remain high. Could a secret fee be the reason?",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
