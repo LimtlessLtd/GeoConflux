@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-07T1354Z-armed-conflict",
+  "collectedAt": "2026-10-07T13:54:44Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "a353b10a"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-10-07T13:54:44Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-10-07T13:54:44Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mxbxy3k7bt2a",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-07T12:45:06Z",
+      "retrievedAt": "2026-10-07T13:54:44Z",
+      "contentHash": "sha256:70f051bc3c393f6f3d5de7ad5327ace106ce1beb6327e31ef0bca0e409949458",
+      "excerpt": "More than 200,000 people displaced since fighting in Yemen began, says UN agency reut.rs/4y6qbIo",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mxbrbjonms2k",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-07T10:45:06Z",
+      "retrievedAt": "2026-10-07T13:54:44Z",
+      "contentHash": "sha256:7d65c3358801a84cc03f09549e04554e86319e67aee0c5ce59a4b62c574722c1",
+      "excerpt": "\"I feel very, very lucky to be alive,\" said Aviva Siegel, 65.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mxb2nal7rj2m",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-07T04:00:04Z",
+      "retrievedAt": "2026-10-07T13:54:44Z",
+      "contentHash": "sha256:71cba2278c16839f5dac02b0d6ac4d7cf60a67db922a2d415675f1425602ecd9",
+      "excerpt": "Yemeni forces launch offensive to retake Houthi-held al-Waziiya in Taiz https://aje.news/7dwqdh",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mxayxmsy7d2i",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-07T03:30:04Z",
+      "retrievedAt": "2026-10-07T13:54:44Z",
+      "contentHash": "sha256:f32179fa7613f3cb16419520d529b320b26b3e848f7e455da247860f674d07ed",
+      "excerpt": "At least 10 civilians were killed in West Kordofan and 5,500 displaced in Blue Nile as clashes widened on Tuesday.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mxalkho3uw2r",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-06T23:30:04Z",
+      "retrievedAt": "2026-10-07T13:54:44Z",
+      "contentHash": "sha256:84c1fce925c02baddbf6d2bdab388d8c057a72242584ffa4657a11fcdb41be53",
+      "excerpt": "The Azawad Liberation Front said sustained air strikes by Malian troops and Russian allies forced its tactical retreat.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 3,
+        "collected": 3
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}

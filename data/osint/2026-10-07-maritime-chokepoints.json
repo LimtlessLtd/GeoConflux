@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-07T1355Z-maritime-chokepoints",
+  "collectedAt": "2026-10-07T13:55:19Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "f29fd8a6"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mxbzesx2yy22",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-07T13:10:07Z",
+      "retrievedAt": "2026-10-07T13:55:19Z",
+      "contentHash": "sha256:258157bfecddb964a7b3a44eedf563e1c35029dccc0ed9a95ed40a3f53dcf630",
+      "excerpt": "Iranian official says 'illegal routes' in Strait of Hormuz to soon be blocked reut.rs/4zln1BD",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mxb5ykq6tw2v",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-07T05:00:05Z",
+      "retrievedAt": "2026-10-07T13:55:19Z",
+      "contentHash": "sha256:57a42ca0c3db25f502185a199050785147f0474438cc72202759410ebb73c7ad",
+      "excerpt": "Oman evacuates injured crew from attacked tanker in Strait of Hormuz https://aje.news/ck964e",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mxad6bx7jo2j",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-06T21:00:06Z",
+      "retrievedAt": "2026-10-07T13:55:19Z",
+      "contentHash": "sha256:85d83cc2beb63892ca45a7f3e10d946cccedee6a6a14d5c1d3781ec203eba9d0",
+      "excerpt": "Bulgaria searches for missing crew after drones hit two ships in Black Sea https://aje.news/j6lw3e",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
