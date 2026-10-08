@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-08T1401Z-maritime-chokepoints",
+  "collectedAt": "2026-10-08T14:01:34Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "2fe71c56"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/399341",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-10-08T13:19:01Z",
+      "retrievedAt": "2026-10-08T14:01:34Z",
+      "contentHash": "sha256:2c264d108a3f6ddf283b07916ee6096e657a4f02e0e470dec4e39263c570c9e4",
+      "excerpt": "🚨 Три человека погибли, еще 36 ранены в результате двух атак на международные аэропорты в Саудовской Аравии, сообщило Главное управление гражданской авиации королевства. Нападения на аэропорты Абха и имени короля Халида произошли 6 и 7 октября.▶️ Дым виден над самолетом в аэропорту Эр-Рияда, сообщает Reuters. Международный аэропорт пока не прекращал свою работу, добавили ТАСС в авиадиспетчерских службах. Ранее военный представитель хуситов Яхья Сариа заявил о нанесении удара баллистической ракетой по международному аэропорту имени короля Халида в Саудовской Аравии. Видео: MonitorX/X ✔️ Подпишись на ТАСС в \"Максе\"",
+      "placeNames": [
+        "Октябр"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/399336",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-10-08T12:43:59Z",
+      "retrievedAt": "2026-10-08T14:01:34Z",
+      "contentHash": "sha256:1c6f630f413fdfccb1bb3cb1b207dd8b79412531cfa964caab2c22c9732728f6",
+      "excerpt": "Суд в Индии дал три недели на репатриацию 20 россиян и других моряков с арестованного танкера Unity, пишет портал Splash24/7.В генконсульстве РФ подтвердили ТАСС, что суд в Индии обязал индийскую сторону принять срочные меры для репатриации экипажа арестованного судна Unity. ✔️ Подпишись на ТАСС в \"Максе\"",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mxemnwvxvi2j",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-08T14:00:33Z",
+      "retrievedAt": "2026-10-08T14:01:34Z",
+      "contentHash": "sha256:80a10ded2bb5b4627964291dfbc8047fe3f10c83aac90bfb4dbdb34522c6a62e",
+      "excerpt": "Syria calls for independent probe into sinking of ship in Black Sea reut.rs/4ekZ8lo",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mxeljos3mk22",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-08T13:40:17Z",
+      "retrievedAt": "2026-10-08T14:01:34Z",
+      "contentHash": "sha256:2be65d2beae22e2470edba5b086c081e343c44694f888478db56982cf1eb9798",
+      "excerpt": "Naval Group steps up Europe push as defence spending rises reut.rs/4rRx2DU",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mxekoodiij22",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-08T13:25:11Z",
+      "retrievedAt": "2026-10-08T14:01:34Z",
+      "contentHash": "sha256:8236a9f31fe3528d4c83330b1de06245fe0c42b86f150b72c675b47ef7b63025",
+      "excerpt": "Attack risks rise for tankers as Iran vows to block more Hormuz routes reut.rs/3VyDpQM",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mxd2ehpfvk2g",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-10-07T23:00:29Z",
+      "retrievedAt": "2026-10-08T14:01:34Z",
+      "contentHash": "sha256:f4e3a79af45c55ff0c7471f7d316ae2eea4a37c72ec1864ca7c598f19072a7c3",
+      "excerpt": "Bulgaria's president says that Russia's war against Ukraine has led to a significant deterioration of the security environment in the Black Sea region.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mxefwiafql2x",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-08T12:00:04Z",
+      "retrievedAt": "2026-10-08T14:01:34Z",
+      "contentHash": "sha256:a504f3b10a0b81815bff2e0855a2327fc4ddd05c57a8dd1a5d948f81fa927abb",
+      "excerpt": "The Hormuz bonus: Sailor salaries soar for transits amid Iran war https://aje.news/9bdvis",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mxdohh7yxp2i",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-08T05:00:04Z",
+      "retrievedAt": "2026-10-08T14:01:34Z",
+      "contentHash": "sha256:0a16ce334ef779c3d1731f3d4dedd79fc8988ebbad601df07a3fba41cb82d3f4",
+      "excerpt": "The UK maritime agency has reported a rise in attacks on vessels in the vital Strait of Hormuz.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 17,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 3,
+        "collected": 3
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
