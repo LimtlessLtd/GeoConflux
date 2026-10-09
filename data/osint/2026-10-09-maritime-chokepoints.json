@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-09T1345Z-maritime-chokepoints",
+  "collectedAt": "2026-10-09T13:45:36Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "0b82346a"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mxgrf3uwou2h",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-09T10:30:25Z",
+      "retrievedAt": "2026-10-09T13:45:36Z",
+      "contentHash": "sha256:660538b7a75c2c7e98d273a274a25f8204c1e773fdc1cf30348dba3e9805a066",
+      "excerpt": "Trump envoy kept financial ties to firm behind $15 billion Hormuz-bypass oil pipeline plan reut.rs/3VZj9aV",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mxgam2ocdz2m",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-09T05:30:05Z",
+      "retrievedAt": "2026-10-09T13:45:36Z",
+      "contentHash": "sha256:92d3dcdbb2bdace06246089579c24ab80eff627142201444d468f6b346910910",
+      "excerpt": "Iranian media reported massive explosions in the southern Strait of Hormuz, with Fars citing unnamed military sources.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mxffrq5mjc2m",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-08T21:30:04Z",
+      "retrievedAt": "2026-10-09T13:45:36Z",
+      "contentHash": "sha256:32d79c10ae3ae19901d0b0a988ed86c54c3cbd03665baa0ca43c8341e6cb639b",
+      "excerpt": "Syria calls for independent probe into sinking of ship in Black Sea https://aje.news/orypg7",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 13,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
