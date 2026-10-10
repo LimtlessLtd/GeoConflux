@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-10T1302Z-armed-conflict",
+  "collectedAt": "2026-10-10T13:02:33Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "2954bd35"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-10-10T13:02:33Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-10-10T13:02:33Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/399672",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-10-10T09:25:39Z",
+      "retrievedAt": "2026-10-10T13:02:33Z",
+      "contentHash": "sha256:a6f63be7d13931ad1c15a151982cc5ac82c41fd038c04de6dd0709925e3216a6",
+      "excerpt": "Самым доступным и понятным средством связи с соотечественниками, находящимися в оккупированных ВСУ городах ДНР, остается Telegram, сообщил ТАСС Пушилин. Штаб обороны ДНР 7 октября призвал жителей подконтрольных ВСУ городов эвакуироваться в Донецк, пообещав…🗣 Главное из заявления Пушилина ТАСС по спецпрограмме переселения в Донецк из подконтрольных ВСУ городов ДНР: ▪Специальная программа переселения предназначена для жителей Краматорска, Славянска, Доброполья и Дружковки; ▪Боевые действия в подконтрольных ВСУ городах создают серьезную угрозу для мирного населения. Украинские военные при отступлении расстреливают мирных жителей и прикрываются ими как живым щитом; ▪Власти ДНР понимают, насколько непросто жителям покидать свои дома; ▪Подготовку программы переселения начали заблаговременно, чтобы снизить риски для людей и оценить объем необходимого для них жилья; ▪Прямой канал связи со специалистом предоставят каждому участнику спецпрограммы переселения в Донецк. Данные участников защищены…",
+      "placeNames": [
+        "Краматорск",
+        "Славянск",
+        "Украинск",
+        "Донецк",
+        "Октябр",
+        "Донец"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mxixrkhidz2i",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-10T07:30:04Z",
+      "retrievedAt": "2026-10-10T13:02:33Z",
+      "contentHash": "sha256:bac019a302ce44d355da546e5e0665428580f52c5b05becdbb9d0a412c9d43e4",
+      "excerpt": "Houthi advances and the closure of vital roads into Taiz have triggered shortages, reviving memories of earlier siege.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mxi3bkdhth2m",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-09T23:00:03Z",
+      "retrievedAt": "2026-10-10T13:02:33Z",
+      "contentHash": "sha256:7f0bd8d045876b5abdcda1192a6a94f6448a4dfc651164cefc1731f983c7fa8c",
+      "excerpt": "Drone reportedly linked to RSF targets Wad al-Mahi, killing dozens near displacement camp, including women and children.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mxhkj5uhkc2s",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-09T18:00:05Z",
+      "retrievedAt": "2026-10-10T13:02:33Z",
+      "contentHash": "sha256:c357bdb40c69439bdbd98bf2a1c805bb237bcc6ecb5c53989fe31d41bda34911",
+      "excerpt": "Ukraine pushes Russia back in Donetsk as military, civilian casualties soar https://aje.news/hp1q1y",
+      "placeNames": [
+        "Donetsk",
+        "Donets"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3mxjjkdfxjj23",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-10-10T12:48:10Z",
+      "retrievedAt": "2026-10-10T13:02:33Z",
+      "contentHash": "sha256:6f1d7e5a9a2a7f63f68cd51ef28d1d762f28333ebf04801dba5425b79707c591",
+      "excerpt": "It has been one year since Hamas released the remaining Israeli hostages and President Trump promised an end to the war, but Palestinians say the past 12 months have been a ceasefire in name only. n.pr/47hkjkD",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 3,
+        "collected": 3
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
