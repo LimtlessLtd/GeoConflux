@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-11T1330Z-armed-conflict",
+  "collectedAt": "2026-10-11T13:30:45Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "652683c4"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-10-11T13:30:45Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-10-11T13:30:45Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mxm3jem75w2w",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-10-11T13:15:05Z",
+      "retrievedAt": "2026-10-11T13:30:45Z",
+      "contentHash": "sha256:80f0cfd23f7f4b78cf15b2275d84ecab3990b66b49e8d43f54401d645a3f28f4",
+      "excerpt": "The Pentagon has released few details about the Iranian drone strike on Port Shuaiba in Kuwait that killed six soldiers. The AP spoke with people serving in key positions of responsibility there or familiar with high-level briefings. Here are key takeaways.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mxk76em4zc2e",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-10-10T19:15:11Z",
+      "retrievedAt": "2026-10-11T13:30:45Z",
+      "contentHash": "sha256:82c7c8b62978809023296c6ff6da30f1f3060805aa0d57dcef71fbcf7027ab0b",
+      "excerpt": "U.S. soldiers wounded in an Iranian drone strike tell the AP the military's medical system failed them: “I was just kind of on my own, at least it felt like that.”",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mxkngd7nsq2r",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-10T23:30:10Z",
+      "retrievedAt": "2026-10-11T13:30:45Z",
+      "contentHash": "sha256:f0b551ac428ad3c686760044ad2ba496c796c001aa98bd40e1069de2ab637497",
+      "excerpt": "Demonstrations in London, Berlin, and Rome denounce ongoing Israeli attacks on Gaza 'ceasefire' anniversary https://aje.news/91hl1g",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mxjlvbt2j42r",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-10T13:30:05Z",
+      "retrievedAt": "2026-10-11T13:30:45Z",
+      "contentHash": "sha256:d72d68bcd25ca559d67c72f410b96ce4a2ba05ce571cb33202541ad70fabfa59",
+      "excerpt": "At least 1,481 Palestinians killed in Israeli attacks since last year's 'ceasefire', Gaza's Health Ministry says https://aje.news/0mzpol",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3mxkgkfsjgm2c",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-10-10T21:27:11Z",
+      "retrievedAt": "2026-10-11T13:30:45Z",
+      "contentHash": "sha256:8c03e4ec76e89c925d66ba0c4902f66b9c8e3cdb8c3e9d8994ad2716561b3879",
+      "excerpt": "It has been one year since Hamas released the remaining Israeli hostages and President Trump promised an end to the war, but Palestinians say the past 12 months have been a ceasefire in name only. n.pr/3TxsXs9",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3mxjjkdfxjj23",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-10-10T12:48:10Z",
+      "retrievedAt": "2026-10-11T13:30:45Z",
+      "contentHash": "sha256:6f1d7e5a9a2a7f63f68cd51ef28d1d762f28333ebf04801dba5425b79707c591",
+      "excerpt": "It has been one year since Hamas released the remaining Israeli hostages and President Trump promised an end to the war, but Palestinians say the past 12 months have been a ceasefire in name only. n.pr/47hkjkD",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
