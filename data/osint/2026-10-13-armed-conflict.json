@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-13T1434Z-armed-conflict",
+  "collectedAt": "2026-10-13T14:34:00Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "22b48ba7"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-10-13T14:34:00Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-10-13T14:34:00Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mxp7caamh52u",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-10-12T19:00:39Z",
+      "retrievedAt": "2026-10-13T14:34:00Z",
+      "contentHash": "sha256:cec628c331a3a75ea5369f51f7c45984c903ec1909f953ab3f447bcb8a929c9f",
+      "excerpt": "Saudi Arabia has launched an investigation into how its air defenses failed to intercept missiles and drones fired by Iran-backed Houthi rebels.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3mxmcfgzt3a2n",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-10-11T15:18:09Z",
+      "retrievedAt": "2026-10-13T14:34:00Z",
+      "contentHash": "sha256:c68149b3bc3c8761f30a3b8ca0d0c3e9e44291a44e6f177a17004e7cc1609c95",
+      "excerpt": "🇺🇸 Donald Trump a assuré dimanche que la Russie et l’Ukraine avaient conclu \"un cessez-le-feu énergétique\", destiné à stopper les frappes contre leurs infrastructures respective ⤵️",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mxqo7aqvpa2y",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-13T09:00:05Z",
+      "retrievedAt": "2026-10-13T14:34:00Z",
+      "contentHash": "sha256:9b4ba6a0ac27ce9037a5a236fe22b781e948f9fbf0083e712a5ee11ce8273bba",
+      "excerpt": "Palestine weekly: Gaza marks year of ‘ceasefire’ with more Israeli killing https://aje.news/7izk05",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mxqhiofjlo2i",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-13T07:00:05Z",
+      "retrievedAt": "2026-10-13T14:34:00Z",
+      "contentHash": "sha256:37d5ad2ce18c289c1065db2b61884a489ad121eaebe58cb075a6406c4397071f",
+      "excerpt": "Islamabad says the PTI failed to lead the fight against armed groups, but analysts question the takeover.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3mxosk5bagy2g",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-10-12T15:12:26Z",
+      "retrievedAt": "2026-10-13T14:34:00Z",
+      "contentHash": "sha256:0dcbf2f167a749afb8de1fa6c68fdaf8a62cd0a4edb0a0dce1c4ef30d93c6a5a",
+      "excerpt": "President Trump said Sunday that Russia and Ukraine had agreed to an \"energy ceasefire,\" but he offered no details on it and Kyiv reported attacks by Moscow on energy sites after his statement. n.pr/4hSrjtc",
+      "placeNames": [
+        "Kyiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3mxolo5rfsk2c",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-10-12T13:09:24Z",
+      "retrievedAt": "2026-10-13T14:34:00Z",
+      "contentHash": "sha256:bee3dc0a0b7da9a890d5934aa02e9887dfddba942f5ff413a3a823f6b4b82e1d",
+      "excerpt": "The surge in attacks, including against other Saudi airports, military facilities and oil infrastructure, has come in the week since a Saudi-led coalition launched a major military offensive against the Houthis. n.pr/4hKKHYM",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}

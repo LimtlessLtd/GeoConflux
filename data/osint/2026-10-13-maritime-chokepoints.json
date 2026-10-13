@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-13T1434Z-maritime-chokepoints",
+  "collectedAt": "2026-10-13T14:34:38Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "166b3d91"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/400102",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-10-13T13:34:02Z",
+      "retrievedAt": "2026-10-13T14:34:38Z",
+      "contentHash": "sha256:fae9d82830f1db72f6b13a9ffe1c50a75eba05d9bfb3cb44099063718000139a",
+      "excerpt": "✈️ Пятый с начала суток пассажирский самолет подал сигнал бедствия в небе над Европой, сообщил ТАСС источник в авиадиспетчерских службах. Борт следовал из Рима в Дублин и совершил посадку в аэропорту назначения.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/400100",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-10-13T13:23:01Z",
+      "retrievedAt": "2026-10-13T14:34:38Z",
+      "contentHash": "sha256:e103afcc2c6d653b441365a34c8e3732207bf79bcd53e6566cbcb258cdbb92dd",
+      "excerpt": "Самолет, приземлившийся в аэропорту Нюрнберга, подал сигнал о захвате воздушного судна. При этом пилот не выходил на связь по радио, сообщила полиция Баварии. Ранее в аэропорту Нюрнберга была объявлена ЧС из-за рейса, прибывшего с греческого острова Корфу.…Аэропорт Нюрнберга возобновил работу, сообщается на сайте оператора воздушной гавани. Ранее там была объявлена чрезвычайная ситуация.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mxqen7pehz2l",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-10-13T06:08:56Z",
+      "retrievedAt": "2026-10-13T14:34:38Z",
+      "contentHash": "sha256:a750d22fbdd47c10b24770eb55dc436ac7a9dc2ca7b38c4f93198fa84dbcfe61",
+      "excerpt": "Drones struck two ships in the Black Sea off Bulgaria, sinking one and prompting emergency rescue operations, Prime Minister Rumen Radev said.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mxqas3ixqb2j",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-13T05:00:04Z",
+      "retrievedAt": "2026-10-13T14:34:38Z",
+      "contentHash": "sha256:1d1c3c3e138a9b4894d72afae93eb16060faf7d40157148b1610c566746b0062",
+      "excerpt": "Iran sets crosshairs on ‘US-UAE’ oil shuttle out of Strait of Hormuz https://aje.news/u5szt5",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
