@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-15T1207Z-maritime-chokepoints",
+  "collectedAt": "2026-10-15T12:07:13Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "c86ee5bb"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mxvyebjkz42t",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-15T11:45:09Z",
+      "retrievedAt": "2026-10-15T12:07:13Z",
+      "contentHash": "sha256:91ceab1f5f42e12d6618034f3c48766a9e656ba69b6abe2437f18c401c334ee1",
+      "excerpt": "Hormuz shipping disruption is starting to hit harvests, UN agency says reut.rs/4hXaRI2",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mxvoce4ntj2e",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-15T08:45:08Z",
+      "retrievedAt": "2026-10-15T12:07:13Z",
+      "contentHash": "sha256:44681ed63521efb795d34ab212e6cc8b1afc30de9c02d6e3b9596b557439b339",
+      "excerpt": "Two ships ablaze in Romanian Black Sea waters, 8 sailors missing reut.rs/4joayZ7",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mxvgqtfzou2i",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-15T06:30:04Z",
+      "retrievedAt": "2026-10-15T12:07:13Z",
+      "contentHash": "sha256:bbb65e5f3f764c7a244226f0ae5f4543b327b5a56e3925959868f370f42ffff0",
+      "excerpt": "Ship catches fire in Romania’s waters amid rising attacks in the Black Sea https://aje.news/id50uh",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mxuucrfqqb2t",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-15T01:00:04Z",
+      "retrievedAt": "2026-10-15T12:07:13Z",
+      "contentHash": "sha256:56d15d8df298831890d3945b39546a00562785d4868abd6981def5cf2c6a65fa",
+      "excerpt": "Iran war live: Tehran vows to fight until US yields as ships sink in Hormuz https://aje.news/5u2naz",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mxukavf57q2m",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-14T22:00:04Z",
+      "retrievedAt": "2026-10-15T12:07:13Z",
+      "contentHash": "sha256:f5bcb15176ba2390a407b10c2f450b717a9daaedb3c0fa895af4cf1c9ac00d1e",
+      "excerpt": "Without a quick deal to move fertiliser through the strait, agricultural productivity would 'significantly drop' https://aje.news/5io0tx",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3mxud4cpr3m2w",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-10-14T19:52:14Z",
+      "retrievedAt": "2026-10-15T12:07:13Z",
+      "contentHash": "sha256:9c21cb25713d4c4197f929bffd63337261fafe6d514a34e141e391dde82c93bb",
+      "excerpt": "As polar ice melts in the Arctic, shipping lanes are opening up, making the region a new zone of superpower competition. Writer Rana Foroohar explains the stakes in Sea Change. n.pr/4yRsnoo",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 17,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 4,
+        "collected": 3
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
