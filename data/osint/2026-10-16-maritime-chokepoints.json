@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-16T1154Z-maritime-chokepoints",
+  "collectedAt": "2026-10-16T11:54:19Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "93ccc58c"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/400618",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-10-16T11:41:09Z",
+      "retrievedAt": "2026-10-16T11:54:19Z",
+      "contentHash": "sha256:36305c8ba06ba1b42a7d73c0dc1669d55154d10ae2989a6780acdbe7bffc5836",
+      "excerpt": "▶️ Контейнеровоз GFS Pride под флагом Сингапура затонул у Ормузского пролива после попадания в него снаряда, сообщает Reuters со ссылкой на источники в сфере морской безопасности. Агентство отмечает, что это второй случай затопления судна с начала войны между…▶️ Контейнеры дрейфуют в Ормузском проливе рядом с затонувшим судном GFS Pride. Это следует из навигационного предупреждения для моряков, с которым ознакомился ТАСС. Новостные порталы заявляли, что на поверхности воды оказалось множество коробок с последними моделями iPhone, но подтверждения этому нет. Видео: ARIKA/X ✔️ Подпишись на ТАСС в \"Максе\"",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mxyencehpl2p",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-10-16T10:30:17Z",
+      "retrievedAt": "2026-10-16T11:54:19Z",
+      "contentHash": "sha256:10210b8d185876282fd776f3275a8cf578a7be92782f7eb55075fa9a1bde45a1",
+      "excerpt": "Drone attacks on at least seven cargo vessels in the Black Sea this month, off the coasts of NATO members Romania and Bulgaria, has some members of the alliance wondering if Russian President Vladimir Putin is seeking escalation to test their support for Ukraine in its war against Moscow’s invasion.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3mxud4cpr3m2w",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-10-14T19:52:14Z",
+      "retrievedAt": "2026-10-16T11:54:19Z",
+      "contentHash": "sha256:9c21cb25713d4c4197f929bffd63337261fafe6d514a34e141e391dde82c93bb",
+      "excerpt": "As polar ice melts in the Arctic, shipping lanes are opening up, making the region a new zone of superpower competition. Writer Rana Foroohar explains the stakes in Sea Change. n.pr/4yRsnoo",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
