@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-17T1110Z-maritime-chokepoints",
+  "collectedAt": "2026-10-17T11:10:36Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "1e72ca57"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3my2qmx3gwc22",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-17T09:10:09Z",
+      "retrievedAt": "2026-10-17T11:10:36Z",
+      "contentHash": "sha256:972e46fc5f26da6978bf6a16212d2fb81af71d1c51d352019c88ec4babb15940",
+      "excerpt": "Tanker struck by unknown projectile off Saudi Arabia on Friday, UKMTO says reut.rs/47osD2c",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mxyencehpl2p",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-10-16T10:30:17Z",
+      "retrievedAt": "2026-10-17T11:10:36Z",
+      "contentHash": "sha256:10210b8d185876282fd776f3275a8cf578a7be92782f7eb55075fa9a1bde45a1",
+      "excerpt": "Drone attacks on at least seven cargo vessels in the Black Sea this month, off the coasts of NATO members Romania and Bulgaria, has some members of the alliance wondering if Russian President Vladimir Putin is seeking escalation to test their support for Ukraine in its war against Moscow’s invasion.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mxztkx7bzf2i",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-17T00:30:04Z",
+      "retrievedAt": "2026-10-17T11:10:36Z",
+      "contentHash": "sha256:ec6021909e6ca18d7cf73456c215b69078feb21826ba25454eeba3dfb7234960",
+      "excerpt": "Trump says the US Navy blockade has stopped all Iranian ships from crossing the Strait of Hormuz.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3mxud4cpr3m2w",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-10-14T19:52:14Z",
+      "retrievedAt": "2026-10-17T11:10:36Z",
+      "contentHash": "sha256:9c21cb25713d4c4197f929bffd63337261fafe6d514a34e141e391dde82c93bb",
+      "excerpt": "As polar ice melts in the Arctic, shipping lanes are opening up, making the region a new zone of superpower competition. Writer Rana Foroohar explains the stakes in Sea Change. n.pr/4yRsnoo",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
