@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-18T1142Z-maritime-chokepoints",
+  "collectedAt": "2026-10-18T11:42:39Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "8e6a4d5c"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/400947",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-10-18T10:58:11Z",
+      "retrievedAt": "2026-10-18T11:42:39Z",
+      "contentHash": "sha256:47629a9459c13dd35999420f7e85ad0cbe2c0e481a6f46f040e0355c8b3fa0b3",
+      "excerpt": "▶️ Лавров провел встречу с главой МИД Саудовской Аравии Фейсалом бен Фарханом Аль Саудом. Главы МИД России и Саудовской Аравии нацелены продолжить сотрудничество в ОПЕК+, а также отметили важность безопасности судоходства в мировых артериях. Видео: Раптли/ТАСС ✔ Подпишись на ТАСС в \"Максе\"",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3my5ftujipy2e",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-18T10:35:10Z",
+      "retrievedAt": "2026-10-18T11:42:39Z",
+      "contentHash": "sha256:b166a1c3c81eb6589bb8b226de56fcfd4a040cb0968f1e26919dcdc513482d8a",
+      "excerpt": "Iran urges US to accept proposal to reopen Strait of Hormuz reut.rs/4hTw7Qh",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3my3ggeycey2h",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-17T15:40:11Z",
+      "retrievedAt": "2026-10-18T11:42:39Z",
+      "contentHash": "sha256:e534c26c2fc9c32809b5fb50a132ee16deadf6154804a61df0dddb71ade4ad51",
+      "excerpt": "Iran's Guards say two tankers hit mines in Strait of Hormuz reut.rs/4yWHX27",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3my4dzud4p72i",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-18T00:30:04Z",
+      "retrievedAt": "2026-10-18T11:42:39Z",
+      "contentHash": "sha256:a63e8a0b0e930721bbe5478ebdc1ddd9b82431164312e55284bad68899e39e4b",
+      "excerpt": "Fires reported on three tankers as masked settlers attack European politicians in the occupied West Bank.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3my35i2mjkn2m",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-17T13:00:04Z",
+      "retrievedAt": "2026-10-18T11:42:39Z",
+      "contentHash": "sha256:7a166134fb8923ae98f8f1d3fed26f2cbbfa0f94e9f244da2073e1cc630ecd8e",
+      "excerpt": "Two vessels have been struck with naval mines in the Strait of Hormuz this week.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
