@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-19T1356Z-maritime-chokepoints",
+  "collectedAt": "2026-10-19T13:56:44Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "1506edfd"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/401100",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-10-19T13:06:01Z",
+      "retrievedAt": "2026-10-19T13:56:44Z",
+      "contentHash": "sha256:254b5a5a6e6b7ddbc656d3596175c312fe7fa3639b3803e7940049519c7d5b74",
+      "excerpt": "✈️ Михаил Мишустин прибыл в Республику Таджикистан с визитом. Его самолет приземлился в международном аэропорту Душанбе, передает корреспондент ТАСС.▶ Кадры прибытия Михаила Мишустина в Таджикистан. Видео: Правительство России/ТАСС ✔ Подпишись на ТАСС в \"Максе\"",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/401099",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-10-19T12:55:52Z",
+      "retrievedAt": "2026-10-19T13:56:44Z",
+      "contentHash": "sha256:b8925131a070fc6250dc6de3cefb0bdf25bc8bfbf2002ce199639295e2df6f68",
+      "excerpt": "✈️ Михаил Мишустин прибыл в Республику Таджикистан с визитом. Его самолет приземлился в международном аэропорту Душанбе, передает корреспондент ТАСС.Михаил Мишустин в преддверии встречи по линии ШОС провел переговоры с первым вице-президентом Ирана Мохаммадом Резой Арефом, передает корреспондент ТАСС. ✔️ Подпишись на ТАСС в \"Максе\"",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/401092",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-10-19T11:56:02Z",
+      "retrievedAt": "2026-10-19T13:56:44Z",
+      "contentHash": "sha256:1315d99610f659256f0cad6d5496e9f482d5a0d6a9d9200c6d6147717dcc7ac5",
+      "excerpt": "✈️ Михаил Мишустин прибыл в Республику Таджикистан с визитом. Его самолет приземлился в международном аэропорту Душанбе, передает корреспондент ТАСС.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 3,
+        "collected": 3
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "unreachable",
+        "reason": "robots.txt returned HTTP 429"
+      }
+    ]
+  }
+}
