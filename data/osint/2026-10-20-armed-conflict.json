@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-20T1210Z-armed-conflict",
+  "collectedAt": "2026-10-20T12:10:16Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "7db8c0a7"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-10-20T12:10:16Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-10-20T12:10:16Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mycazfle2h2e",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-20T08:52:05Z",
+      "retrievedAt": "2026-10-20T12:10:16Z",
+      "contentHash": "sha256:d3029390e1e84a5b5bc2ff92fcee9b9cbc93014b32746b121535ae3364b4b517",
+      "excerpt": "Firefighters try to bring a blaze under control in Kyiv, after a Russian airstrike that officials say killed three people.reut.rs/4zNr3TH",
+      "placeNames": [
+        "Kyiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3my7xiv3uer2a",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-10-19T10:56:28Z",
+      "retrievedAt": "2026-10-20T12:10:16Z",
+      "contentHash": "sha256:5bff1688534f305d3bb331e6cdf45d76e62788dbd5ca5955d648443ca783e7cf",
+      "excerpt": "Iran-backed Houthi rebels strike a government military camp in southern Yemen, killing at least 20 fighters, officials say.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3my6elqwtpq2d",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-10-18T19:45:24Z",
+      "retrievedAt": "2026-10-20T12:10:16Z",
+      "contentHash": "sha256:1d5f48a9a5018b192265099289386f33eecb4250cc92c95d411a2e2e05f702f6",
+      "excerpt": "🇫🇷 Paris : la place de la République, épicentre de la mobilisation parisienne et des heurts de samedi, a été de nouveau le théâtre d'affrontements dimanche après-midi avec les forces de l'ordre, qui ont fait usage de gaz lacrymogènes pour disperser la foule ⬇️",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3myc4grhkzs2m",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-20T07:30:05Z",
+      "retrievedAt": "2026-10-20T12:10:16Z",
+      "contentHash": "sha256:c0d5bab54d10634d07863c32c8111d5f5d9615175a0a01f0e0e6fc92d4ef05e4",
+      "excerpt": "The human cost of surging US air strikes in Somalia https://aje.news/z4qhf8",
+      "placeNames": [
+        "Uman"
+      ],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}

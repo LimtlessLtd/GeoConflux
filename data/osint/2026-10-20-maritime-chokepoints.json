@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-20T1210Z-maritime-chokepoints",
+  "collectedAt": "2026-10-20T12:10:52Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "ccc2ea93"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/401267",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-10-20T11:22:29Z",
+      "retrievedAt": "2026-10-20T12:10:52Z",
+      "contentHash": "sha256:602f758b83803598dc1e86f490adcf9b18e79a8cb249f18aa47fa45be37c8ecc",
+      "excerpt": "Арестованный в Индии танкер Unity с экипажем из РФ намерены продать, сообщила ТАСС родственница одного из моряков. Она уточнила, что моряки не могут покинуть судно, пока их не заменят другим экипажем. ✔️ Подпишись на ТАСС в \"Максе\"Вопрос о репатриации экипажа находящегося у берегов Индии танкера Unity с россиянами на борту упирается в отсутствие его замены. Об этом сообщило ТАСС генконсульство РФ в Калькутте. ✔️ Подпишись на ТАСС в \"Максе\"",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mycdpixfan2j",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-20T09:40:15Z",
+      "retrievedAt": "2026-10-20T12:10:52Z",
+      "contentHash": "sha256:774b07828521ec4f86c9fa926d231f08f44a6fe0e3faa32615c5ce52c6df2ee5",
+      "excerpt": "Asian refiners use smaller tankers, buy delivered crude as freight rates soar reut.rs/4iu1Ebv",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mycdgeng5e2j",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-20T09:35:08Z",
+      "retrievedAt": "2026-10-20T12:10:52Z",
+      "contentHash": "sha256:fe63763e48339ab55df60d1a3dc5c5aaac7b40f6f46d4e562d10295a60680e13",
+      "excerpt": "Hormuz could be 'redundant' in five years, replaced by new routes, HSBC CEO says reut.rs/4yreRGV",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
