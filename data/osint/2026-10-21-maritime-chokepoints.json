@@ -1,37 +1,37 @@
 {
   "schemaVersion": 1,
-  "bundleId": "2026-09-22T1202Z-maritime-chokepoints",
-  "collectedAt": "2026-09-22T12:02:48Z",
+  "bundleId": "2026-10-21T1224Z-maritime-chokepoints",
+  "collectedAt": "2026-10-21T12:24:32Z",
   "brief": {
     "id": "maritime-chokepoints",
     "revision": 2
   },
   "collector": {
     "role": "agent",
-    "runId": "8528e522"
+    "runId": "27e00300"
   },
   "items": [
     {
       "kind": "userGenerated",
-      "url": "https://bsky.app/profile/reuters.com/post/3mw3z5w2dv62b",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mye5suvy7j2e",
       "platform": "bluesky",
-      "channel": "reuters.com",
-      "postedAt": "2026-09-22T10:25:05Z",
-      "retrievedAt": "2026-09-22T12:02:48Z",
-      "contentHash": "sha256:f4a3e5e46ddce71d8a7637a3e4ce32bc8eeeb982e93018bb22cafac463b9c27b",
-      "excerpt": "Iran ready to reopen Strait of Hormuz if US eases military pressure and lifts blockade reut.rs/4ycSrtM",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-21T03:00:05Z",
+      "retrievedAt": "2026-10-21T12:24:32Z",
+      "contentHash": "sha256:c66bfdede4dc71d19279ad92ff058ab5013994d6ed9b10242db18a1276cf7ab7",
+      "excerpt": "King Charles III pays tribute to Muscat's 'noble efforts' to help reopen the Strait of Hormuz https://aje.news/eqsdv3",
       "placeNames": [],
       "relatedTo": []
     },
     {
       "kind": "userGenerated",
-      "url": "https://bsky.app/profile/aljazeera.com/post/3mw3kdzyzjn2y",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mye45bdib42y",
       "platform": "bluesky",
       "channel": "aljazeera.com",
-      "postedAt": "2026-09-22T06:00:04Z",
-      "retrievedAt": "2026-09-22T12:02:48Z",
-      "contentHash": "sha256:ccdd0545b6d2016885d7ea8019f6623db0579d87416cd91c6573281cf1458e4c",
-      "excerpt": "Ministers demand an end to maritime shipping attacks and urge Iran to stop arming the Yemeni group.",
+      "postedAt": "2026-10-21T02:30:06Z",
+      "retrievedAt": "2026-10-21T12:24:32Z",
+      "contentHash": "sha256:3b83beb7f79bae107961a4f51192fdaf07c2cdae09dca3e4ad42d5f14f6cbd36",
+      "excerpt": "NATO to send additional patrol planes to Black Sea after drone attacks https://aje.news/j8eu7m",
       "placeNames": [],
       "relatedTo": []
     }
@@ -66,10 +66,10 @@
       },
       {
         "channel": "bluesky/reuters.com",
-        "outcome": "collected",
+        "outcome": "nothing matched",
         "read": 40,
-        "matched": 1,
-        "collected": 1
+        "matched": 0,
+        "collected": 0
       },
       {
         "channel": "bluesky/apnews.com",
@@ -89,8 +89,8 @@
         "channel": "bluesky/aljazeera.com",
         "outcome": "collected",
         "read": 40,
-        "matched": 1,
-        "collected": 1
+        "matched": 2,
+        "collected": 2
       },
       {
         "channel": "bluesky/npr.org",
