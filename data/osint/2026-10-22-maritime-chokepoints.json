@@ -1,25 +1,25 @@
 {
   "schemaVersion": 1,
-  "bundleId": "2026-09-23T1208Z-maritime-chokepoints",
-  "collectedAt": "2026-09-23T12:08:31Z",
+  "bundleId": "2026-10-22T1224Z-maritime-chokepoints",
+  "collectedAt": "2026-10-22T12:24:29Z",
   "brief": {
     "id": "maritime-chokepoints",
     "revision": 2
   },
   "collector": {
     "role": "agent",
-    "runId": "14ad2a1c"
+    "runId": "90ec9281"
   },
   "items": [
     {
       "kind": "userGenerated",
-      "url": "https://bsky.app/profile/apnews.com/post/3mw6jw4zslk2x",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mygydnk3uz2q",
       "platform": "bluesky",
-      "channel": "apnews.com",
-      "postedAt": "2026-09-23T10:30:17Z",
-      "retrievedAt": "2026-09-23T12:08:31Z",
-      "contentHash": "sha256:ac519cb20b35e9d6724d5a03cbe4176c29c62827fb8d1f4c36d4817d4ae5b6d1",
-      "excerpt": "The lightning advance of Yemen's Houthi rebels down the Red Sea coast was aided by Iranian advisers on the front lines, according to people familiar with the offensive. That marks Iran’s most direct intervention in favor of its longtime ally since Yemen’s civil war erupted in 2014.",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-22T06:00:04Z",
+      "retrievedAt": "2026-10-22T12:24:29Z",
+      "contentHash": "sha256:f579391b143d1e5b81dd5a8ebdfe87dfa641d527ef06ebba9eb3347e539ff914",
+      "excerpt": "Qatari and French leaders stress need to restore freedom of navigation in Strait of Hormuz.",
       "placeNames": [],
       "relatedTo": []
     }
@@ -61,10 +61,10 @@
       },
       {
         "channel": "bluesky/apnews.com",
-        "outcome": "collected",
+        "outcome": "nothing matched",
         "read": 40,
-        "matched": 1,
-        "collected": 1
+        "matched": 0,
+        "collected": 0
       },
       {
         "channel": "bluesky/afp.com",
@@ -75,10 +75,10 @@
       },
       {
         "channel": "bluesky/aljazeera.com",
-        "outcome": "nothing matched",
+        "outcome": "collected",
         "read": 40,
-        "matched": 0,
-        "collected": 0
+        "matched": 1,
+        "collected": 1
       },
       {
         "channel": "bluesky/npr.org",
