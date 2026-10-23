@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-23T1206Z-maritime-chokepoints",
+  "collectedAt": "2026-10-23T12:06:43Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "804782ef"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3myjw4okjr62r",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-10-23T09:58:22Z",
+      "retrievedAt": "2026-10-23T12:06:43Z",
+      "contentHash": "sha256:f3c0d2b692621b49b67b455ec08be1dc916c1eb2e61a194f23880030fb3aa0eb",
+      "excerpt": "Romanian authorities said a search and rescue mission is underway in the Black Sea after a cargo ship caught fire, leaving one dead and three missing.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3myidwgfmwh2k",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-22T19:00:05Z",
+      "retrievedAt": "2026-10-23T12:06:43Z",
+      "contentHash": "sha256:f75916ea1d5b33347fd5ab84ead8d33741f44c2c45c63c22291c307a49876118",
+      "excerpt": "Iran says seven ships hit in Hormuz Strait, warns US of wider response https://aje.news/vyo0b9",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
