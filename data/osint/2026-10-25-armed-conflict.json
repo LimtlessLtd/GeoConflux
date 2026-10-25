@@ -1,0 +1,215 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-25T1158Z-armed-conflict",
+  "collectedAt": "2026-10-25T11:58:51Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "2697995e"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-10-25T11:58:51Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-10-25T11:58:51Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/402247",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-10-25T10:54:11Z",
+      "retrievedAt": "2026-10-25T11:58:51Z",
+      "contentHash": "sha256:4f7ffcc288a03ef5ab9f5b2f0079e7ad37c00b1d09541585206f55cafa836bc6",
+      "excerpt": "Киев нарушил условия использования Starlink, из-за этого ее работу приостановили, заявил Маск. \"Украинские военные нарушили условия использования Starlink и применили его для наступательных ударов дронов с целью убийства людей. Эта лазейка была закрыта на…Илон Маск — миротворец, который видит катастрофические последствия эскалационных шагов \"поджигателей войны\". Так Дмитриев прокомментировал пост, в котором предприниматель объясняет, что Starlink не должен использоваться для нанесения наступательных ударов. Согласно словам Маска, применение спутниковой системы для наступления может повлечь ее уничтожение. Это приведет к образованию большого количества обломков на орбите и помешает использованию космического пространства.",
+      "placeNames": [
+        "Украинск"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3myntxjolyn2x",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-24T23:30:21Z",
+      "retrievedAt": "2026-10-25T11:58:51Z",
+      "contentHash": "sha256:48c961dc02476a20ea1ec09960943c0f7c54200a8f1e57c1ea9d21c46302c503",
+      "excerpt": "Bodies of ambushed Salvadoran soldiers found in Haiti, New York Times reports reut.rs/4yyCGMZ",
+      "placeNames": [
+        "New York"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mynfg5xvhp2h",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-24T19:10:06Z",
+      "retrievedAt": "2026-10-25T11:58:51Z",
+      "contentHash": "sha256:1bf52e33f5bd3b871dc2e89667e83b1b7a70f1cbc33ef82c6b6514c87a51528e",
+      "excerpt": "Gunmen kill at least 40 people in northeastern Nigeria, Amnesty International says reut.rs/4smZo9r",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mymp3bt5jo2i",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-24T12:30:18Z",
+      "retrievedAt": "2026-10-25T11:58:51Z",
+      "contentHash": "sha256:2d56aa3f0044dbc18f070191b94503550a3aaf3492565f4185423da70cd0fff1",
+      "excerpt": "Around 1,200 Palestinians are displaced in Hebron as Israel begins military operation reut.rs/4BEwvtM",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mymiejq5ag2m",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-10-24T10:30:12Z",
+      "retrievedAt": "2026-10-25T11:58:51Z",
+      "contentHash": "sha256:df750e3d874d562781f48f889a241d0b1d8eeac459ed5cb8d94adb7142fab15d",
+      "excerpt": "Taiz, a city in southwestern Yemen, faces a severe water crisis as Houthi rebels backed by Iran tighten their encirclement.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3myo2uoylfr2n",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-10-25T01:34:02Z",
+      "retrievedAt": "2026-10-25T11:58:51Z",
+      "contentHash": "sha256:51892f3b2d2c21d16db89e07cb01528b5fbd701c59c9c3e697d618964f49a1d8",
+      "excerpt": "Footage broadcast on Jordanian state television showed three gunmen firing shots at a Greek Orthodox church in the city of Karak on Friday. n.pr/4skIRD7",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3mynu5tqhmc2i",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-10-24T23:33:53Z",
+      "retrievedAt": "2026-10-25T11:58:51Z",
+      "contentHash": "sha256:1b13cec59ccd545289ebb545f4026460cd2851513a8c7924831d88fbf5a760ed",
+      "excerpt": "Israel's Prime Minister is vowing to launch a major military operation in the West Bank in response to an attack by two Palestinian gunmen on an Israeli military checkpoint that killed two soldiers. n.pr/4Bqy5iH",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3mym576gvta2o",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-10-24T07:10:22Z",
+      "retrievedAt": "2026-10-25T11:58:51Z",
+      "contentHash": "sha256:c68a242f108c93c8ea25c80164ea978d2813f18f4776c4537bb573d5f6c25cb6",
+      "excerpt": "Taiz, a city in southwestern Yemen, faces a severe water crisis as Houthi rebels backed by Iran tighten their encirclement. The city has struggled with water issues for over a decade, but the situation has worsened in recent weeks. n.pr/4ibHTUR",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 3,
+        "collected": 3
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 3,
+        "collected": 3
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
