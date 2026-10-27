@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-27T1239Z-armed-conflict",
+  "collectedAt": "2026-10-27T12:39:42Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "1713a021"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-10-27T12:39:42Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-10-27T12:39:42Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3myty4lndql2a",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-27T10:00:44Z",
+      "retrievedAt": "2026-10-27T12:39:42Z",
+      "contentHash": "sha256:279fc75d3259f74bca71015c7b85d8a95366c9e07f0bba16adc95f2a94f8264b",
+      "excerpt": "Jordan says it killed more than 20 Islamic State militants in airstrikes on Syria reut.rs/4zfqWjQ",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3myu5xexz622y",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-10-27T11:45:12Z",
+      "retrievedAt": "2026-10-27T12:39:42Z",
+      "contentHash": "sha256:830d7c2a8a0b156cbb30b22c0c9eabac059846f84727bed01926d05621cfcb91",
+      "excerpt": "At least 62 people have been killed after gunmen attacked a community in northeastern Nigeria, the country’s emergency agency said.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3myt3ahzais2v",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-10-27T01:23:56Z",
+      "retrievedAt": "2026-10-27T12:39:42Z",
+      "contentHash": "sha256:131b929ccb62f7b0c7c25d6d9154e96b5e9c0fb68baed9bb270fb8a3cc75b65e",
+      "excerpt": "A localized ceasefire between Ukraine and Russia has taken effect ahead of a humanitarian mission led by U.S. first lady Melania Trump.",
+      "placeNames": [
+        "Uman"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3myttjq6u6i2b",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-10-27T08:38:36Z",
+      "retrievedAt": "2026-10-27T12:39:42Z",
+      "contentHash": "sha256:e2cb30ce59bcd6f7a9397f6275b433c85d5b07c14e4c6b23f7e7977aae0e2dd0",
+      "excerpt": "🇺🇦 Un cessez-le-feu annoncé par Melania Trump en vue d'une opération humanitaire a débuté mardi matin autour d'Olechky, ville isolée du sud de l'Ukraine sous occupation russe et en proie à des pénuries. ➡️ u.afp.com/SyS5",
+      "placeNames": [
+        "Uman"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mytzr3b6dq2y",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-27T10:30:05Z",
+      "retrievedAt": "2026-10-27T12:39:42Z",
+      "contentHash": "sha256:2c6c762c9a47ff13184977deeb00177f88177759c8564979ffb5ef4e4497c0a3",
+      "excerpt": "Millions without power in the East as Sudan's warring sides trade drone strikes.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mytamf4erq2y",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-27T03:00:04Z",
+      "retrievedAt": "2026-10-27T12:39:42Z",
+      "contentHash": "sha256:22b64edcedb1327c24d2a7651eaab0fba847eed5ea1a25a0d6386020345ee302",
+      "excerpt": "Russia halts strikes on Ukraine’s Kherson as Oleshky ceasefire takes effect https://aje.news/48jy9y",
+      "placeNames": [
+        "Oleshky",
+        "Kherson"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3myszvst2w72y",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-27T01:00:04Z",
+      "retrievedAt": "2026-10-27T12:39:42Z",
+      "contentHash": "sha256:1be044e27edc95ec8abcdc66bb1bfe6551cfb303cfeee0f31151853784c77649",
+      "excerpt": "Jordan launches air strikes in Syria in response to a fatal church shooting https://aje.news/0bnlgq",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 3,
+        "collected": 3
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}

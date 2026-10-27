@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-27T1240Z-maritime-chokepoints",
+  "collectedAt": "2026-10-27T12:40:18Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "32b9099c"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/402597",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-10-27T11:55:04Z",
+      "retrievedAt": "2026-10-27T12:40:18Z",
+      "contentHash": "sha256:e41391a039a2b6de3c4092eedfb983458c0753858a8e524f58c9bc0fc66b145a",
+      "excerpt": "❗️Первый танкер в рамках дизельной сделки уйдет через 2-3 дня, на нем будет 40 тыс. тонн дизеля, заявил Путин. Видео: Раптли/ТАСС ✔️ Подпишись на ТАСС в \"Максе\"Новак заявил, что удивлен позицией демократов США по дизельной сделке с РФ, поскольку они действуют не в интересах своих граждан. Ранее в США внесли законопроект, призванный помешать реализации соглашения. По данным Axios, представители Конгресса угрожают бизнесу, требуя от него отказа от участия в договоренностях о поставках дизеля из России.",
+      "placeNames": [
+        "Оскол"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/402584",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-10-27T11:00:34Z",
+      "retrievedAt": "2026-10-27T12:40:18Z",
+      "contentHash": "sha256:7d21b11a39729318ef0a962bc02f83e0ef425a47b50a7d6d2bf97a5512216392",
+      "excerpt": "Первые 3 танкера с российским дизелем уже находятся в пути в сторону восточного побережья Атлантического океана, заявил Новак.Четвертый танкер с дизелем отправится на экспорт 28 октября, сообщил Новак.",
+      "placeNames": [
+        "Октябр"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3myuaip7v6b24",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-27T12:30:40Z",
+      "retrievedAt": "2026-10-27T12:40:18Z",
+      "contentHash": "sha256:5bbcecdd9ea36a098d5a9bae69fb8cd8af3b83d17934d369402fa817a80cc381",
+      "excerpt": "Iranian strait authority says Sinokor vessels will face legal action reut.rs/4i8PODJ",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3myu3psnu6624",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-10-27T11:05:10Z",
+      "retrievedAt": "2026-10-27T12:40:18Z",
+      "contentHash": "sha256:79749cd51379b26d32116089b6651bcd72d8144cb8192c424583ad7a35fe8624",
+      "excerpt": "Three Arab states back Greece in dispute over Turkey-Libya maritime accord reut.rs/4BASVvZ",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
