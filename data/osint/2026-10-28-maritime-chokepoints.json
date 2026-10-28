@@ -1,25 +1,37 @@
 {
   "schemaVersion": 1,
-  "bundleId": "2026-09-29T1319Z-maritime-chokepoints",
-  "collectedAt": "2026-09-29T13:19:21Z",
+  "bundleId": "2026-10-28T1331Z-maritime-chokepoints",
+  "collectedAt": "2026-10-28T13:31:53Z",
   "brief": {
     "id": "maritime-chokepoints",
     "revision": 2
   },
   "collector": {
     "role": "agent",
-    "runId": "f5d22666"
+    "runId": "b22db163"
   },
   "items": [
     {
       "kind": "userGenerated",
-      "url": "https://bsky.app/profile/aljazeera.com/post/3mwn3wthipv2i",
+      "url": "https://t.me/tass_agency/402790",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-10-28T11:55:58Z",
+      "retrievedAt": "2026-10-28T13:31:53Z",
+      "contentHash": "sha256:166cc7111b705a85182ebf2edad13e11acca588b5583108cb5eca19469795d68",
+      "excerpt": "Пассажиры круизного лайнера Villa Vie Odyssey, совершавшего кругосветку, застряли в Камбодже из-за выросших цен на топливо, сообщает The Independent. По словам представителей компании, обслуживающей судно, ежемесячные расходы на топливо в расчете на одну каюту выросли с $1,8 тыс. до $8 тыс. Пассажиров высадили на берег, информации об условиях их пребывания нет.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3myuulejq3x2u",
       "platform": "bluesky",
       "channel": "aljazeera.com",
-      "postedAt": "2026-09-29T05:30:04Z",
-      "retrievedAt": "2026-09-29T13:19:21Z",
-      "contentHash": "sha256:c6e6ef7be06c70381baeb6b58d3c5fd44dd4bcbb5d08218579bce20a8a9264fe",
-      "excerpt": "Rubio, Saudi Arabia’s foreign minister hold talks on Yemen, Hormuz Strait https://aje.news/mlw1or",
+      "postedAt": "2026-10-27T18:30:05Z",
+      "retrievedAt": "2026-10-28T13:31:53Z",
+      "contentHash": "sha256:fa751cc771b8ffdc75ef2781999cb441231a003fc0ea831b224dc37f1525414d",
+      "excerpt": "Iran’s calculations as US escalation looms: Trust, midterms, Hormuz https://aje.news/g561s9",
       "placeNames": [],
       "relatedTo": []
     }
@@ -47,10 +59,10 @@
       },
       {
         "channel": "telegram/tass_agency",
-        "outcome": "nothing matched",
-        "read": 14,
-        "matched": 0,
-        "collected": 0
+        "outcome": "collected",
+        "read": 20,
+        "matched": 1,
+        "collected": 1
       },
       {
         "channel": "bluesky/reuters.com",

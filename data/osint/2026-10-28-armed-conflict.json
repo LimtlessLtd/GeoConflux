@@ -1,0 +1,192 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-28T1331Z-armed-conflict",
+  "collectedAt": "2026-10-28T13:31:15Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "98dd4c59"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-10-28T13:31:15Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-10-28T13:31:15Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3myv46hqvhc2x",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-10-27T20:46:02Z",
+      "retrievedAt": "2026-10-28T13:31:15Z",
+      "contentHash": "sha256:f339797beaaf2e3d5c2e2140729044338a58963d297fbc6f778c57ca1e5077c7",
+      "excerpt": "Sudanese army drone strike kills 102 people at a busy market in Darfur, says Sudanese rights group.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3myttjq6u6i2b",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-10-27T08:38:36Z",
+      "retrievedAt": "2026-10-28T13:31:15Z",
+      "contentHash": "sha256:e2cb30ce59bcd6f7a9397f6275b433c85d5b07c14e4c6b23f7e7977aae0e2dd0",
+      "excerpt": "🇺🇦 Un cessez-le-feu annoncé par Melania Trump en vue d'une opération humanitaire a débuté mardi matin autour d'Olechky, ville isolée du sud de l'Ukraine sous occupation russe et en proie à des pénuries. ➡️ u.afp.com/SyS5",
+      "placeNames": [
+        "Uman"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mywnlboujj2u",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-28T11:30:05Z",
+      "retrievedAt": "2026-10-28T13:31:15Z",
+      "contentHash": "sha256:4d5dbe1ff857f321bc983d35a35c6dc3d09568cac8db86439ccadef02a2733c4",
+      "excerpt": "Three weeks into the siege of Yemen’s third-largest city, prices have doubled, and families are down to the basics.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3myuwazc53m26",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-27T19:00:04Z",
+      "retrievedAt": "2026-10-28T13:31:15Z",
+      "contentHash": "sha256:be84f2e16e7c0af47580a5d2a75025139555f79895eb2a0a87a5b1374b0404f5",
+      "excerpt": "Death toll from attack by gunmen in northeastern Nigeria rises to 62 https://aje.news/11osrr",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3myv7ffqott2v",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-10-27T21:43:36Z",
+      "retrievedAt": "2026-10-28T13:31:15Z",
+      "contentHash": "sha256:6b06753e40b302594a5100564123ff11d4ddc7301ffe9415df1db334d3074f48",
+      "excerpt": "Intense rainstorms linked to a very active El Niño-driven Pacific hurricane season have left thousands of people in the Four Corners states displaced. n.pr/4yJ3NVS",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3myueglzuzb2o",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-10-27T13:41:05Z",
+      "retrievedAt": "2026-10-28T13:31:15Z",
+      "contentHash": "sha256:314099832baf8d6e82d1d4071e852d30e4d96c350d489a015d1e967e52032d49",
+      "excerpt": "A localized ceasefire between Ukraine and Russia took effect early Tuesday ahead of a humanitarian mission brokered by U.S. first lady Melania Trump, as missile attacks resumed in Kyiv. n.pr/3WObcFW",
+      "placeNames": [
+        "Kyiv",
+        "Uman"
+      ],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
