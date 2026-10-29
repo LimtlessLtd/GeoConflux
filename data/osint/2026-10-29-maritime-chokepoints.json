@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-29T1343Z-maritime-chokepoints",
+  "collectedAt": "2026-10-29T13:43:06Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "5ee6327e"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/402988",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-10-29T11:57:01Z",
+      "retrievedAt": "2026-10-29T13:43:06Z",
+      "contentHash": "sha256:1a727ca5d3e177d6cf149a4f773a8ab28f1c33a8f88c1bb382b558a82246ee22",
+      "excerpt": "Подавший сигнал тревоги после вылета из Еревана пассажирский самолет приземлился в аэропорту вылета, сообщают диспетчеры.Самолет компании \"Азимут\" вернулся в Ереван, в аэропорт вылета, из-за проблем с системой кондиционирования, сообщил ТАСС представитель компании.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3myxz5zqdul25",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-29T00:30:05Z",
+      "retrievedAt": "2026-10-29T13:43:06Z",
+      "contentHash": "sha256:9792f5ceb6cb767a8df3de5a9b00af0076570a438ccc5e1a49e7287cc8be3b06",
+      "excerpt": "Iran war live: Tehran presses 7-day Hormuz plan; Trump denies peace talks https://aje.news/ry3jk0",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}

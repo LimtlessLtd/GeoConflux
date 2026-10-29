@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-29T1342Z-armed-conflict",
+  "collectedAt": "2026-10-29T13:42:29Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "61555ac0"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-10-29T13:42:29Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-10-29T13:42:29Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/402996",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-10-29T12:47:01Z",
+      "retrievedAt": "2026-10-29T13:42:29Z",
+      "contentHash": "sha256:811dd8a57f5e7f7eab0551b897047a1bcef882a5c692e83b36584983a20b9750",
+      "excerpt": "🚗 Минтранс рекомендовал менять летние шины на зимние при температуре плюс 5-7 градусов и наступлении постоянных заморозков. Там пояснили, что при низких температурах летняя резина становится слишком твердой и теряет упругость, что ухудшает сцепление с дорогой и увеличивает тормозной путь.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3myxnheactx2u",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-10-28T21:00:33Z",
+      "retrievedAt": "2026-10-29T13:42:29Z",
+      "contentHash": "sha256:6f97b940ba518e52d2dd850e4971cfd185801ae382af51d395f93c66712630ab",
+      "excerpt": "A planned six-day ceasefire brokered by U.S. first lady Melania Trump has brought rare quiet to the Ukrainian-held city of Kherson.",
+      "placeNames": [
+        "Kherson"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mywvyi4qpj2v",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-10-28T14:00:38Z",
+      "retrievedAt": "2026-10-29T13:42:29Z",
+      "contentHash": "sha256:c353d13d9bdb290ef0138df4211e4d7548b17c82d1401eb519aea72b05c9574a",
+      "excerpt": "Islamic extremist militants killed at least 20 Somali soldiers in an ambush, a military officer who survived the attack said, as the government acknowledged damage to military vehicles but disclosed no troop casualties. The al-Qaida-linked al-Shabab group claimed responsibility for Monday's attack.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3myttjq6u6i2b",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-10-27T08:38:36Z",
+      "retrievedAt": "2026-10-29T13:42:29Z",
+      "contentHash": "sha256:e2cb30ce59bcd6f7a9397f6275b433c85d5b07c14e4c6b23f7e7977aae0e2dd0",
+      "excerpt": "🇺🇦 Un cessez-le-feu annoncé par Melania Trump en vue d'une opération humanitaire a débuté mardi matin autour d'Olechky, ville isolée du sud de l'Ukraine sous occupation russe et en proie à des pénuries. ➡️ u.afp.com/SyS5",
+      "placeNames": [
+        "Uman"
+      ],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
