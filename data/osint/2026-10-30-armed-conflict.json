@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-30T1333Z-armed-conflict",
+  "collectedAt": "2026-10-30T13:33:04Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "cdf0626e"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-10-30T13:33:04Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-10-30T13:33:04Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mz3jgslq6z2i",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-10-30T09:59:19Z",
+      "retrievedAt": "2026-10-30T13:33:04Z",
+      "contentHash": "sha256:41b6093c5bfc44af484cc914634e96e735b5f2ad6f9153bf1d51cb6700a34911",
+      "excerpt": "Russian and Ukrainian officials on a humanitarian mission say they have entered the devastated city of Oleshky following a localized ceasefire.",
+      "placeNames": [
+        "Oleshky",
+        "Uman"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3mz3gv2xsxw22",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-10-30T09:13:36Z",
+      "retrievedAt": "2026-10-30T13:33:04Z",
+      "contentHash": "sha256:52b0a10a48e8855a56085c3904d2f805a9f4eb01d6fc4f89550835e28d49f016",
+      "excerpt": "🇷🇺 Le journal Novaïa Gazeta, bastion historique de la presse indépendante en Russie, qui était ouvertement opposé à l'offensive russe contre l'Ukraine, a annoncé sa fermeture sous la pression des autorités russes.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mz2qdiqasu25",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-30T02:30:04Z",
+      "retrievedAt": "2026-10-30T13:33:04Z",
+      "contentHash": "sha256:8b758a9fac4edea7f193fe45cc110e975a13915ceb6b6afeddfdd38c50eaf88b",
+      "excerpt": "This comes as more than 3,300 Palestinians are forced from homes in Hebron as Israel's military offensive continues.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 17,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
