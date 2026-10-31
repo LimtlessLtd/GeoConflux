@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "bundleId": "2026-10-01T1353Z-armed-conflict",
-  "collectedAt": "2026-10-01T13:53:21Z",
+  "bundleId": "2026-10-31T1303Z-armed-conflict",
+  "collectedAt": "2026-10-31T13:03:17Z",
   "brief": {
     "id": "armed-conflict",
     "revision": 2
   },
   "collector": {
     "role": "agent",
-    "runId": "fb022f8a"
+    "runId": "c67fe314"
   },
   "items": [
     {
@@ -17,7 +17,7 @@
       "platform": "telegram",
       "channel": "ukrainenowenglish",
       "postedAt": "2022-10-23T16:54:07Z",
-      "retrievedAt": "2026-10-01T13:53:21Z",
+      "retrievedAt": "2026-10-31T13:03:17Z",
       "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
       "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
       "placeNames": [
@@ -31,7 +31,7 @@
       "platform": "telegram",
       "channel": "ukrainenowenglish",
       "postedAt": "2022-10-23T15:22:01Z",
-      "retrievedAt": "2026-10-01T13:53:21Z",
+      "retrievedAt": "2026-10-31T13:03:17Z",
       "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
       "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
       "placeNames": [
@@ -41,13 +41,39 @@
     },
     {
       "kind": "userGenerated",
-      "url": "https://bsky.app/profile/aljazeera.com/post/3mwrsssxiq32q",
+      "url": "https://bsky.app/profile/apnews.com/post/3mz42wbm27g2u",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-10-30T15:12:11Z",
+      "retrievedAt": "2026-10-31T13:03:17Z",
+      "contentHash": "sha256:73e1a8c0af8df06fabab294b3204fa893017f06e1468705b39d4aa24ce8d1542",
+      "excerpt": "Some residents of Russian-occupied Oleshky have been evacuated from the war-ravaged city on the fourth day of a localized ceasefire, a Ukrainian lawmaker says.",
+      "placeNames": [
+        "Oleshky"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3mz3gv2xsxw22",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-10-30T09:13:36Z",
+      "retrievedAt": "2026-10-31T13:03:17Z",
+      "contentHash": "sha256:52b0a10a48e8855a56085c3904d2f805a9f4eb01d6fc4f89550835e28d49f016",
+      "excerpt": "🇷🇺 Le journal Novaïa Gazeta, bastion historique de la presse indépendante en Russie, qui était ouvertement opposé à l'offensive russe contre l'Ukraine, a annoncé sa fermeture sous la pression des autorités russes.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mz5pvb2y772t",
       "platform": "bluesky",
       "channel": "aljazeera.com",
-      "postedAt": "2026-10-01T02:30:05Z",
-      "retrievedAt": "2026-10-01T13:53:21Z",
-      "contentHash": "sha256:a2b27460cd3edfd6b38b6d632120f8b38a499800ddd484721e1a71debe17768d",
-      "excerpt": "Gunmen attack bus in Homs province hours after a pipeline explosion knocked out three power plants near Damascus.",
+      "postedAt": "2026-10-31T07:00:05Z",
+      "retrievedAt": "2026-10-31T13:03:17Z",
+      "contentHash": "sha256:5e2833f0fd8dbb8a477ba3b1f1f21a47612a27464c23f0417198b165cccf44dd",
+      "excerpt": "Troops hold at least 12 Palestinians near demolished homes as nearly 5,000 remain displaced from Hebron neighbourhoods",
       "placeNames": [],
       "relatedTo": []
     }
@@ -71,7 +97,7 @@
       {
         "channel": "telegram/tass_agency",
         "outcome": "nothing matched",
-        "read": 19,
+        "read": 20,
         "matched": 0,
         "collected": 0
       },
@@ -84,17 +110,17 @@
       },
       {
         "channel": "bluesky/apnews.com",
-        "outcome": "nothing matched",
+        "outcome": "collected",
         "read": 40,
-        "matched": 0,
-        "collected": 0
+        "matched": 1,
+        "collected": 1
       },
       {
         "channel": "bluesky/afp.com",
-        "outcome": "nothing matched",
+        "outcome": "collected",
         "read": 40,
-        "matched": 0,
-        "collected": 0
+        "matched": 1,
+        "collected": 1
       },
       {
         "channel": "bluesky/aljazeera.com",

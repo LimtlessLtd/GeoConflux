@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-10-31T1303Z-maritime-chokepoints",
+  "collectedAt": "2026-10-31T13:03:55Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "11cc1075"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/403344",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-10-31T09:55:58Z",
+      "retrievedAt": "2026-10-31T13:03:55Z",
+      "contentHash": "sha256:1dbcf421e351f3bc041699bcc75c348f1148c164c84a9ef22c3b3a29c796d705",
+      "excerpt": "В Шереметьеве опровергли сообщения о якобы объявлении воздушной тревоги. В пресс-службе воздушной гавани подчеркнули, что фото, \"сопровождающие публикации, относятся к событиям прошлых периодов и не отражают текущую ситуацию в аэропорту\".",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mz5ybgymsj2t",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-31T09:30:04Z",
+      "retrievedAt": "2026-10-31T13:03:55Z",
+      "contentHash": "sha256:212c1b5e71b8217fb059b70eaf710b7ff18c04172e74eba9e3f3dd25493f4295",
+      "excerpt": "Conflict devastates Black Sea marine life, killing more than 120,000 dolphins and causing ecological damage.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mz53rixv4v2a",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-31T01:00:05Z",
+      "retrievedAt": "2026-10-31T13:03:55Z",
+      "contentHash": "sha256:b5672ae7802884300026547df744001915ca52d2d1fdeceb3c7ede22037ec374",
+      "excerpt": "IRGC says four tankers hit in Strait of Hormuz, as Trump says war on Iran will 'get wrapped up soon'.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mz4wqjxf6x2y",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-30T23:30:03Z",
+      "retrievedAt": "2026-10-31T13:03:55Z",
+      "contentHash": "sha256:f1f392b346d22010d4227d8bdbe08fd92429d2b0dc547a8b6d87390529daede4",
+      "excerpt": "Incident comes as Iran says three oil tankers were halted while attempting to use 'unauthorised routes' to cross Hormuz https://aje.news/un87t0",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 3,
+        "collected": 3
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
