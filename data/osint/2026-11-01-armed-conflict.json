@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "bundleId": "2026-10-02T1309Z-armed-conflict",
-  "collectedAt": "2026-10-02T13:09:35Z",
+  "bundleId": "2026-11-01T1346Z-armed-conflict",
+  "collectedAt": "2026-11-01T13:46:52Z",
   "brief": {
     "id": "armed-conflict",
     "revision": 2
   },
   "collector": {
     "role": "agent",
-    "runId": "12de2e06"
+    "runId": "b433d75c"
   },
   "items": [
     {
@@ -17,7 +17,7 @@
       "platform": "telegram",
       "channel": "ukrainenowenglish",
       "postedAt": "2022-10-23T16:54:07Z",
-      "retrievedAt": "2026-10-02T13:09:35Z",
+      "retrievedAt": "2026-11-01T13:46:52Z",
       "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
       "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
       "placeNames": [
@@ -31,7 +31,7 @@
       "platform": "telegram",
       "channel": "ukrainenowenglish",
       "postedAt": "2022-10-23T15:22:01Z",
-      "retrievedAt": "2026-10-02T13:09:35Z",
+      "retrievedAt": "2026-11-01T13:46:52Z",
       "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
       "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
       "placeNames": [
@@ -41,25 +41,39 @@
     },
     {
       "kind": "userGenerated",
-      "url": "https://bsky.app/profile/aljazeera.com/post/3mwu7wijq232k",
+      "url": "https://bsky.app/profile/apnews.com/post/3mz6elrsrg32g",
       "platform": "bluesky",
-      "channel": "aljazeera.com",
-      "postedAt": "2026-10-02T01:30:06Z",
-      "retrievedAt": "2026-10-02T13:09:35Z",
-      "contentHash": "sha256:26bfefed8d31712e47dafcb6359fe94174d20c3e8e081ad966e59c62d46f2bbe",
-      "excerpt": "1,439 Palestinians have been killed in Gaza and 5,052 injured since the 'ceasefire' began in October 2025.",
+      "channel": "apnews.com",
+      "postedAt": "2026-10-31T13:10:36Z",
+      "retrievedAt": "2026-11-01T13:46:52Z",
+      "contentHash": "sha256:4ef1f6185c6904d4da2641f0ad0114e440c420924aadaae866d6f13d84fd45ef",
+      "excerpt": "BREAKING: Residents evacuated from the Russian-occupied city of Oleshky reach Ukraine after a localized ceasefire.",
+      "placeNames": [
+        "Oleshky"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3mz3gv2xsxw22",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-10-30T09:13:36Z",
+      "retrievedAt": "2026-11-01T13:46:52Z",
+      "contentHash": "sha256:52b0a10a48e8855a56085c3904d2f805a9f4eb01d6fc4f89550835e28d49f016",
+      "excerpt": "🇷🇺 Le journal Novaïa Gazeta, bastion historique de la presse indépendante en Russie, qui était ouvertement opposé à l'offensive russe contre l'Ukraine, a annoncé sa fermeture sous la pression des autorités russes.",
       "placeNames": [],
       "relatedTo": []
     },
     {
       "kind": "userGenerated",
-      "url": "https://bsky.app/profile/aljazeera.com/post/3mwtsjb7tvk24",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mzanrcgy352e",
       "platform": "bluesky",
       "channel": "aljazeera.com",
-      "postedAt": "2026-10-01T21:30:03Z",
-      "retrievedAt": "2026-10-02T13:09:35Z",
-      "contentHash": "sha256:afb06ed4c7740a91b7ea376f630376682b211ab5573ed3f32be9234acfbd0c48",
-      "excerpt": "Air strikes and difficult terrain have prevented the Houthis from turning coastal gains into a wider breakthrough.",
+      "postedAt": "2026-11-01T11:00:04Z",
+      "retrievedAt": "2026-11-01T13:46:52Z",
+      "contentHash": "sha256:7adbccbdcfb5786f789ed0647500ec984c85a1d5ca3862746a7c916b55b23b3b",
+      "excerpt": "Weapons and ammunition depots are seized after a counteroffensive.",
       "placeNames": [],
       "relatedTo": []
     }
@@ -83,7 +97,7 @@
       {
         "channel": "telegram/tass_agency",
         "outcome": "nothing matched",
-        "read": 20,
+        "read": 19,
         "matched": 0,
         "collected": 0
       },
@@ -96,24 +110,24 @@
       },
       {
         "channel": "bluesky/apnews.com",
-        "outcome": "nothing matched",
+        "outcome": "collected",
         "read": 40,
-        "matched": 0,
-        "collected": 0
+        "matched": 1,
+        "collected": 1
       },
       {
         "channel": "bluesky/afp.com",
-        "outcome": "nothing matched",
+        "outcome": "collected",
         "read": 40,
-        "matched": 0,
-        "collected": 0
+        "matched": 1,
+        "collected": 1
       },
       {
         "channel": "bluesky/aljazeera.com",
         "outcome": "collected",
         "read": 40,
-        "matched": 2,
-        "collected": 2
+        "matched": 1,
+        "collected": 1
       },
       {
         "channel": "bluesky/npr.org",

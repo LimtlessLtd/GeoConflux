@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-11-01T1347Z-maritime-chokepoints",
+  "collectedAt": "2026-11-01T13:47:30Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "33116876"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/403467",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-11-01T12:03:21Z",
+      "retrievedAt": "2026-11-01T13:47:30Z",
+      "contentHash": "sha256:e1f25926a27e648d9d190f63d3b0c74c8f32ab34dc836d4c3515ca2e044959a8",
+      "excerpt": "Первая группа моряков с арестованного в Индии танкера Unity отправится на родину 31 октября, остальные — в начале ноября, сообщает генконсульство РФ.Первые члены экипажа российского танкера Unity возвращаются на родину, сообщила ТАСС родственница одного из моряков.",
+      "placeNames": [
+        "Октябр"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mz7kksx2rr2u",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-01T00:30:06Z",
+      "retrievedAt": "2026-11-01T13:47:30Z",
+      "contentHash": "sha256:735b3d1c96b0faed051bf47b8272863e6744c440a226ee16648c5946524bf1b3",
+      "excerpt": "Iran war live: Araghchi says talks under way on 2-day plan to reopen Hormuz https://aje.news/3nxml3",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mz755n2s442i",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-10-31T20:30:05Z",
+      "retrievedAt": "2026-11-01T13:47:30Z",
+      "contentHash": "sha256:3ccf2ce63cf39e01682781c32d2f65b850f8d773a21ab0cfe068393a3a1304f3",
+      "excerpt": "Turkiye’s Erdogan urges Russia and Ukraine to stop Black Sea attacks https://aje.news/3gyxf4",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 19,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
