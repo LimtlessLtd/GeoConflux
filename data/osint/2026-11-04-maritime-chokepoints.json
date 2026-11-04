@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-11-04T1453Z-maritime-chokepoints",
+  "collectedAt": "2026-11-04T14:53:03Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "804b97da"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/403975",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-11-04T14:31:25Z",
+      "retrievedAt": "2026-11-04T14:53:03Z",
+      "contentHash": "sha256:d4bf1faee7c9854b133476c869343a150b348a0467c972e0d27e36dd5dc49ac3",
+      "excerpt": "❗️ВС РФ поразили в порту Одесса сухогруз, доставлявший на Украину военное имущество, сообщили в Минобороны.",
+      "placeNames": [
+        "Одесса"
+      ],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 19,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
