@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-11-05T1457Z-maritime-chokepoints",
+  "collectedAt": "2026-11-05T14:57:32Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "ca4c5e8e"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/404124",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-11-05T14:01:49Z",
+      "retrievedAt": "2026-11-05T14:57:32Z",
+      "contentHash": "sha256:89c2df4a62393e2c0c450f14cbe7b8f5b44ad87f2fdf9561f35b9e1506ce406a",
+      "excerpt": "Главные новости к этому часу: ▪️Путин поручил создать отдельную программу обучения наподобие \"Времени героев\" для бойцов СВО без высшего образования. ▪️У Путина сегодня возможен международный контакт. Главное из заявлений Пескова — в материале ТАСС. ▪️ВС РФ поразили за сутки объекты энергетики и транспортной инфраструктуры, используемые ВСУ. ▪️Криштиану Роналду объявил о завершении карьеры в сборной Португалии. ▪️Медведев заявил, что не разделяет восторга по решению CAS по хоккею. ▪️Суд назначил четыре года колонии заочно Жанне Немцовой (признана в РФ иностранным агентом) по делу о руководстве нежелательной организацией, передает корреспондент ТАСС. ▪️Суд в Финляндии приговорил российского капитана судна Fitburg к 3,5 года по делу о предполагаемом повреждении подводных кабелей. ТАСС собрал основное о ситуации. ▪️Материалы на тему отечественной разведки появятся в новых учебниках по русскому языку для 10-11-х классов, заявила Ямпольская. ▪️Более тысячи лет может понадобиться Лерчек для…",
+      "placeNames": [
+        "Ямполь"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mzl2awau752q",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-11-05T14:10:11Z",
+      "retrievedAt": "2026-11-05T14:57:32Z",
+      "contentHash": "sha256:c10f2bb8dab484618a302ad413465c51797894861659ac0e69aa0a26f897e2a9",
+      "excerpt": "France extends maritime patrol plane's stay in Black Sea after cargo ship attacks reut.rs/3UCdtDC",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mzkzousgqg25",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-05T14:00:05Z",
+      "retrievedAt": "2026-11-05T14:57:32Z",
+      "contentHash": "sha256:be690062f0997a61dfd23718100ac0761da2de6c8fa6e21dc95bc250f2b9c107",
+      "excerpt": "US Treasury says Indian couple faked ship registries for countries including Guyana and Laos to help Iranian tankers.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mzkiwgbf7o2u",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-05T09:00:05Z",
+      "retrievedAt": "2026-11-05T14:57:32Z",
+      "contentHash": "sha256:2e032137c0c5339bc7793047d196a26361a4d250caee0685e4731eb1d2a42a2f",
+      "excerpt": "South Korea plans to expand anti-piracy operations closer to Hormuz Strait https://aje.news/5dgdmm",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
