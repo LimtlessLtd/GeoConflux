@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-11-06T1436Z-maritime-chokepoints",
+  "collectedAt": "2026-11-06T14:36:45Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "d790c69e"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mznjd6sbef2y",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-11-06T13:45:12Z",
+      "retrievedAt": "2026-11-06T14:36:45Z",
+      "contentHash": "sha256:bb8aeb03995f5f9b58709e46645e0a0d6042c03b1430afcbd7b1e38aa31b7edb",
+      "excerpt": "One seafarer killed in missile attack on tanker in Gulf reut.rs/4BLEDIJ",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mzmsorrmzv2j",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-06T07:00:05Z",
+      "retrievedAt": "2026-11-06T14:36:45Z",
+      "contentHash": "sha256:71d723ba5c31cb95f329efdc492c3a237a60f628215abc5701e768836e5fe794",
+      "excerpt": "Tehran says ships from four countries can cross Hormuz freely, but analysts say the deals carry political risks.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mzlstkdee425",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-05T21:30:06Z",
+      "retrievedAt": "2026-11-06T14:36:45Z",
+      "contentHash": "sha256:d7c770bd325fd4d71f30f92fe9c75f4fdf6c76604e2cc0361161d1852385db48",
+      "excerpt": "Iranian forces say five oil tankers and a tugboat have caught fire in several incidents in the Strait of Hormuz.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 15,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}

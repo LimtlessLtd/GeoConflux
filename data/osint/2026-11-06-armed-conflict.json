@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-11-06T1436Z-armed-conflict",
+  "collectedAt": "2026-11-06T14:36:08Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "0837586b"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-11-06T14:36:08Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-11-06T14:36:08Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/404308",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-11-06T14:14:03Z",
+      "retrievedAt": "2026-11-06T14:36:08Z",
+      "contentHash": "sha256:ef9a02b17b0ec4a3ee66c8f8d4ed172a227ca9eee11137bf4f5e0c62403d26da",
+      "excerpt": "Александра Колчака, который в годы гражданской войны носил титул Верховного правителя России, перед казнью не могли полноценно допросить из-за наступления белогвардейцев. Это следует из рассекреченного уголовного дела, с которым ознакомился ТАСС на выставке…Суд в 1999 году не стал реабилитировать адмирала Александра Колчака, который в годы гражданской войны носил титул Верховного правителя России, из-за свидетельств массовых расправ над красноармейцами и мирными гражданами. Это следует из рассекреченных документов, с которыми ознакомился ТАСС на выставке \"Колчак. История от первого лица\".",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mznir5mny326",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-11-06T13:35:07Z",
+      "retrievedAt": "2026-11-06T14:36:08Z",
+      "contentHash": "sha256:03d896b562cd9bf1d4ddb76d56ce9b452193a7f74d5f3beaa980de12683aa05a",
+      "excerpt": "'We have nothing': Displaced mothers in Yemen's Taiz collect plastic to survive reut.rs/4k6iNtn",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mznecaj7nx2z",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-11-06T12:15:12Z",
+      "retrievedAt": "2026-11-06T14:36:08Z",
+      "contentHash": "sha256:6a57435cf1e1dc164786e0bfb06ef038e4f75c1537ba8848aa9e36e659e9097f",
+      "excerpt": "Millions of displaced Sudanese risk losing shelter as funds run low, UN warns reut.rs/487MRNV",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mzlkhrq3op2o",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-11-05T19:00:21Z",
+      "retrievedAt": "2026-11-06T14:36:08Z",
+      "contentHash": "sha256:5d72d877030da0ca8a6d219f77e3b4c5a5aa5cbd828c5c18ef08be6b9c71bd7c",
+      "excerpt": "An envoy to Russian President Vladimir Putin thanked first lady Melania Trump for her “distinguished humanitarian role” in securing the ceasefire between Russia and Ukraine at a White House event.",
+      "placeNames": [
+        "Uman"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mzmnnu55jz2u",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-06T05:30:05Z",
+      "retrievedAt": "2026-11-06T14:36:08Z",
+      "contentHash": "sha256:a037e208bb0de03bee9f24a5eb4e02c124555f8745b304fc7a7bdba12952cad3",
+      "excerpt": "Call comes as Iraq's top diplomat urges armed groups not to join any Iranian retaliation to US attacks.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 15,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
