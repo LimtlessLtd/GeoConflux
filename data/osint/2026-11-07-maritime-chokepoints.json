@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-11-07T1332Z-maritime-chokepoints",
+  "collectedAt": "2026-11-07T13:32:27Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "1002391c"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3mzpxbrnel72g",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-11-07T13:00:17Z",
+      "retrievedAt": "2026-11-07T13:32:27Z",
+      "contentHash": "sha256:921ad2e252bf13dee5aa9eed6fb804da7d3207b9e32d0903498568613d24a6ef",
+      "excerpt": "🚁🎮 Face à la menace des drones, l'industrie navale de défense se met au Lego : au salon mondial Euronaval, les industriels ont présenté des solutions modulaires conçues pour répondre aux enseignements des conflits en Ukraine et au Moyen-Orient.➡️ u.afp.com/Sy9Y",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mzpyx2ja2b2r",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-07T13:30:05Z",
+      "retrievedAt": "2026-11-07T13:32:27Z",
+      "contentHash": "sha256:42dffb76aefe19c2049e456188008590a9ff84904890ae5f4d366e7dc11e8fb5",
+      "excerpt": "Zero Russian diesel has reached the US as tankers divert and buyers fear legal action.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mzpxbi46de2r",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-07T13:00:07Z",
+      "retrievedAt": "2026-11-07T13:32:27Z",
+      "contentHash": "sha256:8e2bcc67b5c7955b85a0e025c79100e2e6e87ee3a3f443c1b4eded63dbf410ac",
+      "excerpt": "US strikes have continued on Iran after more ships in the Strait of Hormuz were attacked.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mzo7x5x4hh2s",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-06T20:30:05Z",
+      "retrievedAt": "2026-11-07T13:32:27Z",
+      "contentHash": "sha256:2d9b31194688de9a12d1f31a144f2a7f2a726399e7573e336d0329968561536f",
+      "excerpt": "Millions fleeing Sudan’s war risk losing shelter as funds run low, UN warns https://aje.news/4en8w1",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 19,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 3,
+        "collected": 3
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
