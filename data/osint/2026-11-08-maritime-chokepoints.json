@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-11-08T1351Z-maritime-chokepoints",
+  "collectedAt": "2026-11-08T13:51:22Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "f33ebfb6"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mzpzs2xviv2y",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-11-07T13:45:11Z",
+      "retrievedAt": "2026-11-08T13:51:22Z",
+      "contentHash": "sha256:ec89232dc1f7f0ffa63dfd6c08576bcf4a201e85216b35e18b0014bc80e16d5d",
+      "excerpt": "EXCLUSIVE: Expanding on naval blockade, US military looks to restrict Iranian land commerce reut.rs/4BQ86kV",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mzr45unqf72a",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-11-08T00:00:14Z",
+      "retrievedAt": "2026-11-08T13:51:22Z",
+      "contentHash": "sha256:dbcbcbbb413b22b093082ffaa883fcae1a2a6b06ab51a72575415de53aafedbb",
+      "excerpt": "The U.S. military says it fired on a commercial vessel in the Gulf of Oman after it attempted to breach a naval blockade on Iran.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3mzpxbrnel72g",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-11-07T13:00:17Z",
+      "retrievedAt": "2026-11-08T13:51:22Z",
+      "contentHash": "sha256:921ad2e252bf13dee5aa9eed6fb804da7d3207b9e32d0903498568613d24a6ef",
+      "excerpt": "🚁🎮 Face à la menace des drones, l'industrie navale de défense se met au Lego : au salon mondial Euronaval, les industriels ont présenté des solutions modulaires conçues pour répondre aux enseignements des conflits en Ukraine et au Moyen-Orient.➡️ u.afp.com/Sy9Y",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mzpyx2ja2b2r",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-07T13:30:05Z",
+      "retrievedAt": "2026-11-08T13:51:22Z",
+      "contentHash": "sha256:42dffb76aefe19c2049e456188008590a9ff84904890ae5f4d366e7dc11e8fb5",
+      "excerpt": "Zero Russian diesel has reached the US as tankers divert and buyers fear legal action.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mzpxbi46de2r",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-07T13:00:07Z",
+      "retrievedAt": "2026-11-08T13:51:22Z",
+      "contentHash": "sha256:8e2bcc67b5c7955b85a0e025c79100e2e6e87ee3a3f443c1b4eded63dbf410ac",
+      "excerpt": "US strikes have continued on Iran after more ships in the Strait of Hormuz were attacked.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 18,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}

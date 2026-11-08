@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "bundleId": "2026-10-09T1344Z-armed-conflict",
-  "collectedAt": "2026-10-09T13:44:58Z",
+  "bundleId": "2026-11-08T1350Z-armed-conflict",
+  "collectedAt": "2026-11-08T13:50:44Z",
   "brief": {
     "id": "armed-conflict",
     "revision": 2
   },
   "collector": {
     "role": "agent",
-    "runId": "dd571565"
+    "runId": "48ad4b2b"
   },
   "items": [
     {
@@ -17,7 +17,7 @@
       "platform": "telegram",
       "channel": "ukrainenowenglish",
       "postedAt": "2022-10-23T16:54:07Z",
-      "retrievedAt": "2026-10-09T13:44:58Z",
+      "retrievedAt": "2026-11-08T13:50:44Z",
       "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
       "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
       "placeNames": [
@@ -31,7 +31,7 @@
       "platform": "telegram",
       "channel": "ukrainenowenglish",
       "postedAt": "2022-10-23T15:22:01Z",
-      "retrievedAt": "2026-10-09T13:44:58Z",
+      "retrievedAt": "2026-11-08T13:50:44Z",
       "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
       "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
       "placeNames": [
@@ -41,13 +41,37 @@
     },
     {
       "kind": "userGenerated",
-      "url": "https://bsky.app/profile/afp.com/post/3mxejdpuxnh25",
+      "url": "https://bsky.app/profile/reuters.com/post/3mzqmrvc4a22z",
       "platform": "bluesky",
-      "channel": "afp.com",
-      "postedAt": "2026-10-08T13:01:10Z",
-      "retrievedAt": "2026-10-09T13:44:58Z",
-      "contentHash": "sha256:d8fc456fdb77be20fa83a4e6c94a59f64b7eb7bd13597452c4e2e6ccab1f7511",
-      "excerpt": "Trois ans après l'attaque du Hamas du 7-Octobre sur Israël, qui a déclenché une vaste offensive à Gaza en représailles, des Gazaouis évoquent leurs conditions de vie désastreuses et expriment leurs espoirs ⤵️",
+      "channel": "reuters.com",
+      "postedAt": "2026-11-07T19:25:06Z",
+      "retrievedAt": "2026-11-08T13:50:44Z",
+      "contentHash": "sha256:dba646af389d91759a25b602aa2c2811250108d35304ab3d1edf605740788005",
+      "excerpt": "Houthi-run health ministry says airstrikes it blames on Saudi Arabia kill 27 near Yemen capital reut.rs/4iuT3pj",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mzqepfpoih26",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-11-07T17:00:33Z",
+      "retrievedAt": "2026-11-08T13:50:44Z",
+      "contentHash": "sha256:9a1ab8383eecf1d6207c305bf90df3882487fe63481510f0bf33d7d2d928a7b1",
+      "excerpt": "Heavy rain floods tents housing Gaza displaced people, aid shortages hamper response reut.rs/4iujpYw",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mzpsaja5ee2l",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-07T11:30:06Z",
+      "retrievedAt": "2026-11-08T13:50:44Z",
+      "contentHash": "sha256:ab77b65489d3a51f03d5fe3cdca9b446981176cbe84d157175440ac22fbc73f6",
+      "excerpt": "Rains flood thousands of displaced families’ tents in Gaza https://aje.news/2duox4",
       "placeNames": [],
       "relatedTo": []
     }
@@ -71,16 +95,16 @@
       {
         "channel": "telegram/tass_agency",
         "outcome": "nothing matched",
-        "read": 13,
+        "read": 18,
         "matched": 0,
         "collected": 0
       },
       {
         "channel": "bluesky/reuters.com",
-        "outcome": "nothing matched",
+        "outcome": "collected",
         "read": 40,
-        "matched": 0,
-        "collected": 0
+        "matched": 2,
+        "collected": 2
       },
       {
         "channel": "bluesky/apnews.com",
@@ -91,17 +115,17 @@
       },
       {
         "channel": "bluesky/afp.com",
-        "outcome": "collected",
-        "read": 40,
-        "matched": 1,
-        "collected": 1
-      },
-      {
-        "channel": "bluesky/aljazeera.com",
         "outcome": "nothing matched",
         "read": 40,
         "matched": 0,
         "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
       },
       {
         "channel": "bluesky/npr.org",
