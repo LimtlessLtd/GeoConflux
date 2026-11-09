@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-11-09T1651Z-maritime-chokepoints",
+  "collectedAt": "2026-11-09T16:51:17Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "4cb6289f"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/404749",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-11-09T14:49:16Z",
+      "retrievedAt": "2026-11-09T16:51:17Z",
+      "contentHash": "sha256:d5bee12cf37214d67b071b6e06141f478cbd3a176e5fc64fc01c44df65af421c",
+      "excerpt": "❗️ВС РФ поразили в порту Одесса логистический центр \"Сухой порт\", предназначенный для хранения и распределения грузов в интересах ВСУ, сообщили в Минобороны. Также днем был поражен в Черном море сухогруз с вооружением и военным имуществом ВСУ.",
+      "placeNames": [
+        "Одесса"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mzubbvi7n62i",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-11-09T06:09:57Z",
+      "retrievedAt": "2026-11-09T16:51:17Z",
+      "contentHash": "sha256:066c419562620356ab05643bf11ce965d53a8f4b8fb64a81922f2142f089a7a9",
+      "excerpt": "Greek authorities say they have recovered 12 bodies from a migrant boat found sailing south of Crete, while a passing cargo ship rescued 18 people from the same vessel.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3mzpxbrnel72g",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-11-07T13:00:17Z",
+      "retrievedAt": "2026-11-09T16:51:17Z",
+      "contentHash": "sha256:921ad2e252bf13dee5aa9eed6fb804da7d3207b9e32d0903498568613d24a6ef",
+      "excerpt": "🚁🎮 Face à la menace des drones, l'industrie navale de défense se met au Lego : au salon mondial Euronaval, les industriels ont présenté des solutions modulaires conçues pour répondre aux enseignements des conflits en Ukraine et au Moyen-Orient.➡️ u.afp.com/Sy9Y",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
