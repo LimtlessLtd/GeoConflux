@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-11-10T1514Z-maritime-chokepoints",
+  "collectedAt": "2026-11-10T15:14:23Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "350a03a0"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mzxpwtkamp2r",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-11-10T15:10:11Z",
+      "retrievedAt": "2026-11-10T15:14:23Z",
+      "contentHash": "sha256:2044c71524ff23948187297d4ed54ee308e3b8edaed12797245d1060a7a35a45",
+      "excerpt": "Italy says EU nations failed to commit to Red Sea security reut.rs/4kHNPYy",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3mzxja6fxe72w",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-11-10T13:10:09Z",
+      "retrievedAt": "2026-11-10T15:14:23Z",
+      "contentHash": "sha256:b0d833edcf828f0509129d3132b9c0a9e43243e8895a700d1f90942fb68d3194",
+      "excerpt": "EU's von der Leyen pledges €50 million to speed up security hub in the Black Sea reut.rs/4izaHs0",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3mzx6ml4car2f",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-11-10T10:00:14Z",
+      "retrievedAt": "2026-11-10T15:14:23Z",
+      "contentHash": "sha256:f8ced944100d49f884c56b0ba99e163d515112f96d33bf51f7c46d746701c51c",
+      "excerpt": "Piracy is rising in the Gulf of Aden, threatening vital shipping lanes.",
+      "placeNames": [
+        "Aden"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mzx3b3dynj24",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-10T09:00:07Z",
+      "retrievedAt": "2026-11-10T15:14:23Z",
+      "contentHash": "sha256:33374ce1558a4e7190d54a6e5b0a450ac1d008ab849add81968e00bc37d95240",
+      "excerpt": "Two refuelling tankers and several other aircraft diverted from RAF Mildenhall airbase to other locations, WSJ reports https://aje.news/co08wn",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mzwisxg5c72h",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-10T03:30:05Z",
+      "retrievedAt": "2026-11-10T15:14:23Z",
+      "contentHash": "sha256:6ee5f5797efd5e79f39a7462c8ed710d3c16941166a5f8ba2d1482c5bd51ef3c",
+      "excerpt": "The oil pipeline runs through the desert to the coast and is essential for bypassing the Strait of Hormuz.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
