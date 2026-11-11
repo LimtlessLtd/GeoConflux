@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-11-11T1442Z-maritime-chokepoints",
+  "collectedAt": "2026-11-11T14:42:51Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "82851ace"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/405159",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-11-11T14:20:04Z",
+      "retrievedAt": "2026-11-11T14:42:51Z",
+      "contentHash": "sha256:fb2586e0df9cba60a91db66d98640497671f28fc43ac74ac72273aa5d4acb3bf",
+      "excerpt": "⚡Второй день переговоров РФ, США и Украины в Абу-Даби завершен, передает корреспондент ТАСС.❗️Уиткофф и Кушнер улетели из Абу-Даби, сообщили ТАСС в аэропорту Аль-Батин.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3n223wqsl7f2x",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-11-11T13:50:13Z",
+      "retrievedAt": "2026-11-11T14:42:51Z",
+      "contentHash": "sha256:5329840f0be0276585ed6f8d854dafee883b655117cc4e53a3ee754969f9e54e",
+      "excerpt": "Russia turns to giant plastic bags to store unexported grain as Black Sea trade stalls reut.rs/3WApfPu",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3mzzlpy4pla2e",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-11T09:00:06Z",
+      "retrievedAt": "2026-11-11T14:42:51Z",
+      "contentHash": "sha256:a049bbe7ec322357edb6f9c20ca9c8add88e434f7d676308de32cd2fa7b3b6a9",
+      "excerpt": "Iran denies talks with US, says Hormuz will stay shut until demands are met https://aje.news/3hp8i7",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
