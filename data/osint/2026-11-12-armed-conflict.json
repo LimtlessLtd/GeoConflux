@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-11-12T1535Z-armed-conflict",
+  "collectedAt": "2026-11-12T15:35:24Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "441e324e"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-11-12T15:35:24Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-11-12T15:35:24Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3n23sfn2pb62r",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-11-12T06:04:55Z",
+      "retrievedAt": "2026-11-12T15:35:24Z",
+      "contentHash": "sha256:3471117ab5c60997253a460c97c0b7e138096108398483c114f82401913d4a59",
+      "excerpt": "Gaza's Health Ministry says an Israeli airstrike targeting the Nasser Hospital in southern Gaza has killed six people and wounded at least a dozen more.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3n224iygcl72i",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-11-11T14:00:25Z",
+      "retrievedAt": "2026-11-12T15:35:24Z",
+      "contentHash": "sha256:c778f6ef4d16854933627f6148a2c446d130eda5bbbaf7aae689559ce547efe4",
+      "excerpt": "It’s business as usual for President Donald Trump’s deportation offensive despite the Republican wipeout in the midterm elections. Advocates reported arrests from California to Michigan to Massachusetts.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3mzxpfe3aa52a",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-11-10T15:00:25Z",
+      "retrievedAt": "2026-11-12T15:35:24Z",
+      "contentHash": "sha256:3e07dd3d2915dc85d18d18d2babcfa268706d2d8d64596219e247a00cf3f4607",
+      "excerpt": "🇺🇸 Guerre avec l'Iran : le secrétaire d'État américain Marco Rubio a estimé mardi qu'il n'y avait \"pas besoin\" actuellement d'opération militaire majeure contre l'Iran, en écho au président Donald Trump qui a jugé peu probable une reprise des hostilités à grande échelle.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3n23ytmhbgc26",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-12T08:00:06Z",
+      "retrievedAt": "2026-11-12T15:35:24Z",
+      "contentHash": "sha256:4d646776bfe7c61ec5312e6ea408a70997ec11548c7ac5487d3bf83a97e1eb27",
+      "excerpt": "World Health Organization says more than 320,000 people have been displaced in Yemen fighting since August 1.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 17,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}

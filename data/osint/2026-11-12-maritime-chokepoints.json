@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-11-12T1536Z-maritime-chokepoints",
+  "collectedAt": "2026-11-12T15:36:01Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "d52159f0"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3n24nsaq7nm2x",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-11-12T14:15:09Z",
+      "retrievedAt": "2026-11-12T15:36:01Z",
+      "contentHash": "sha256:752f6ccccfb86b5ea89913c180c95865d5a92cbd7b3fc2133aae31bbd54984ae",
+      "excerpt": "Vessel on fire after being struck off UAE's Ras Al-Khaimah, maritime agencies say reut.rs/4iMJJvT",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3n24juzxf6r2y",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-11-12T13:05:07Z",
+      "retrievedAt": "2026-11-12T15:36:01Z",
+      "contentHash": "sha256:64d7e279035ca1d5b7b58b73c20a15c5808981529886bb273c2ba9483590dc8a",
+      "excerpt": "Oman monitors handling of oil tanker run aground off its coast reut.rs/4iKaalH",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3n23i35onuj2n",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-12T03:00:05Z",
+      "retrievedAt": "2026-11-12T15:36:01Z",
+      "contentHash": "sha256:bc25bf1695e11df0ea51eceb71a6d7bc2be0bec399e234abac5c3a1ea9f31439",
+      "excerpt": "Hormuz Strait will ‘never return’ to pre-war status, Iran’s Ghalibaf says https://aje.news/lkrn1a",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 17,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
