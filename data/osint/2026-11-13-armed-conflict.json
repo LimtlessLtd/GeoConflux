@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "bundleId": "2026-10-15T1206Z-armed-conflict",
-  "collectedAt": "2026-10-15T12:06:34Z",
+  "bundleId": "2026-11-13T1453Z-armed-conflict",
+  "collectedAt": "2026-11-13T14:53:55Z",
   "brief": {
     "id": "armed-conflict",
     "revision": 2
   },
   "collector": {
     "role": "agent",
-    "runId": "29605055"
+    "runId": "d0988ebb"
   },
   "items": [
     {
@@ -17,7 +17,7 @@
       "platform": "telegram",
       "channel": "ukrainenowenglish",
       "postedAt": "2022-10-23T16:54:07Z",
-      "retrievedAt": "2026-10-15T12:06:34Z",
+      "retrievedAt": "2026-11-13T14:53:55Z",
       "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
       "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
       "placeNames": [
@@ -31,12 +31,36 @@
       "platform": "telegram",
       "channel": "ukrainenowenglish",
       "postedAt": "2022-10-23T15:22:01Z",
-      "retrievedAt": "2026-10-15T12:06:34Z",
+      "retrievedAt": "2026-11-13T14:53:55Z",
       "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
       "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
       "placeNames": [
         "Zaporizhzhia"
       ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3n26tefnqta2c",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-13T11:00:06Z",
+      "retrievedAt": "2026-11-13T14:53:55Z",
+      "contentHash": "sha256:8a088c860eb27ac443a2df46d074064e34bb8cc674e6eb6ea29cf27f87b57bba",
+      "excerpt": "Russia and Ukraine continue attacks as US efforts to broker a ceasefire struggle to make progress.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3n26jcjydhp25",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-13T08:00:06Z",
+      "retrievedAt": "2026-11-13T14:53:55Z",
+      "contentHash": "sha256:fae2efa1c3078ceed9bbe7088cf3882a55b6df798eb14dbc759051986983e601",
+      "excerpt": "Burkina Faso’s rival armed groups turn on each other as state loses ground https://aje.news/9cqlzi",
+      "placeNames": [],
       "relatedTo": []
     }
   ],
@@ -59,7 +83,7 @@
       {
         "channel": "telegram/tass_agency",
         "outcome": "nothing matched",
-        "read": 17,
+        "read": 19,
         "matched": 0,
         "collected": 0
       },
@@ -86,10 +110,10 @@
       },
       {
         "channel": "bluesky/aljazeera.com",
-        "outcome": "nothing matched",
+        "outcome": "collected",
         "read": 40,
-        "matched": 0,
-        "collected": 0
+        "matched": 2,
+        "collected": 2
       },
       {
         "channel": "bluesky/npr.org",
