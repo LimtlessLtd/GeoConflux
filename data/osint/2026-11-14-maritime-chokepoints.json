@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-11-14T1347Z-maritime-chokepoints",
+  "collectedAt": "2026-11-14T13:47:50Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "6d36bc5b"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3n2a3hvdzou2w",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-11-13T22:57:53Z",
+      "retrievedAt": "2026-11-14T13:47:50Z",
+      "contentHash": "sha256:25b2d9b11fe1e9087b48b4efa3374f79f25804ba99ad3421cf8f0cadc1698575",
+      "excerpt": "Over 30 people were hospitalized after a tanker in New Orleans “lost control” and hit a docked cruise ship, mayor says.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3n27tu5hf7j2s",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-11-13T20:41:34Z",
+      "retrievedAt": "2026-11-14T13:47:50Z",
+      "contentHash": "sha256:1f6779b6f663c48fd12cec1f16efeeec2939a26655634f1dcc411a6458fd5742",
+      "excerpt": "A tanker struck a New Orleans river cruise with 129 passengers on board, partially submerging the boat. Rescues were underway on the Mississippi River, officials say.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 14,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
