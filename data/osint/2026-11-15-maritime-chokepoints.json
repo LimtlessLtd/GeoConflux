@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-11-15T1418Z-maritime-chokepoints",
+  "collectedAt": "2026-11-15T14:18:10Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "63f745e2"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/405803",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-11-15T13:09:37Z",
+      "retrievedAt": "2026-11-15T14:18:10Z",
+      "contentHash": "sha256:0eff4675e3b36ff46b891dbe8d7ae703a888c7a640c752258d80d61d60544824",
+      "excerpt": "Военные ЕС высадились на судно под флагом Зимбабве, предположительно, перевозящее российскую нефть, сообщила Каллас. Она утверждает, что ЕС \"намерен продолжать подрывать\" перевозки российской нефти. МИД России ранее подчеркивал, что Евросоюз запугивает коммерческих перевозчиков и препятствует свободе судоходства, это злоупотребление действующими международно-правовыми нормами. ✔ Подпишись на ТАСС в \"Максе\"",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3n2e2zkyk7b2r",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-11-15T13:00:31Z",
+      "retrievedAt": "2026-11-15T14:18:10Z",
+      "contentHash": "sha256:e70cb3014d147c58413d29c9be408176586323a65021d55117552b410cc7c2a0",
+      "excerpt": "Three ships struck by drones in Black Sea near Romanian shipping canal, PM says reut.rs/4zI4wYA",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3n2dmhuzqnq2v",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-11-15T08:40:05Z",
+      "retrievedAt": "2026-11-15T14:18:10Z",
+      "contentHash": "sha256:ea7dac7f6363a7870b8f270dd85621f4dca659fe9540e8a2f3aecc9e7e93d0cf",
+      "excerpt": "Yemen government forces withdraw from area near Bab el-Mandeb Strait, Houthis in control reut.rs/3Vpf14c",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3n2cou6gh6v2l",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-11-14T23:50:06Z",
+      "retrievedAt": "2026-11-15T14:18:10Z",
+      "contentHash": "sha256:3ded53e21b5c81888be35cecb90dff5691945db8ebeaa37fdb01005f74268314",
+      "excerpt": "Data recorder recovered from tanker in New Orleans cruise ship collision, NTSB says reut.rs/3V1vlbd",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3n2cpgkpll32b",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-11-15T00:00:23Z",
+      "retrievedAt": "2026-11-15T14:18:10Z",
+      "contentHash": "sha256:fb93fd540bc7663dab2d977e866fb1969bf1fdd372101488f68c0ed9376ab832",
+      "excerpt": "New Orleans port officials have sued the owner of a tanker that slammed into a cruise ship on the Mississippi River.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3n2bwutn4ou2y",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-11-14T16:40:58Z",
+      "retrievedAt": "2026-11-15T14:18:10Z",
+      "contentHash": "sha256:54c0ad63faea014af2a4ce1160c125d543415f4b99237dfe4013cfce48462b50",
+      "excerpt": "Carnaval De Luz, the 16th album from the Irish rock band that's always on a mission, mines familiar terrain with good humor and a sense of urgency, and manages to meet the moment. n.pr/4Cl0tDx",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 4,
+        "collected": 3
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
