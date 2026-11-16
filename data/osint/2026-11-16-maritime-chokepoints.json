@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-11-16T1624Z-maritime-chokepoints",
+  "collectedAt": "2026-11-16T16:24:45Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "65a96611"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/405974",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-11-16T15:11:34Z",
+      "retrievedAt": "2026-11-16T16:24:45Z",
+      "contentHash": "sha256:e1f49fe458cdd90c5fd0e3ed8a099664939746e7e86e0728385977b6beda0b09",
+      "excerpt": "❕ВС РФ поразили в морском порту Николаев объекты инфраструктуры для хранения ГСМ, сообщает МО. ✔️ Подпишись на ТАСС в \"Максе\"",
+      "placeNames": [
+        "Николаев"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3n2gszbhtyk2q",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-11-16T15:15:11Z",
+      "retrievedAt": "2026-11-16T16:24:45Z",
+      "contentHash": "sha256:fb0ca02c864b5eb6199ca5b0f6614f1b9234df5c4feaf1b97192a080540d4db9",
+      "excerpt": "Supertanker rates plunge more than 60% from record highs reut.rs/3WNDCjw",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3n2fibgpcty2w",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-11-16T02:30:13Z",
+      "retrievedAt": "2026-11-16T16:24:45Z",
+      "contentHash": "sha256:d83d78d135a83aeecc544e739e754014447fead935332c14a935291200925a14",
+      "excerpt": "U.S. government safety officials say a preliminary finding indicates a tanker's steering system failed, keeping its rudder in a position that sent it crashing into a cruise ship docked in New Orleans last week.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3n2fbkmkifm2e",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-16T00:30:05Z",
+      "retrievedAt": "2026-11-16T16:24:45Z",
+      "contentHash": "sha256:c45a840175dc8b4a62e5f806f022b00073297565314716e1e34966dfa46688b9",
+      "excerpt": "Yemeni army says it is 'repositioning' troops away from the Bab al-Mandeb strait and other key coastal areas https://aje.news/ynjbbl",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3n2bwutn4ou2y",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-11-14T16:40:58Z",
+      "retrievedAt": "2026-11-16T16:24:45Z",
+      "contentHash": "sha256:54c0ad63faea014af2a4ce1160c125d543415f4b99237dfe4013cfce48462b50",
+      "excerpt": "Carnaval De Luz, the 16th album from the Irish rock band that's always on a mission, mines familiar terrain with good humor and a sense of urgency, and manages to meet the moment. n.pr/4Cl0tDx",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}

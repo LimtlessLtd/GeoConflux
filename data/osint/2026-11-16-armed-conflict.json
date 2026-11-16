@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "bundleId": "2026-10-18T1142Z-armed-conflict",
-  "collectedAt": "2026-10-18T11:42:01Z",
+  "bundleId": "2026-11-16T1624Z-armed-conflict",
+  "collectedAt": "2026-11-16T16:24:08Z",
   "brief": {
     "id": "armed-conflict",
     "revision": 2
   },
   "collector": {
     "role": "agent",
-    "runId": "ef6568c1"
+    "runId": "f62a3b3d"
   },
   "items": [
     {
@@ -17,7 +17,7 @@
       "platform": "telegram",
       "channel": "ukrainenowenglish",
       "postedAt": "2022-10-23T16:54:07Z",
-      "retrievedAt": "2026-10-18T11:42:01Z",
+      "retrievedAt": "2026-11-16T16:24:08Z",
       "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
       "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
       "placeNames": [
@@ -31,48 +31,12 @@
       "platform": "telegram",
       "channel": "ukrainenowenglish",
       "postedAt": "2022-10-23T15:22:01Z",
-      "retrievedAt": "2026-10-18T11:42:01Z",
+      "retrievedAt": "2026-11-16T16:24:08Z",
       "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
       "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
       "placeNames": [
         "Zaporizhzhia"
       ],
-      "relatedTo": []
-    },
-    {
-      "kind": "userGenerated",
-      "url": "https://bsky.app/profile/reuters.com/post/3my3n4xk6dt2x",
-      "platform": "bluesky",
-      "channel": "reuters.com",
-      "postedAt": "2026-10-17T17:40:11Z",
-      "retrievedAt": "2026-10-18T11:42:01Z",
-      "contentHash": "sha256:050ff99324674ed16796c78e681f803d5d44c44267137473003696df1ff72087",
-      "excerpt": "Explosion at Iraqi paramilitary alliance base kills one member, sources say reut.rs/4ityxUT",
-      "placeNames": [],
-      "relatedTo": []
-    },
-    {
-      "kind": "userGenerated",
-      "url": "https://bsky.app/profile/afp.com/post/3my3hjwbics2m",
-      "platform": "bluesky",
-      "channel": "afp.com",
-      "postedAt": "2026-10-17T16:00:04Z",
-      "retrievedAt": "2026-10-18T11:42:01Z",
-      "contentHash": "sha256:4ef6710844f7592054c418e096c5d9828735dcce6b6ab42e02805e44a3aaceed",
-      "excerpt": "À l'appel notamment d'anciens gilets jaunes et de jeunes, la journée de mobilisation contre la \"vie chère\" est marquée dans plusieurs villes par des tensions et affrontements. Voici les derniers développements ➡️ u.afp.com/SC82",
-      "placeNames": [],
-      "relatedTo": []
-    },
-    {
-      "kind": "userGenerated",
-      "url": "https://bsky.app/profile/aljazeera.com/post/3my3tbga7lo2m",
-      "platform": "bluesky",
-      "channel": "aljazeera.com",
-      "postedAt": "2026-10-17T19:30:03Z",
-      "retrievedAt": "2026-10-18T11:42:01Z",
-      "contentHash": "sha256:258a7e9ab15000db5edf94ef323e7387a543c26e020cfc801cf41269fbdfe399",
-      "excerpt": "Attacks hit several areas as UNICEF reports more than 340 children killed since 'ceasefire' began a year ago.",
-      "placeNames": [],
       "relatedTo": []
     }
   ],
@@ -101,10 +65,10 @@
       },
       {
         "channel": "bluesky/reuters.com",
-        "outcome": "collected",
+        "outcome": "nothing matched",
         "read": 40,
-        "matched": 1,
-        "collected": 1
+        "matched": 0,
+        "collected": 0
       },
       {
         "channel": "bluesky/apnews.com",
@@ -115,17 +79,17 @@
       },
       {
         "channel": "bluesky/afp.com",
-        "outcome": "collected",
+        "outcome": "nothing matched",
         "read": 40,
-        "matched": 1,
-        "collected": 1
+        "matched": 0,
+        "collected": 0
       },
       {
         "channel": "bluesky/aljazeera.com",
-        "outcome": "collected",
+        "outcome": "nothing matched",
         "read": 40,
-        "matched": 1,
-        "collected": 1
+        "matched": 0,
+        "collected": 0
       },
       {
         "channel": "bluesky/npr.org",
