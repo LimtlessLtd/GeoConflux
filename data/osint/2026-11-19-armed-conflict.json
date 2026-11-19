@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "bundleId": "2026-10-21T1223Z-armed-conflict",
-  "collectedAt": "2026-10-21T12:23:54Z",
+  "bundleId": "2026-11-19T1602Z-armed-conflict",
+  "collectedAt": "2026-11-19T16:02:52Z",
   "brief": {
     "id": "armed-conflict",
     "revision": 2
   },
   "collector": {
     "role": "agent",
-    "runId": "b0f5bd41"
+    "runId": "478b1034"
   },
   "items": [
     {
@@ -17,7 +17,7 @@
       "platform": "telegram",
       "channel": "ukrainenowenglish",
       "postedAt": "2022-10-23T16:54:07Z",
-      "retrievedAt": "2026-10-21T12:23:54Z",
+      "retrievedAt": "2026-11-19T16:02:52Z",
       "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
       "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
       "placeNames": [
@@ -31,7 +31,7 @@
       "platform": "telegram",
       "channel": "ukrainenowenglish",
       "postedAt": "2022-10-23T15:22:01Z",
-      "retrievedAt": "2026-10-21T12:23:54Z",
+      "retrievedAt": "2026-11-19T16:02:52Z",
       "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
       "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
       "placeNames": [
@@ -41,40 +41,38 @@
     },
     {
       "kind": "userGenerated",
-      "url": "https://bsky.app/profile/reuters.com/post/3myez7a5cvd2a",
+      "url": "https://bsky.app/profile/apnews.com/post/3n2nysm2wsm2g",
       "platform": "bluesky",
-      "channel": "reuters.com",
-      "postedAt": "2026-10-21T11:10:10Z",
-      "retrievedAt": "2026-10-21T12:23:54Z",
-      "contentHash": "sha256:6ac874d6d8dd40b62435df901683c92e9a3a89c6f18cce6491607a49cd3ea3ca",
-      "excerpt": "Water rationing, rubbish pile-up raise disease fears in Yemen's besieged Taiz reut.rs/4zKWQo6",
+      "channel": "apnews.com",
+      "postedAt": "2026-11-19T11:47:27Z",
+      "retrievedAt": "2026-11-19T16:02:52Z",
+      "contentHash": "sha256:c82e39a6c17197f1b46c3c9743c75c64f1c760ee7d52f69e16475552aef080d8",
+      "excerpt": "The UN’s top court says Myanmar committed genocide against the Rohingya minority in a brutal 2017 military operation.",
       "placeNames": [],
       "relatedTo": []
     },
     {
       "kind": "userGenerated",
-      "url": "https://bsky.app/profile/aljazeera.com/post/3myeb66hier2l",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3n2mivgurjf2o",
       "platform": "bluesky",
       "channel": "aljazeera.com",
-      "postedAt": "2026-10-21T04:00:05Z",
-      "retrievedAt": "2026-10-21T12:23:54Z",
-      "contentHash": "sha256:8b95eba13f2150927e390dde62603057d21ffab5b5f3e53bcb2e43ffffb89c3c",
-      "excerpt": "From the forest to Mutobo, former fighters face the challenge of rebuilding their lives after leaving the armed group.",
+      "postedAt": "2026-11-18T21:30:03Z",
+      "retrievedAt": "2026-11-19T16:02:52Z",
+      "contentHash": "sha256:4d2aa059c199a37232a4bd307fd96ab3e2cb7bf8e96b4cb3300c9b7da490c4b5",
+      "excerpt": "Billions have been pledged for Gaza since a 2025 'ceasefire', but rebuilding hasn't begun and Israeli attacks continue.",
       "placeNames": [],
       "relatedTo": []
     },
     {
       "kind": "userGenerated",
-      "url": "https://bsky.app/profile/aljazeera.com/post/3mydjp5fms42v",
+      "url": "https://bsky.app/profile/npr.org/post/3n2o5caut4j2p",
       "platform": "bluesky",
-      "channel": "aljazeera.com",
-      "postedAt": "2026-10-20T21:00:05Z",
-      "retrievedAt": "2026-10-21T12:23:54Z",
-      "contentHash": "sha256:83db8d8d45226a1ead19ead4828e19e98ef3ff278010fe29cc8783046a3946e0",
-      "excerpt": "Yemen’s Taiz faces deadly siege, as Shabwah death toll rises https://aje.news/wu9njg",
-      "placeNames": [
-        "Shabwah"
-      ],
+      "channel": "npr.org",
+      "postedAt": "2026-11-19T13:07:48Z",
+      "retrievedAt": "2026-11-19T16:02:52Z",
+      "contentHash": "sha256:91ec467f1adda52e135c200fe47e11d3e737f527da9c4e9ebf44afa70178f7c9",
+      "excerpt": "The International Court of Justice found that Myanmar security forces \"acted with genocidal intent\" against the Rohingya during the 2017 military operations in the northern Rakhine State. n.pr/3XilluO",
+      "placeNames": [],
       "relatedTo": []
     }
   ],
@@ -97,23 +95,23 @@
       {
         "channel": "telegram/tass_agency",
         "outcome": "nothing matched",
-        "read": 20,
+        "read": 17,
         "matched": 0,
         "collected": 0
       },
       {
         "channel": "bluesky/reuters.com",
-        "outcome": "collected",
-        "read": 40,
-        "matched": 1,
-        "collected": 1
-      },
-      {
-        "channel": "bluesky/apnews.com",
         "outcome": "nothing matched",
         "read": 40,
         "matched": 0,
         "collected": 0
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
       },
       {
         "channel": "bluesky/afp.com",
@@ -126,15 +124,15 @@
         "channel": "bluesky/aljazeera.com",
         "outcome": "collected",
         "read": 40,
-        "matched": 2,
-        "collected": 2
+        "matched": 1,
+        "collected": 1
       },
       {
         "channel": "bluesky/npr.org",
-        "outcome": "nothing matched",
+        "outcome": "collected",
         "read": 40,
-        "matched": 0,
-        "collected": 0
+        "matched": 1,
+        "collected": 1
       },
       {
         "channel": "bluesky/bbcnews.bsky.social",
