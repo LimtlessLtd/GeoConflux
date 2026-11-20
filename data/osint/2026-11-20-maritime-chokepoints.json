@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-11-20T1545Z-maritime-chokepoints",
+  "collectedAt": "2026-11-20T15:45:34Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "1efc0e40"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/406874",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-11-20T14:47:32Z",
+      "retrievedAt": "2026-11-20T15:45:34Z",
+      "contentHash": "sha256:5ff7e76c9caeb19386e41ae2ed64ccf005fbfe69c1b3c2264e8356d9ca3c97ef",
+      "excerpt": "▶️ Путин и Рахмон продолжили переговоры в неформальной обстановке в беседке на свежем воздухе, передает корреспондент ТАСС. Видео: Kremlin. ru ✔️ Подпишись на ТАСС в \"Максе\"Завершился рабочий визит Владимира Путина в Таджикистан, сообщила пресс-служба таджикского лидера. Рахмон проводил Путина в аэропорту Душанбе.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/406868",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-11-20T14:14:24Z",
+      "retrievedAt": "2026-11-20T15:45:34Z",
+      "contentHash": "sha256:05e7b010854bb06b09f7adf4ae36461a8d9418855d086ca64081d88fbef7be96",
+      "excerpt": "❗️ВС РФ поразили ТЭЦ Слобожанская в Харьковской области, обеспечивающую работу предприятий ВПК Украины, сообщили в Минобороны. Также в порту Черноморск поражен сухогруз с грузами для ВСУ и портовая инфраструктура. ✔️ Подпишись на ТАСС в \"Максе\"В районе железнодорожной станции \"Рядовое\" Днепропетровской области поражен локомотив, используемый для перевозки грузов ВСУ, сообщили в МО РФ.",
+      "placeNames": [
+        "Днепропетровск",
+        "Черноморск",
+        "Харьков",
+        "Днепр"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/406867",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-11-20T14:13:09Z",
+      "retrievedAt": "2026-11-20T15:45:34Z",
+      "contentHash": "sha256:e5ca662fb041201b0ead0d64beefe111a1b1860f11d18ae5009be8c24b1f53de",
+      "excerpt": "❗️ВС РФ поразили логистический центр в Городне Черниговской области, осуществлявший хранение военных грузов, сообщили в Минобороны.❗️ВС РФ поразили ТЭЦ Слобожанская в Харьковской области, обеспечивающую работу предприятий ВПК Украины, сообщили в Минобороны. Также в порту Черноморск поражен сухогруз с грузами для ВСУ и портовая инфраструктура. ✔️ Подпишись на ТАСС в \"Максе\"",
+      "placeNames": [
+        "Черноморск",
+        "Чернигов",
+        "Харьков"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3n2qktbr5nd2u",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-11-20T12:15:17Z",
+      "retrievedAt": "2026-11-20T15:45:34Z",
+      "contentHash": "sha256:f0ab9cc3d21f3e45767de878a030a005a0e4f96bb5e70969e5fcfeb6af5f3381",
+      "excerpt": "19 crew members airlifted after cargo ship runs aground in southwestern France reut.rs/4eJavUH",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3n2nnm6oygq2m",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-11-19T08:27:01Z",
+      "retrievedAt": "2026-11-20T15:45:34Z",
+      "contentHash": "sha256:0316a77c0eac6a47d834f7264f16b7332f8038c22fe296d0fdf025fb0bee964d",
+      "excerpt": "🇫🇷🌧️ Les départements de la Somme, du Pas-de-Calais, de la Seine-Maritime et des Landes sont placés en vigilance orange pluie-inondation jusqu'à vendredi midi tandis que la Haute-Corse est concernée par une vigilance orange pour les crues, a annoncé Météo-France jeudi.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 3,
+        "collected": 3
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
