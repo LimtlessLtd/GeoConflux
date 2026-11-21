@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-11-21T1456Z-maritime-chokepoints",
+  "collectedAt": "2026-11-21T14:56:08Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "8ae6a823"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/tass_agency/406986",
+      "platform": "telegram",
+      "channel": "tass_agency",
+      "postedAt": "2026-11-21T13:45:01Z",
+      "retrievedAt": "2026-11-21T14:56:08Z",
+      "contentHash": "sha256:50a0ad91f6dc47d63421fb8ad90e5167ccdc2970a4906b0347d37f73d23230d8",
+      "excerpt": "Угрозы для снабжения Калининградской области в связи с ударом по судну в нейтральных водах Финского залива нет, заявил губернатор Беспрозванных. ✔️ Подпишись на ТАСС в \"Максе\"Спасательное судно РФ подошло к российскому сухогрузу, атакованному БПЛА в международных водах Финского залива, сообщил Дрозденко. Эвакуация не потребовалась. Команда атакованного сухогруза планирует продолжить движение и проводит необходимые работы.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3n2sncx2u7h2a",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-11-21T08:05:10Z",
+      "retrievedAt": "2026-11-21T14:56:08Z",
+      "contentHash": "sha256:a2592e99244a534b1f40c0b2013c8c2dd0ec7fac6e13f12e0518c5d730463f8d",
+      "excerpt": "Tanker hit by unknown projectile near Oman's Khasab, UKMTO says reut.rs/4thqzDg",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3n2tct6leif2b",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-21T14:30:03Z",
+      "retrievedAt": "2026-11-21T14:56:08Z",
+      "contentHash": "sha256:8de7094c701d0d6a8b55d90e0e837cd96b0b96f93ee353b98c9c679c3005b2d2",
+      "excerpt": "Two drones attack a cargo ship close to Russia's maritime border, causing damage and crew evacuation.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3n2svg3b2fs2b",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-21T10:30:04Z",
+      "retrievedAt": "2026-11-21T14:56:08Z",
+      "contentHash": "sha256:970ad2e052789b8a9c8621e585587d49f54528b80f76febc2c377a52ca085c90",
+      "excerpt": "Iran reiterates conditions for Hormuz reopening as US slaps sanctions on four Iranians it says acted as 'oil trustees' https://aje.news/3fc7eb",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3n2rqjx7t2u2s",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-20T23:30:06Z",
+      "retrievedAt": "2026-11-21T14:56:08Z",
+      "contentHash": "sha256:427f5b8c12daffbb1e9c5c58dd3a571a380693d93382af3643a1375247e729ed",
+      "excerpt": "Ukraine strikes Kerch Bridge as Putin ally declares ‘no one needs Europe’ https://aje.news/4h0a4w",
+      "placeNames": [
+        "Kerch"
+      ],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "collected",
+        "read": 20,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 3,
+        "collected": 3
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
