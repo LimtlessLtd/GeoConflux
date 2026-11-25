@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-11-25T1737Z-maritime-chokepoints",
+  "collectedAt": "2026-11-25T17:37:32Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "a7d4cc7a"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3n35duljy5423",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-11-25T14:15:21Z",
+      "retrievedAt": "2026-11-25T17:37:32Z",
+      "contentHash": "sha256:4fd360b8d37e5377e999816334debf9dc78ec864cd35216b24502dc29e5429cf",
+      "excerpt": "Iran says ships hit mines in Hormuz, warns vessels to coordinate passage reut.rs/3VO4kbx",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3n35olhx54l2k",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-11-25T17:27:07Z",
+      "retrievedAt": "2026-11-25T17:37:32Z",
+      "contentHash": "sha256:ecb84b76c40a460396594b79764deaeb6c5580f24ddc85836e5d20aade75193d",
+      "excerpt": "An unexpected holiday delivery washed up on Bulgaria’s Black Sea coast: a shipping container packed with Christmas decorations.The container, which came ashore near Tsarevo on Nov. 2, has now been opened, revealing more than 80 boxes of ornaments and decorations worth an estimated 50,000 euros.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3n34lp7hmr62n",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-11-25T07:02:51Z",
+      "retrievedAt": "2026-11-25T17:37:32Z",
+      "contentHash": "sha256:83d5ee4e4fd056edb5136e78714ae9f16c5ee8c867cf4693e20227a87abeb63e",
+      "excerpt": "Libyan authorities say two naval officers have died from wounds sustained in a Ukrainian drone attack on a Russian warship.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3n34vm5ew3i2k",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-25T10:00:05Z",
+      "retrievedAt": "2026-11-25T17:37:32Z",
+      "contentHash": "sha256:c18cf81220bfa58ad5b633380f22387e5e5f26aeb21304bd620e308b42cce337",
+      "excerpt": "The escalation comes after the Yemeni rebel group threatened to attack the kingdom's Red Sea ports in retaliation.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
