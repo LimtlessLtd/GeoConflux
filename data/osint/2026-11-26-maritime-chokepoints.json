@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-11-26T1718Z-maritime-chokepoints",
+  "collectedAt": "2026-11-26T17:18:50Z",
+  "brief": {
+    "id": "maritime-chokepoints",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "8d9149d6"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3n37uuzsc3x2i",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-11-26T14:25:09Z",
+      "retrievedAt": "2026-11-26T17:18:50Z",
+      "contentHash": "sha256:ad82fc7766008c030e5c0b4baf667e2907c9290f9ffb97665dffdee4a665b6ac",
+      "excerpt": "Iran's Revolutionary Guards say two oil tankers hit sea mines near Oman’s Khasab reut.rs/4leGi3K",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3n37swphtni2h",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-11-26T13:50:18Z",
+      "retrievedAt": "2026-11-26T17:18:50Z",
+      "contentHash": "sha256:ee5ba826b1237e568a7b684f500ce6bfa3a5a0480f0f9a794ebba72cc382a0f5",
+      "excerpt": "Most Gulf markets retreat on Saudi energy strikes, maritime dangers reut.rs/3WYtuog",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3n37ms6jaxu2n",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-11-26T12:00:24Z",
+      "retrievedAt": "2026-11-26T17:18:50Z",
+      "contentHash": "sha256:aaa88d124b7a486bd9ba7d6238a99ad4dbdedfae717ca06da8c3d3f0d15fe729",
+      "excerpt": "A crash involving a fuel tanker ignited a massive fire on a major highway surrounding Cairo on Wednesday, killing at least 31 people, Egyptian authorities said.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3n35olhx54l2k",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-11-25T17:27:07Z",
+      "retrievedAt": "2026-11-26T17:18:50Z",
+      "contentHash": "sha256:ecb84b76c40a460396594b79764deaeb6c5580f24ddc85836e5d20aade75193d",
+      "excerpt": "An unexpected holiday delivery washed up on Bulgaria’s Black Sea coast: a shipping container packed with Christmas decorations.The container, which came ashore near Tsarevo on Nov. 2, has now been opened, revealing more than 80 boxes of ornaments and decorations worth an estimated 50,000 euros.",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "nothing matched",
+        "read": 12,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 20,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
