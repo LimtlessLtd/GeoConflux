@@ -1,0 +1,199 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "2026-11-27T1658Z-armed-conflict",
+  "collectedAt": "2026-11-27T16:58:26Z",
+  "brief": {
+    "id": "armed-conflict",
+    "revision": 2
+  },
+  "collector": {
+    "role": "agent",
+    "runId": "e5f1ad4b"
+  },
+  "items": [
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20998",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T16:54:07Z",
+      "retrievedAt": "2026-11-27T16:58:26Z",
+      "contentHash": "sha256:8211550876d0f2523e2afb4ec497364eb14648de2744b2c5d1a728c07613ddda",
+      "excerpt": "📸 Ukrainian servicemen at the frontline in the Kharkiv region. October 2022 Photo: Slava Ratynski",
+      "placeNames": [
+        "Kharkiv"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://t.me/ukrainenowenglish/20995",
+      "platform": "telegram",
+      "channel": "ukrainenowenglish",
+      "postedAt": "2022-10-23T15:22:01Z",
+      "retrievedAt": "2026-11-27T16:58:26Z",
+      "contentHash": "sha256:dc9b93242c37ac2f4a378228470f3f1236d715c0c36c8afa7d1feef46af4c92a",
+      "excerpt": "❤️🩹 This is Hanna, her pigeon Serhii, and a toy rabbit at the railway station in Przemyśl, Poland The woman and her daughter were forced to leave Zaporizhzhia due to constant shelling. When Hanna told her story to Diana, the author of this photo, she cried. But then she took a toy rabbit and started playing with Serhiiko the Pigeon. Photo: @diana__djan",
+      "placeNames": [
+        "Zaporizhzhia"
+      ],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/reuters.com/post/3n3ck43gxrs2y",
+      "platform": "bluesky",
+      "channel": "reuters.com",
+      "postedAt": "2026-11-27T15:50:14Z",
+      "retrievedAt": "2026-11-27T16:58:26Z",
+      "contentHash": "sha256:a1a5c4ac8349168784a06f94850d6ab941e9a19f23cd746d09962bc2e0e872ac",
+      "excerpt": "Suspected militants kill 13 soldiers in southwest Niger, ministry says reut.rs/4zQOJGj",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/apnews.com/post/3n37cd3gbza2n",
+      "platform": "bluesky",
+      "channel": "apnews.com",
+      "postedAt": "2026-11-26T08:53:00Z",
+      "retrievedAt": "2026-11-27T16:58:26Z",
+      "contentHash": "sha256:f47ee0465b71212a9de35c64a845313bae467db05ec3f541db3e2da827aa473f",
+      "excerpt": "The fast-moving Ebola outbreak in eastern Congo has topped 12,000 confirmed cases, government data showed, as fighting between rebels and the army disrupts efforts to contain the spread of the disease.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3n3cjr7ubmq2c",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-11-27T15:44:10Z",
+      "retrievedAt": "2026-11-27T16:58:26Z",
+      "contentHash": "sha256:8bc40aa75a571ee0bc12df90bbdd298c4a601ff70978d86c58567b493fa560b1",
+      "excerpt": "⚽️ Plusieurs supporters bulgares ont été blessés jeudi à Marseille lors d'affrontements avec des supporters marseillais avant le coup d'envoi du match de Ligue Europa entre le Levski Sofia et l'OM. Le parquet de Marseille a annoncé l'ouverture de deux enquêtes ⤵️",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/afp.com/post/3n3bptstcz427",
+      "platform": "bluesky",
+      "channel": "afp.com",
+      "postedAt": "2026-11-27T08:00:19Z",
+      "retrievedAt": "2026-11-27T16:58:26Z",
+      "contentHash": "sha256:1dac5d9afb1d15132a2ba03b7e644e622bf6954fe46e8b61c8e1c2211f3d0cb8",
+      "excerpt": "⚽ Plusieurs supporters du Levski Sofia ont été blessés jeudi à Marseille lors d'affrontements avec des supporters de l'OM. Emmanuel Macron et son homologue bulgare Iliana Iotova ont condamné des actes de violence de la part des Marseillais. ➡️ u.afp.com/SFF8",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3n3bptfr4mj2w",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-27T08:00:05Z",
+      "retrievedAt": "2026-11-27T16:58:26Z",
+      "contentHash": "sha256:e213c0527749ca55c43c848bf9c1416e85c3fb1477f1ffca7a5739a75238c9f7",
+      "excerpt": "Two Italians killed by ‘drone strike debris’ in Kuwait https://aje.news/m3adlj",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/aljazeera.com/post/3n3arns7sqo2q",
+      "platform": "bluesky",
+      "channel": "aljazeera.com",
+      "postedAt": "2026-11-26T23:00:05Z",
+      "retrievedAt": "2026-11-27T16:58:26Z",
+      "contentHash": "sha256:5b11daf533de9f31d61bf7d291fee97e12f72025f026076aa8261ec5acde26b2",
+      "excerpt": "President Abelardo de la Espriella's campaign against armed groups has resulted in accusations of extrajudicial killing.",
+      "placeNames": [],
+      "relatedTo": []
+    },
+    {
+      "kind": "userGenerated",
+      "url": "https://bsky.app/profile/npr.org/post/3n37udnfuum2m",
+      "platform": "bluesky",
+      "channel": "npr.org",
+      "postedAt": "2026-11-26T14:15:26Z",
+      "retrievedAt": "2026-11-27T16:58:26Z",
+      "contentHash": "sha256:1f502e288aff592284580a98ddbd92952c3264d4b6625e2cfe1437338b0958d6",
+      "excerpt": "As the fast-moving outbreak continues to spread in eastern Congo, fighting between rebels and the army is disrupting efforts to contain the spread of the disease. n.pr/4lbubEz",
+      "placeNames": [],
+      "relatedTo": []
+    }
+  ],
+  "coverage": {
+    "sources": [
+      {
+        "channel": "telegram/bbcbreaking",
+        "outcome": "nothing matched",
+        "read": 3,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "telegram/ukrainenowenglish",
+        "outcome": "collected",
+        "read": 12,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "telegram/tass_agency",
+        "outcome": "nothing matched",
+        "read": 18,
+        "matched": 0,
+        "collected": 0
+      },
+      {
+        "channel": "bluesky/reuters.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/apnews.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/afp.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/aljazeera.com",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 2,
+        "collected": 2
+      },
+      {
+        "channel": "bluesky/npr.org",
+        "outcome": "collected",
+        "read": 40,
+        "matched": 1,
+        "collected": 1
+      },
+      {
+        "channel": "bluesky/bbcnews.bsky.social",
+        "outcome": "no public posts",
+        "reason": "served nothing readable"
+      },
+      {
+        "channel": "mastodon/theguardian",
+        "outcome": "nothing matched",
+        "read": 40,
+        "matched": 0,
+        "collected": 0
+      }
+    ]
+  }
+}
