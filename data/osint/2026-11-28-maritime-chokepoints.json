@@ -1,37 +1,25 @@
 {
   "schemaVersion": 1,
-  "bundleId": "2026-10-30T1333Z-maritime-chokepoints",
-  "collectedAt": "2026-10-30T13:33:40Z",
+  "bundleId": "2026-11-28T1549Z-maritime-chokepoints",
+  "collectedAt": "2026-11-28T15:49:42Z",
   "brief": {
     "id": "maritime-chokepoints",
     "revision": 2
   },
   "collector": {
     "role": "agent",
-    "runId": "e7cf8be9"
+    "runId": "8a6732d7"
   },
   "items": [
     {
       "kind": "userGenerated",
-      "url": "https://bsky.app/profile/reuters.com/post/3mz3qqvvseb2q",
+      "url": "https://bsky.app/profile/reuters.com/post/3n3ebp4vao72g",
       "platform": "bluesky",
       "channel": "reuters.com",
-      "postedAt": "2026-10-30T12:10:14Z",
-      "retrievedAt": "2026-10-30T13:33:40Z",
-      "contentHash": "sha256:1686bed0344d9d6644dbde127161c26de0ca9556c918b9468c13441c370a4c4d",
-      "excerpt": "Iran's IRGC navy says two tankers stopped south of Hormuz after incidents reut.rs/4icIWFr",
-      "placeNames": [],
-      "relatedTo": []
-    },
-    {
-      "kind": "userGenerated",
-      "url": "https://bsky.app/profile/aljazeera.com/post/3mz2jmxd7ju2y",
-      "platform": "bluesky",
-      "channel": "aljazeera.com",
-      "postedAt": "2026-10-30T00:30:05Z",
-      "retrievedAt": "2026-10-30T13:33:40Z",
-      "contentHash": "sha256:f53a5414971a93a897a0cf2c8e36b238c1b007c5db83baa6f740a6abf77323d7",
-      "excerpt": "Iran's IRGC says four tankers have struck naval mines after using \"unauthorised\" Strait of Hormuz routes https://aje.news/mc8tx2",
+      "postedAt": "2026-11-28T08:25:09Z",
+      "retrievedAt": "2026-11-28T15:49:42Z",
+      "contentHash": "sha256:bae07e57f73ae74990896ef83ce364fcf5c7c66a7c5fbfa4f9b7217c18e705f9",
+      "excerpt": "Armed group boards cargo ship off Yemen and takes control, UKMTO says reut.rs/49rlbE9",
       "placeNames": [],
       "relatedTo": []
     }
@@ -60,7 +48,7 @@
       {
         "channel": "telegram/tass_agency",
         "outcome": "nothing matched",
-        "read": 18,
+        "read": 20,
         "matched": 0,
         "collected": 0
       },
@@ -87,10 +75,10 @@
       },
       {
         "channel": "bluesky/aljazeera.com",
-        "outcome": "collected",
+        "outcome": "nothing matched",
         "read": 40,
-        "matched": 1,
-        "collected": 1
+        "matched": 0,
+        "collected": 0
       },
       {
         "channel": "bluesky/npr.org",
